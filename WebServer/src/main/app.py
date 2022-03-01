@@ -1,5 +1,5 @@
 from flask import Flask
-from bin.ServerLobby import ServerLobby
+from src.bin.ServerLobby import ServerLobby
 
 app = Flask(__name__)
 
