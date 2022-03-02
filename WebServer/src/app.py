@@ -23,10 +23,18 @@ def lobbies_matching_client_filter(max_players):
     return jsonify(result), 200
 
 
+@app.route('/server/lobby/<lobby_id>', methods=['DELETE'])
+def match_started_lobby_deleted(lobby_id):
+    if not str(lobby_id).isnumeric():
+        return "Lobby id is not a number", 404
 
-@app.route('/server/lobby/<id>', methods=['DELETE'])
-def match_started_lobby_deleted(id):
-    return 'Hello World!'
+    lobby_id = int(lobby_id)
+    global temporary_dict_of_lobbies
+
+    if lobby_id not in temporary_dict_of_lobbies:
+        return "Lobby not found", 404
+    temporary_dict_of_lobbies.pop(lobby_id)
+    return "", 200
 
 
 @app.route('/server/lobbies', methods=['POST'])
@@ -38,13 +46,36 @@ def create_new_lobby():
         return "Arguments not found", 401
 
 
-@app.route('/server/lobby/<id>/numberOfPlayer', methods=['PUT'])
-def exit_lobby_decrement_number_of_players(id):
-    return 'Hello World!'
+@app.route('/server/lobby/<lobby_id>/numberOfPlayer', methods=['DELETE'])
+def exit_lobby_decrement_number_of_players(lobby_id):
+    if not str(lobby_id).isnumeric():
+        return "Lobby id is not a number", 404
+
+    lobby_id = int(lobby_id)
+    global temporary_dict_of_lobbies
+
+    if lobby_id not in temporary_dict_of_lobbies:
+        return "Lobby not found", 404
+
+    temporary_dict_of_lobbies[lobby_id].players_inside -= 1
+    return '', 200
 
 
-@app.route('/server/lobby/<id>/managerClientIp', methods=['PUT'])
-def update_manager_client_info(id):
+@app.route('/server/lobby/<lobby_id>/managerClientIp', methods=['PUT'])
+def update_manager_client_info(lobby_id):
+    if not str(lobby_id).isnumeric():
+        return "Lobby id is not a number", 404
+
+    lobby_id = int(lobby_id)
+    global temporary_dict_of_lobbies
+
+    if lobby_id not in temporary_dict_of_lobbies:
+        return "Lobby not found", 404
+
+    if request.form.get('new_manager_client_ip') is None:
+        return "New manager not set", 400
+
+    temporary_dict_of_lobbies[lobby_id].manager_client_ip = request.form.get('new_manager_client_ip')
     return 'Hello World!'
 
 
@@ -56,7 +87,7 @@ def connect_to_lobby():
 def add_lobby_to_dict(name, manager_ip, max_players):
     global count
     global temporary_dict_of_lobbies
-    temporary_dict_of_lobbies[count] = ServerLobby(name, manager_ip, max_players)
+    temporary_dict_of_lobbies[count] = ServerLobby(name, count, manager_ip, max_players)
     count += 1
 
 
@@ -64,4 +95,3 @@ if __name__ == '__main__':
     temporary_dict_of_lobbies = {}
     count = 0
     app.run()
-
