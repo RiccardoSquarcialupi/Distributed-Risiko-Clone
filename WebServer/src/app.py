@@ -4,9 +4,24 @@ from ServerLobby import ServerLobby
 app = Flask(__name__)
 
 
-@app.route('/server/lobbies/<maxPlayers>', methods=['GET'])
-def lobbies_matching_client_filter(maxPlayers):
-    return 'Hello World!' + str(maxPlayers)
+@app.route('/server/lobbies/<max_players>', methods=['GET'])
+def lobbies_matching_client_filter(max_players):
+    if max_players is None:
+        return "Argument not set", 404
+
+    if not str(max_players).isnumeric():
+        return "Number of player is not a number", 404
+
+    if int(max_players) < 3 or int(max_players) > 6:
+        return "Number of player is inconsistent", 404
+
+    global temporary_dict_of_lobbies
+    result = []
+    for lobby in temporary_dict_of_lobbies.values():
+        if lobby.max_players == max_players:
+            result.append(lobby.toJSON())
+    return jsonify(result), 200
+
 
 
 @app.route('/server/lobby/<id>', methods=['DELETE'])
@@ -18,6 +33,7 @@ def match_started_lobby_deleted(id):
 def create_new_lobby():
     if request.form.get('name') is not None and request.form.get('max_players') is not None:
         add_lobby_to_dict(request.form['name'], request.remote_addr, request.form['max_players'])
+        return "", 200
     else:
         return "Arguments not found", 401
 
