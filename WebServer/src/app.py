@@ -19,7 +19,7 @@ def lobbies_matching_client_filter(max_players):
     result = []
     for lobby in temporary_dict_of_lobbies.values():
         if lobby.max_players == max_players:
-            result.append(lobby.toJSON())
+            result.append(lobby.to_json())
     return jsonify(result), 200
 
 
@@ -76,12 +76,23 @@ def update_manager_client_info(lobby_id):
         return "New manager not set", 400
 
     temporary_dict_of_lobbies[lobby_id].manager_client_ip = request.form.get('new_manager_client_ip')
-    return 'Hello World!'
+    return '', 200
 
 
-@app.route('/server/lobby', methods=['GET'])
-def connect_to_lobby():
-    return 'Hello World!'
+@app.route('/server/lobby/<lobby_id>', methods=['PUT'])
+def connect_to_lobby(lobby_id):
+    if not str(lobby_id).isnumeric():
+        return "Lobby id is not a number", 404
+
+    lobby_id = int(lobby_id)
+    global temporary_dict_of_lobbies
+
+    if lobby_id not in temporary_dict_of_lobbies:
+        return "Lobby not found", 404
+
+    temporary_dict_of_lobbies[lobby_id].players_inside += 1
+
+    return '', 200
 
 
 def add_lobby_to_dict(name, manager_ip, max_players):
