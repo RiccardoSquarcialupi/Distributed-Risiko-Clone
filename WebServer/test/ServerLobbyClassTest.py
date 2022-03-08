@@ -1,6 +1,5 @@
 import unittest
-from src.ServerLobby import ServerLobby
-
+from WebServer.src.ServerLobby import ServerLobby
 
 class MyTestCase(unittest.TestCase):
     server1 = ServerLobby('server', 0, '0.0.0.0', 3, 1)
