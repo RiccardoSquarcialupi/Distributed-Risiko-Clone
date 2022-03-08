@@ -6,7 +6,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
 public class ClientServerPart extends AbstractVerticle{
-    public static void main(final String[] args) {
+    public static void main() {
         Vertx vertx = Vertx.vertx();
         HttpServer httpServer = vertx.createHttpServer();
         Router router = Router.router(vertx);

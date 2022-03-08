@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class ManagerClient extends LobbyClient {
     private int idLobbyCreated;
     private int maxPlayer;
