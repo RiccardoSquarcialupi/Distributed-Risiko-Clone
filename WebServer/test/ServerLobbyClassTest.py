@@ -1,5 +1,7 @@
 import unittest
+
 from WebServer.src.ServerLobby import ServerLobby
+
 
 class MyTestCase(unittest.TestCase):
     server1 = ServerLobby('server', 0, '0.0.0.0', 3, 1)
@@ -25,6 +27,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(0, self.server1.players_inside)
         with self.assertRaises(ValueError):
             self.server1.remove_players_inside()
+
 
 if __name__ == '__main__':
     unittest.main()
