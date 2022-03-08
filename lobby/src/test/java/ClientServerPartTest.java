@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Test;
 
-public class ClientLauncherTest {
+public class ClientServerPartTest {
     @Test
     void main() {
     }
