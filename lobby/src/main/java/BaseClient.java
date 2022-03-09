@@ -8,4 +8,8 @@ public class BaseClient {
         this.ip = ip;
         this.nickname = nickname;
     }
+
+    public int getId(){return this.id;}
+    public String getIp(){return this.ip;}
+    public String getNickname(){return this.nickname;}
 }

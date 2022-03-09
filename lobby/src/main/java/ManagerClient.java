@@ -1,9 +1,9 @@
 public class ManagerClient extends LobbyClient {
-    private int idLobbyCreated;
     private int maxPlayer;
 
-    public ManagerClient(int id, String ip, String nickname) {
-        super(id, ip, nickname);
+    public ManagerClient(int id, String ip, String nickname, int idLobby, int maxPlayer) {
+        super(id, ip, nickname, idLobby, id);
+        this.maxPlayer = maxPlayer;
     }
 
     private void addPlayer(BaseClient client){
