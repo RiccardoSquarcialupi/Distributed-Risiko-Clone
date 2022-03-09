@@ -17,12 +17,30 @@ public class LobbyClient extends BaseClient {
         this.clientList = new ArrayList<>();
 
         this.clientServerPart = new ClientServerPart(this);
-        this.clientServerPart.start();
     }
 
+    public  void start(){this.clientServerPart.start();}
     public void stop(){
         this.clientServerPart.stop();
     }
 
-    // Qui ci vanno tutti i metodi che richiamerà ClientServerPart per aggiornare lo stato del client.
+    public void addNewClient(BaseClient newClient) {
+        this.clientList.add(newClient);
+    }
+
+    public void deleteClient(BaseClient toDeleteClient) {
+        this.clientList.remove(toDeleteClient);
+    }
+
+    public void updateManager(int newManagerId) {
+        this.idManagerClient = newManagerId;
+    }
+
+    public void gameStarted() {
+        Launcher.gameStarted();
+    }
+
+    public void lobbyClosed() {
+        Launcher.lobbyClosed();
+    }
 }

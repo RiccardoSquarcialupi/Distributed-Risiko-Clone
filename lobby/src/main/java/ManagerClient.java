@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class ManagerClient extends LobbyClient {
     private int maxPlayer;
 
@@ -15,4 +17,8 @@ public class ManagerClient extends LobbyClient {
     }
 
     private void startGame(){}
+
+    public List<BaseClient> getClientList() {
+        return this.clientList;
+    }
 }

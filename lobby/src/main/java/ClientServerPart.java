@@ -1,20 +1,15 @@
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
 public class ClientServerPart extends AbstractVerticle{
-
-    private final Vertx vertx;
     private final HttpServer httpServer;
     private final Router router;
 
     private LobbyClient lobbyClient;
 
     public ClientServerPart(LobbyClient lobbyClient){
-        this.vertx = Vertx.vertx();
         this.httpServer = vertx.createHttpServer();
         this.router = Router.router(vertx);
 
@@ -25,8 +20,7 @@ public class ClientServerPart extends AbstractVerticle{
                 .post("/client/lobby/clients")
                 .consumes("*/json")
                 .handler(routingContext -> {
-                    routingContext.getBodyAsJson();
-                    //TODO add new client info
+                    this.lobbyClient.addNewClient(routingContext.getBodyAsJson().mapTo(BaseClient.class));
                     routingContext.response().end();
                 });
 
@@ -34,8 +28,7 @@ public class ClientServerPart extends AbstractVerticle{
                 .delete("client/lobby/clients")
                 .consumes("*/json")
                 .handler(routingContext -> {
-                    routingContext.getBodyAsJson();
-                    //TODO delete a client
+                    this.lobbyClient.deleteClient(routingContext.getBodyAsJson().mapTo(BaseClient.class));
                     routingContext.response().end();
                 });
 
@@ -43,8 +36,7 @@ public class ClientServerPart extends AbstractVerticle{
                 .put("client/lobby/manager")
                 .consumes("*/json")
                 .handler(routingContext -> {
-                    routingContext.getBodyAsJson();
-                    //TODO update manager client
+                    this.lobbyClient.updateManager(routingContext.getBodyAsJson().getInteger("manager_id"));
                     routingContext.response().end();
                 });
 
@@ -53,7 +45,7 @@ public class ClientServerPart extends AbstractVerticle{
                 .consumes("*/json")
                 .handler(routingContext -> {
                     routingContext.getBodyAsJson();
-                    //TODO game has started
+                    this.lobbyClient.gameStarted();
                     routingContext.response().end();
                 });
 
@@ -62,7 +54,7 @@ public class ClientServerPart extends AbstractVerticle{
                 .consumes("*/json")
                 .handler(routingContext -> {
                     routingContext.getBodyAsJson();
-                    //TODO lobby got closed
+                    this.lobbyClient.lobbyClosed();
                     routingContext.response().end();
                 });
 
@@ -71,10 +63,8 @@ public class ClientServerPart extends AbstractVerticle{
                 .handler(routingContext -> {
                     routingContext.getBodyAsJson();
                     if(this.lobbyClient instanceof ManagerClient){
-
+                        ((ManagerClient)this.lobbyClient).getClientList();
                     }
-
-                    //TODO return clients list json
                     routingContext.response().end();
                 });
 
