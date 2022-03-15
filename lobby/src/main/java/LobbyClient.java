@@ -1,3 +1,5 @@
+import io.vertx.core.json.JsonObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,19 +10,22 @@ public class LobbyClient extends BaseClient {
     private int idManagerClient;
 
     protected final ClientServerPart clientServerPart;
+    protected final ClientWebClientPart clientWebClientPart;
 
     public LobbyClient(int id, String ip, String nickname, int idLobby, int idManagerClient) {
         super(id, ip, nickname);
         this.idLobby = idLobby;
         this.idManagerClient = idManagerClient;
-
         this.clientList = new ArrayList<>();
-
+        this.clientWebClientPart = new ClientWebClientPart();
         this.clientServerPart = new ClientServerPart(this);
     }
 
-    public  void start(){this.clientServerPart.start();}
-    public void stop(){
+    public void start() {
+        this.clientServerPart.start();
+    }
+
+    public void stop() {
         this.clientServerPart.stop();
     }
 
@@ -42,5 +47,13 @@ public class LobbyClient extends BaseClient {
 
     public void lobbyClosed() {
         Launcher.lobbyClosed();
+    }
+
+    public void joinLobby(){
+        this.clientWebClientPart.joinLobby(JsonObject.mapFrom((BaseClient)this));
+    }
+
+    public void exitLobby(){
+        this.clientWebClientPart.exitLobby();
     }
 }
