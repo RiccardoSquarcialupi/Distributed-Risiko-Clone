@@ -1,28 +1,35 @@
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 
 public class Launcher {
 
     public static BaseClient client;
 
     public static void main(String[] args) throws IOException {
-        BaseClient client = new BaseClient(0, "127.0.0.1", "Nicki");
+        BaseClient client1 = new BaseClient(Inet4Address.getLocalHost().getHostAddress(), "Nicki");
 
-        // Quando mi devo trasformare in LobbyClient:
-        client = new LobbyClient(client.getId(), client.getIp(), client.getNickname(), 0, 0);
-        ((LobbyClient)client).start();
-
-        // Se mi trasformo in ManagerClient:
-        client = new ManagerClient(client.getId(), client.getIp(), client.getNickname(), 0, 5);
-        ((ManagerClient)client).start();
     }
 
     public static void gameStarted() {
-        ((LobbyClient)client).stop();
+        ((LobbyClient) client).stop();
         // client = new gameClient();
     }
 
     public static void lobbyClosed() {
-        ((LobbyClient)client).stop();
-        client = new BaseClient(client.getId(), client.getIp(), client.getNickname());
+        ((LobbyClient) client).stop();
+        client = new BaseClient(client.getIp(), client.getNickname());
     }
+
+    public static void lobbyJoinedSuccessfully(String managerClientIp) {
+        client = new LobbyClient(client.getIp(), client.getNickname(), 0, managerClientIp);
+        ((LobbyClient) client).start();
+    }
+
+    public static void lobbyCreatedSuccessfully() throws UnknownHostException {
+        client = new ManagerClient(client.getIp(), client.getNickname(), 0, 5);
+        ((ManagerClient) client).start();
+    }
+
+
 }

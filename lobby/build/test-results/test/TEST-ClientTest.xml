@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ClientTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-03-26T16:58:57" hostname="DESKTOP-MIIEU0C" time="0.317">
+  <properties/>
+  <testcase name="testClientServerPartAPI()" classname="ClientTest" time="0.317"/>
+  <system-out><![CDATA[[]
+[]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

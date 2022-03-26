@@ -7,15 +7,15 @@ public class LobbyClient extends BaseClient {
 
     protected List<BaseClient> clientList;
     private int idLobby;
-    private int idManagerClient;
+    private String ipManagerClient;
 
-    protected final ClientServerPart clientServerPart;
-    protected final ClientWebClientPart clientWebClientPart;
+    protected ClientServerPart clientServerPart;
+    protected ClientWebClientPart clientWebClientPart;
 
-    public LobbyClient(int id, String ip, String nickname, int idLobby, int idManagerClient) {
-        super(id, ip, nickname);
+    public LobbyClient(String ip, String nickname, int idLobby, String ipManagerClient) {
+        super(ip, nickname);
         this.idLobby = idLobby;
-        this.idManagerClient = idManagerClient;
+        this.ipManagerClient = ipManagerClient;
         this.clientList = new ArrayList<>();
         this.clientWebClientPart = new ClientWebClientPart();
         this.clientServerPart = new ClientServerPart(this);
@@ -37,8 +37,8 @@ public class LobbyClient extends BaseClient {
         this.clientList.remove(toDeleteClient);
     }
 
-    public void updateManager(int newManagerId) {
-        this.idManagerClient = newManagerId;
+    public void updateManager(String newManagerIp) {
+        this.ipManagerClient = newManagerIp;
     }
 
     public void gameStarted() {
@@ -47,10 +47,6 @@ public class LobbyClient extends BaseClient {
 
     public void lobbyClosed() {
         Launcher.lobbyClosed();
-    }
-
-    public void joinLobby(){
-        this.clientWebClientPart.joinLobby(JsonObject.mapFrom((BaseClient)this));
     }
 
     public void exitLobby(){
