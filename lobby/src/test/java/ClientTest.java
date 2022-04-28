@@ -1,6 +1,7 @@
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.Inet4Address;
@@ -10,11 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ClientTest{
 
     static BaseClient client1;
-
-    @BeforeAll
-    static void setupClient() throws UnknownHostException {
-        client1 = new BaseClient(Inet4Address.getLocalHost().getHostAddress(), "Riky");
-    }
     
     @Test
     void testBaseClient() throws UnknownHostException {
@@ -26,13 +22,11 @@ public class ClientTest{
     void testLobbyClient(){
         client1 = new LobbyClient(client1.getIp(), client1.getNickname(), 0, "0.0.0.0");
         assertEquals(LobbyClient.class, client1.getClass());
-        ((LobbyClient) client1).start();
     }
     @Test
     void testManagerClient(){
         client1 = new ManagerClient(client1.getIp(), client1.getNickname(), 0, 5);
         assertEquals(ManagerClient.class, client1.getClass());
-        ((ManagerClient) client1).start();
     }
     @Test
     void testClientServerPartAPI(){
@@ -51,5 +45,6 @@ public class ClientTest{
         if(fut.failed()){
             fail();
         }
+        ((ManagerClient) client1).stop();
     }
 }
