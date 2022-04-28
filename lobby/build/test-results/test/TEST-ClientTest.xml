@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ClientTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-03-26T16:58:57" hostname="DESKTOP-MIIEU0C" time="0.317">
+<testsuite name="ClientTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-04-28T18:40:15" hostname="LAPTOP-9GED6IPR" time="1.009">
   <properties/>
-  <testcase name="testClientServerPartAPI()" classname="ClientTest" time="0.317"/>
-  <system-out><![CDATA[[]
-[]
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
+  <testcase name="testClientServerPartAPI()" classname="ClientTest" time="1.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[apr 28, 2022 8:40:16 PM io.vertx.core.impl.VertxImpl
+AVVERTENZA: You're already on a Vert.x context, are you sure you want to create a new Vertx instance?
+]]></system-err>
 </testsuite>

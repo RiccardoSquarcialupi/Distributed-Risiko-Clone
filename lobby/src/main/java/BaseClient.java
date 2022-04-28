@@ -32,7 +32,7 @@ public class BaseClient {
 
     }
 
-    private JsonObject toJson(){
+    public JsonObject toJson(){
         JsonObject jo = new JsonObject();
         jo.put("ip", ip);
         jo.put("nickname", nickname);

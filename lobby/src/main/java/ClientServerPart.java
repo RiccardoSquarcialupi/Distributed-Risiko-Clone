@@ -20,8 +20,10 @@ public class ClientServerPart extends AbstractVerticle {
         router
                 .post("/client/lobby/clients")
                 .handler(routingContext -> {
-                    this.lobbyClient.addNewClient(BaseClient.fromJson(routingContext.getBodyAsJson()));
-                    routingContext.response().end();
+                    routingContext.request().bodyHandler(bh->{
+                        this.lobbyClient.addNewClient(BaseClient.fromJson(bh.toJsonObject()));
+                        routingContext.response().setStatusCode(200).end();
+                    });
                 });
 
         router
