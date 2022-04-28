@@ -28,36 +28,34 @@ public class ClientServerPart extends AbstractVerticle {
 
         router
                 .delete("/client/lobby/clients")
-                .consumes("*/json")
                 .handler(routingContext -> {
-                    this.lobbyClient.deleteClient(BaseClient.fromJson(routingContext.getBodyAsJson()));
-                    routingContext.response().end();
+                    routingContext.request().bodyHandler(bh-> {
+                        this.lobbyClient.deleteClient(BaseClient.fromJson(bh.toJsonObject()));
+                        routingContext.response().setStatusCode(200).end();
+                    });
                 });
 
         router
                 .put("/client/lobby/manager")
-                .consumes("*/json")
                 .handler(routingContext -> {
-                    this.lobbyClient.updateManager(routingContext.getBodyAsJson().getString("manager_ip"));
-                    routingContext.response().end();
+                    routingContext.request().bodyHandler(bh-> {
+                        this.lobbyClient.updateManager(bh.toJsonObject().getString("manager_ip"));
+                        routingContext.response().setStatusCode(200).end();
+                    });
                 });
 
         router
                 .put("/client/lobby/game")
-                .consumes("*/json")
                 .handler(routingContext -> {
-                    routingContext.getBodyAsJson();
                     this.lobbyClient.gameStarted();
-                    routingContext.response().end();
+                    routingContext.response().setStatusCode(200).end();
                 });
 
         router
                 .delete("/client/lobby")
-                .consumes("*/json")
                 .handler(routingContext -> {
-                    routingContext.getBodyAsJson();
                     this.lobbyClient.lobbyClosed();
-                    routingContext.response().end();
+                    routingContext.response().setStatusCode(200).end();
                 });
 
         router
