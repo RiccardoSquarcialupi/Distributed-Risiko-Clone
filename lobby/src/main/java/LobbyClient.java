@@ -21,6 +21,10 @@ public class LobbyClient extends BaseClient {
         this.clientServerPart = new ClientServerPart(this);
     }
 
+    public String getIpManagerClient(){
+        return this.ipManagerClient;
+    }
+
     public void start() {
         this.clientServerPart.start();
     }

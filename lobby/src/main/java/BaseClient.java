@@ -5,6 +5,8 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 
+import java.util.Objects;
+
 public class BaseClient {
     private final String ip;
     private final String nickname;
@@ -41,5 +43,18 @@ public class BaseClient {
 
     public static BaseClient fromJson(JsonObject bodyAsJson) {
         return new BaseClient(bodyAsJson.getString("ip"),bodyAsJson.getString("nickname"));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseClient that = (BaseClient) o;
+        return Objects.equals(ip, that.ip);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ip);
     }
 }

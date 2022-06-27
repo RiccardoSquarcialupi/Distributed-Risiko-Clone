@@ -1,6 +1,7 @@
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
@@ -62,12 +63,17 @@ public class ClientServerPart extends AbstractVerticle {
                 .get("/manager/lobby/clients")
                 .handler(routingContext -> {
                     if (this.lobbyClient instanceof ManagerClient) {
+                        JsonArray jarr = new JsonArray();
+                        for(BaseClient bc : ((ManagerClient) this.lobbyClient).getClientList()){
+                            jarr.add(bc.toJson());
+                        }
                         routingContext.response()
                                 .putHeader("Content-Type", "application/json")
-                                .end(JsonObject.mapFrom(((ManagerClient) this.lobbyClient).getClientList()).encode());
+                                .end(jarr.toBuffer());
 
+                    } else {
+                        routingContext.response().end();
                     }
-                    routingContext.response().end();
                 });
 
         httpServer.requestHandler(router).listen(8080);
