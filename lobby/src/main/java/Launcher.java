@@ -7,7 +7,7 @@ public class Launcher {
     public static BaseClient client;
 
     public static void main(String[] args) throws IOException {
-        BaseClient client1 = new BaseClient(Inet4Address.getLocalHost().getHostAddress(), "Nicki");
+        client = new BaseClient(Inet4Address.getLocalHost().getHostAddress(), "Nicki");
 
     }
 
