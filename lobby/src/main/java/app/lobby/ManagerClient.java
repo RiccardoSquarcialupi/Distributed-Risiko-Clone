@@ -1,7 +1,9 @@
+package app.lobby;
+
+import app.base.BaseClient;
+import app.lobby.LobbyClient;
 import io.vertx.core.json.JsonObject;
 
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

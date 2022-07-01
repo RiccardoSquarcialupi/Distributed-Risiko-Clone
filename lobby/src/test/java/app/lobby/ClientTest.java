@@ -1,9 +1,12 @@
+package app.lobby;
+
+import app.lobby.LobbyClient;
+import app.base.BaseClient;
+import app.lobby.ManagerClient;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.Inet4Address;

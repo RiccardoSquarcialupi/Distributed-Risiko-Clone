@@ -1,8 +1,10 @@
+package app.lobby;
+
+import app.base.BaseClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 public class ClientServerPart extends AbstractVerticle {

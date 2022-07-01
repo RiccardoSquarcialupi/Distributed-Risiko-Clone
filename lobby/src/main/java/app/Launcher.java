@@ -1,10 +1,16 @@
+package app;
+
+import app.base.BaseClient;
+import app.lobby.LobbyClient;
+import app.lobby.ManagerClient;
+
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
 public class Launcher {
 
-    public static BaseClient client;
+    private static BaseClient client;
 
     public static void main(String[] args) throws IOException {
         client = new BaseClient(Inet4Address.getLocalHost().getHostAddress(), "Nicki");

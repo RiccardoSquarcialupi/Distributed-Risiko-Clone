@@ -1,3 +1,6 @@
+package app.lobby;
+
+import app.base.BaseClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;

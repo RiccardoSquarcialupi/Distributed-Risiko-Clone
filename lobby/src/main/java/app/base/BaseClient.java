@@ -1,11 +1,12 @@
-import com.google.gson.Gson;
+package app.base;
+
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.Utils;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 
 import java.util.Objects;
+
+import app.Launcher;
 
 public class BaseClient {
     private final String ip;
