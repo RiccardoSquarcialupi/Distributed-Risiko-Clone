@@ -1,64 +1,23 @@
 package app.lobby;
 
-import app.Launcher;
 import app.base.BaseClient;
-import app.lobby.ClientServerPart;
-import app.lobby.ClientWebClientPart;
 
-import java.util.ArrayList;
-import java.util.List;
+public interface LobbyClient extends BaseClient {
+    String getIpManagerClient();
 
-public class LobbyClient extends BaseClient {
+    void start();
 
-    protected List<BaseClient> clientList;
-    private int idLobby;
-    private String ipManagerClient;
+    void stop();
 
-    protected ClientServerPart clientServerPart;
-    protected ClientWebClientPart clientWebClientPart;
+    void addNewClient(BaseClient newClient);
 
-    public LobbyClient(String ip, String nickname, int idLobby, String ipManagerClient) {
-        super(ip, nickname);
-        this.idLobby = idLobby;
-        this.ipManagerClient = ipManagerClient;
-        this.clientList = new ArrayList<>();
-        this.clientWebClientPart = new ClientWebClientPart();
-        this.clientServerPart = new ClientServerPart(this);
-    }
+    void deleteClient(BaseClient toDeleteClient);
 
-    public String getIpManagerClient(){
-        return this.ipManagerClient;
-    }
+    void updateManager(String newManagerIp);
 
-    public void start() {
-        this.clientServerPart.start();
-    }
+    void gameStarted();
 
-    public void stop() {
-        this.clientServerPart.stop();
-    }
+    void lobbyClosed();
 
-    public void addNewClient(BaseClient newClient) {
-        this.clientList.add(newClient);
-    }
-
-    public void deleteClient(BaseClient toDeleteClient) {
-        this.clientList.remove(toDeleteClient);
-    }
-
-    public void updateManager(String newManagerIp) {
-        this.ipManagerClient = newManagerIp;
-    }
-
-    public void gameStarted() {
-        Launcher.gameStarted();
-    }
-
-    public void lobbyClosed() {
-        Launcher.lobbyClosed();
-    }
-
-    public void exitLobby(){
-        this.clientWebClientPart.exitLobby();
-    }
+    void exitLobby();
 }

@@ -1,8 +1,11 @@
 package app;
 
 import app.base.BaseClient;
+import app.base.BaseClientImpl;
 import app.lobby.LobbyClient;
+import app.lobby.LobbyClientImpl;
 import app.lobby.ManagerClient;
+import app.lobby.ManagerClientImpl;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -13,7 +16,7 @@ public class Launcher {
     private static BaseClient client;
 
     public static void main(String[] args) throws IOException {
-        client = new BaseClient(Inet4Address.getLocalHost().getHostAddress(), "Nicki");
+        client = new BaseClientImpl(Inet4Address.getLocalHost().getHostAddress(), "Nicki");
 
     }
 
@@ -24,16 +27,16 @@ public class Launcher {
 
     public static void lobbyClosed() {
         ((LobbyClient) client).stop();
-        client = new BaseClient(client.getIp(), client.getNickname());
+        client = new BaseClientImpl(client.getIp(), client.getNickname());
     }
 
     public static void lobbyJoinedSuccessfully(String managerClientIp) {
-        client = new LobbyClient(client.getIp(), client.getNickname(), 0, managerClientIp);
+        client = new LobbyClientImpl(client.getIp(), client.getNickname(), 0, managerClientIp);
         ((LobbyClient) client).start();
     }
 
     public static void lobbyCreatedSuccessfully() throws UnknownHostException {
-        client = new ManagerClient(client.getIp(), client.getNickname(), 0, 5);
+        client = new ManagerClientImpl(client.getIp(), client.getNickname(), 0, 5);
         ((ManagerClient) client).start();
     }
 

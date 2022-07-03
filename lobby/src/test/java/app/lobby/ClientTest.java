@@ -1,8 +1,7 @@
 package app.lobby;
 
-import app.lobby.LobbyClient;
 import app.base.BaseClient;
-import app.lobby.ManagerClient;
+import app.base.BaseClientImpl;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -19,24 +18,24 @@ public class ClientTest{
     
     @Test
     void testBaseClient() throws UnknownHostException {
-        client1 = new BaseClient(Inet4Address.getLocalHost().getHostAddress(), "Riky");
+        client1 = new BaseClientImpl(Inet4Address.getLocalHost().getHostAddress(), "Riky");
         assertEquals("Riky",client1.getNickname());
         assertEquals(Inet4Address.getLocalHost().getHostAddress(),client1.getIp());
     }
     @Test
     void testLobbyClient(){
-        client1 = new LobbyClient(client1.getIp(), client1.getNickname(), 0, "0.0.0.0");
-        assertEquals(LobbyClient.class, client1.getClass());
+        client1 = new LobbyClientImpl(client1.getIp(), client1.getNickname(), 0, "0.0.0.0");
+        assertEquals(LobbyClientImpl.class, client1.getClass());
         ((LobbyClient)client1).stop();
     }
     @Test
     void testManagerClient(){
-        client1 = new ManagerClient(client1.getIp(), client1.getNickname(), 0, 5);
-        assertEquals(ManagerClient.class, client1.getClass());
+        client1 = new ManagerClientImpl(client1.getIp(), client1.getNickname(), 0, 5);
+        assertEquals(ManagerClientImpl.class, client1.getClass());
         ((ManagerClient)client1).stop();
     }
 
-    void waitForCompletition(Future<?> fut){
+    void waitForCompletion(Future<?> fut){
         while(!fut.isComplete()){
             try {
                 Thread.sleep(100);
@@ -49,7 +48,7 @@ public class ClientTest{
 
     @Test
     void testClientServerPartAPI(){
-        client1 = new ManagerClient(client1.getIp(), client1.getNickname(), 0, 5);
+        client1 = new ManagerClientImpl(client1.getIp(), client1.getNickname(), 0, 5);
         ((ManagerClient) client1).start();
         Vertx vertx = Vertx.vertx();
 
@@ -58,15 +57,15 @@ public class ClientTest{
         var fut = WebClient.create(vertx)
                 .post(8080, client1.getIp(), "/client/lobby/clients")
                 .sendJsonObject(client1.toJson());
-        waitForCompletition(fut);
-        assertEquals(client1.getIp(), ((ManagerClient) client1).clientList.get(0).getIp());
+        waitForCompletion(fut);
+        assertEquals(client1.getIp(), ((ManagerClientImpl) client1).clientList.get(0).getIp());
 
         // Client asks for clients.
 
         fut = WebClient.create(vertx)
                 .get(8080, client1.getIp(), "/manager/lobby/clients")
                 .send();
-        waitForCompletition(fut);
+        waitForCompletion(fut);
         assertEquals(1, fut.result().bodyAsJsonArray().size());
 
         // Client leave lobby.
@@ -74,8 +73,8 @@ public class ClientTest{
         fut = WebClient.create(vertx)
                 .delete(8080, client1.getIp(), "/client/lobby/clients")
                 .sendJsonObject(client1.toJson());
-        waitForCompletition(fut);
-        assertEquals(0, ((ManagerClient) client1).clientList.size());
+        waitForCompletion(fut);
+        assertEquals(0, ((ManagerClientImpl) client1).clientList.size());
 
         // Stop client.
         ((ManagerClient) client1).stop();
@@ -83,7 +82,7 @@ public class ClientTest{
 
     @Test
     void testManagerChange(){
-        client1 = new ManagerClient(client1.getIp(), client1.getNickname(), 0, 5);
+        client1 = new ManagerClientImpl(client1.getIp(), client1.getNickname(), 0, 5);
         ((ManagerClient) client1).start();
         Vertx vertx = Vertx.vertx();
 
@@ -94,7 +93,7 @@ public class ClientTest{
         var fut = WebClient.create(vertx)
                 .put(8080, client1.getIp(), "/client/lobby/manager")
                 .sendJsonObject(newMan);
-        waitForCompletition(fut);
+        waitForCompletion(fut);
         assertEquals(newMan.getString("manager_ip"), ((ManagerClient) client1).getIpManagerClient());
 
         ((ManagerClient) client1).stop();
