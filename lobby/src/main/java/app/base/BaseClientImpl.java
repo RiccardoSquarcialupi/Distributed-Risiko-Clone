@@ -25,10 +25,10 @@ public class BaseClientImpl implements BaseClient {
     public String getNickname(){return this.nickname;}
 
     @Override
-    public void joinLobby(BaseClient client, String managerClientIp) {
+    public void joinLobby(String managerClientIp) {
         this.client
                 .post(8080, managerClientIp, "/client/lobby/clients")
-                .sendJsonObject(client.toJson())
+                .sendJsonObject(this.toJson())
                 .onSuccess(response -> {
                     System.out.println("Received response with status code" + response.statusCode());
                     Launcher.lobbyJoinedSuccessfully(managerClientIp);

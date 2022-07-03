@@ -9,15 +9,5 @@ public interface LobbyClient extends BaseClient {
 
     void stop();
 
-    void addNewClient(BaseClient newClient);
-
-    void deleteClient(BaseClient toDeleteClient);
-
-    void updateManager(String newManagerIp);
-
-    void gameStarted();
-
-    void lobbyClosed();
-
     void exitLobby();
 }

@@ -9,5 +9,5 @@ public interface ManagerClient extends LobbyClient {
 
     List<BaseClient> getClientList();
 
-    void managerClientChange();
+    void managerClientChange(String newManagerIP);
 }

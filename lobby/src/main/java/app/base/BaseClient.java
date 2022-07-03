@@ -7,7 +7,7 @@ public interface BaseClient {
 
     String getNickname();
 
-    void joinLobby(BaseClient client, String managerClientIp);
+    void joinLobby(String managerClientIp);
 
     JsonObject toJson();
 }

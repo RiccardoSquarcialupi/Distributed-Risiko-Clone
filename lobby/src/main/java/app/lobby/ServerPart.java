@@ -8,15 +8,15 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
 
-public class ClientServerPart extends AbstractVerticle {
+public class ServerPart extends AbstractVerticle {
     private final HttpServer httpServer;
     private final Router router;
 
-    private final LobbyClient lobbyClient;
+    private final LobbyClientImpl lobbyClient;
 
-    public ClientServerPart(LobbyClient lobbyClient) {
+    public ServerPart(LobbyClient lobbyClient) {
         this.httpServer = Vertx.vertx().createHttpServer();
-        this.lobbyClient = lobbyClient;
+        this.lobbyClient = (LobbyClientImpl) lobbyClient;
         this.router = Router.router(vertx);
     }
 

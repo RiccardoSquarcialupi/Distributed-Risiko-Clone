@@ -8,10 +8,10 @@ import io.vertx.ext.web.client.WebClient;
 
 import java.util.List;
 
-public class ClientWebClientPart extends AbstractVerticle {
+public class ClientPart extends AbstractVerticle {
     private final WebClient client;
 
-    public ClientWebClientPart() {
+    public ClientPart() {
         this.client = WebClient.create(Vertx.vertx());
     }
 

@@ -24,15 +24,15 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
     }
 
     @Override
-    public void managerClientChange() {
-        this.clientWebClientPart.managerClientChange(JsonObject.mapFrom(this.getIp()), this.clientList);
+    public void managerClientChange(String newManagerIP) {
+        this.clientPart.managerClientChange(JsonObject.mapFrom(newManagerIP), this.clientList);
     }
 
     @Override
     public void startGame() {
         Collections.shuffle(cards);
         for (int i = 0; i < this.maxPlayer; i++) {
-            this.clientWebClientPart.gameHasStarted(JsonObject.mapFrom((cards.subList(0, cards.size() / (this.maxPlayer - i)))),this.clientList.get(i).getIp());
+            this.clientPart.gameHasStarted(JsonObject.mapFrom((cards.subList(0, cards.size() / (this.maxPlayer - i)))),this.clientList.get(i).getIp());
             Stream.iterate(0, n -> cards.remove(0)).limit(cards.size() / (this.maxPlayer - i));
         }
     }

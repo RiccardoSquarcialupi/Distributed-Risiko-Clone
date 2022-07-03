@@ -13,16 +13,16 @@ public class LobbyClientImpl extends BaseClientImpl implements LobbyClient {
     private int idLobby;
     private String ipManagerClient;
 
-    protected ClientServerPart clientServerPart;
-    protected ClientWebClientPart clientWebClientPart;
+    protected ServerPart serverPart;
+    protected ClientPart clientPart;
 
     public LobbyClientImpl(String ip, String nickname, int idLobby, String ipManagerClient) {
         super(ip, nickname);
         this.idLobby = idLobby;
         this.ipManagerClient = ipManagerClient;
         this.clientList = new ArrayList<>();
-        this.clientWebClientPart = new ClientWebClientPart();
-        this.clientServerPart = new ClientServerPart(this);
+        this.clientPart = new ClientPart();
+        this.serverPart = new ServerPart(this);
     }
 
     @Override
@@ -32,41 +32,38 @@ public class LobbyClientImpl extends BaseClientImpl implements LobbyClient {
 
     @Override
     public void start() {
-        this.clientServerPart.start();
+        this.serverPart.start();
     }
 
     @Override
     public void stop() {
-        this.clientServerPart.stop();
-    }
-
-    @Override
-    public void addNewClient(BaseClient newClient) {
-        this.clientList.add(newClient);
-    }
-
-    @Override
-    public void deleteClient(BaseClient toDeleteClient) {
-        this.clientList.remove(toDeleteClient);
-    }
-
-    @Override
-    public void updateManager(String newManagerIp) {
-        this.ipManagerClient = newManagerIp;
-    }
-
-    @Override
-    public void gameStarted() {
-        Launcher.gameStarted();
-    }
-
-    @Override
-    public void lobbyClosed() {
-        Launcher.lobbyClosed();
+        this.serverPart.stop();
     }
 
     @Override
     public void exitLobby(){
-        this.clientWebClientPart.exitLobby();
+        this.clientPart.exitLobby();
     }
+
+    protected void addNewClient(BaseClient newClient) {
+        this.clientList.add(newClient);
+    }
+
+    protected void deleteClient(BaseClient toDeleteClient) {
+        this.clientList.remove(toDeleteClient);
+    }
+
+    protected void updateManager(String newManagerIp) {
+        this.ipManagerClient = newManagerIp;
+    }
+
+    protected void gameStarted() {
+        Launcher.gameStarted();
+    }
+
+    protected void lobbyClosed() {
+        Launcher.lobbyClosed();
+    }
+
+
 }
