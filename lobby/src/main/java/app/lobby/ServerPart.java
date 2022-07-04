@@ -2,6 +2,7 @@ package app.lobby;
 
 import app.base.BaseClient;
 import app.base.BaseClientImpl;
+import app.base.JSONClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -25,7 +26,7 @@ public class ServerPart extends AbstractVerticle {
                 .post("/client/lobby/clients")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh->{
-                        this.lobbyClient.addNewClient(BaseClientImpl.fromJson(bh.toJsonObject()));
+                        this.lobbyClient.addNewClient(JSONClient.fromJson(bh.toJsonObject()));
                         routingContext.response().setStatusCode(200).end();
                     });
                 });
@@ -34,7 +35,7 @@ public class ServerPart extends AbstractVerticle {
                 .delete("/client/lobby/clients")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh-> {
-                        this.lobbyClient.deleteClient(BaseClientImpl.fromJson(bh.toJsonObject()));
+                        this.lobbyClient.deleteClient(JSONClient.fromJson(bh.toJsonObject()));
                         routingContext.response().setStatusCode(200).end();
                     });
                 });
@@ -67,7 +68,7 @@ public class ServerPart extends AbstractVerticle {
                 .handler(routingContext -> {
                     if (this.lobbyClient instanceof ManagerClientImpl) {
                         JsonArray jarr = new JsonArray();
-                        for(BaseClient bc : ((ManagerClient) this.lobbyClient).getClientList()){
+                        for(JSONClient bc : ((ManagerClient) this.lobbyClient).getClientList()){
                             jarr.add(bc.toJson());
                         }
                         routingContext.response()

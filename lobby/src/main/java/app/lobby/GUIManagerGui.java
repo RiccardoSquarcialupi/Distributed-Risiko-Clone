@@ -1,6 +1,6 @@
 package app.lobby;
 
-import app.gui.GUI;
+import app.manager.gui.GUI;
 
 import javax.swing.*;
 

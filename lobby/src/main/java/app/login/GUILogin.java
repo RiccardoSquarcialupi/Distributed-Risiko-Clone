@@ -1,7 +1,7 @@
 package app.login;
 
 import app.Launcher;
-import app.gui.GUI;
+import app.manager.gui.GUI;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,8 +32,8 @@ public class GUILogin extends JPanel implements GUI {
 
     private ActionListener onEnter(){
         return (e) -> {
-            if(jtfName.getText().length() > 0){
-                Launcher.userLoginned(jtfName.getText());
+            if(jtfName.getText().length() > 0) {
+                Launcher.getCurrentClient().login(jtfName.getText());
             } else {
                 jlbDescr.setText(jlbDescr.getText() + "!");
             }

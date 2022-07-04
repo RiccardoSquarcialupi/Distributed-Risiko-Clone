@@ -1,5 +1,8 @@
 package app.base;
 
+import app.login.LoginClient;
+import app.manager.client.Client;
+import app.manager.client.ClientParameters;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -8,21 +11,18 @@ import java.util.Objects;
 
 import app.Launcher;
 
-public class BaseClientImpl implements BaseClient {
-    private final String ip;
-    private final String nickname;
+public class BaseClientImpl extends LoginClient implements BaseClient {
     private WebClient client;
+    private ClientParameters cltPar;
 
-    public BaseClientImpl(String ip, String nickname) {
+    public BaseClientImpl(ClientParameters cltPar) {
+        super(cltPar);
         this.client = WebClient.create(Vertx.vertx());
-        this.ip = ip;
-        this.nickname = nickname;
+        this.cltPar = cltPar;
     }
 
     @Override
-    public String getIp(){return this.ip;}
-    @Override
-    public String getNickname(){return this.nickname;}
+    public String getNickname(){return this.cltPar.getNickname();}
 
     @Override
     public void joinLobby(String managerClientIp) {
@@ -31,7 +31,8 @@ public class BaseClientImpl implements BaseClient {
                 .sendJsonObject(this.toJson())
                 .onSuccess(response -> {
                     System.out.println("Received response with status code" + response.statusCode());
-                    Launcher.lobbyJoinedSuccessfully(managerClientIp);
+                    this.cltPar.setIpManager(managerClientIp);
+                    Launcher.lobbyJoinedSuccessfully();
                 })
                 .onFailure(err ->
                         System.out.println("Something went wrong " + err.getMessage()));
@@ -41,25 +42,8 @@ public class BaseClientImpl implements BaseClient {
     @Override
     public JsonObject toJson(){
         JsonObject jo = new JsonObject();
-        jo.put("ip", ip);
-        jo.put("nickname", nickname);
+        jo.put("ip", getIP());
+        jo.put("nickname", this.cltPar.getNickname());
         return jo;
-    }
-
-    public static BaseClient fromJson(JsonObject bodyAsJson) {
-        return new BaseClientImpl(bodyAsJson.getString("ip"),bodyAsJson.getString("nickname"));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BaseClientImpl that = (BaseClientImpl) o;
-        return Objects.equals(ip, that.ip);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(ip);
     }
 }

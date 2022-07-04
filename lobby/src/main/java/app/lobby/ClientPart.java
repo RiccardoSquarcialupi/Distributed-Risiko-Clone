@@ -1,6 +1,7 @@
 package app.lobby;
 
 import app.base.BaseClient;
+import app.base.JSONClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -25,9 +26,9 @@ public class ClientPart extends AbstractVerticle {
                         System.out.println("Something went wrong " + err.getMessage()));
     }
 
-    public void managerClientChange(JsonObject body, List<BaseClient> clientList) {
+    public void managerClientChange(JsonObject body, List<JSONClient> clientList) {
         clientList.forEach(c -> this.client
-                .put(8080, c.getIp(), "/client/lobby/manager")
+                .put(8080, c.getIP(), "/client/lobby/manager")
                 .sendJsonObject(body)
                 .onSuccess(response -> System.out
                         .println("Received response with status code" + response.statusCode()))

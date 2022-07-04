@@ -1,4 +1,6 @@
-package app.gui;
+package app.manager.gui;
+
+import app.manager.ClientWindow;
 
 public interface GUIManager {
     /**
@@ -14,7 +16,7 @@ public interface GUIManager {
     /**
      * Change gui.
      */
-    void change(GUIWindow newGUI);
+    void change(ClientWindow newGUI);
 
     /**
      * Get current GUI java interface.

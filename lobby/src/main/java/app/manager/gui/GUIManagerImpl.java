@@ -1,5 +1,6 @@
-package app.gui;
+package app.manager.gui;
 
+import app.manager.ClientWindow;
 import app.base.GUIBase;
 import app.lobby.GUILobby;
 import app.lobby.GUIManagerGui;
@@ -10,13 +11,12 @@ import javax.swing.*;
 public class GUIManagerImpl extends JFrame implements GUIManager {
     private GUI currentGUI;
 
-    public GUIManagerImpl(GUIWindow firstGUI) {
+    public GUIManagerImpl(ClientWindow firstGUI) {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setGUIFromEnum(firstGUI);
-        setContentPane((JPanel)this.currentGUI);
-        pack();
     }
 
-    private void setGUIFromEnum(GUIWindow window) {
+    private void setGUIFromEnum(ClientWindow window) {
         switch (window){
             case LOGIN:
                 this.currentGUI = new GUILogin();
@@ -34,11 +34,13 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
                 this.currentGUI = () -> "This should not happen";
                 break;
         }
+        setContentPane((JPanel) this.currentGUI);
+        setTitle(this.currentGUI.getTitle());
+        pack();
     }
 
     @Override
     public void open() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
 
@@ -48,11 +50,8 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
     }
 
     @Override
-    public void change(GUIWindow newGUI) {
+    public void change(ClientWindow newGUI) {
         setGUIFromEnum(newGUI);
-        setContentPane((JPanel) this.currentGUI);
-        setTitle(this.currentGUI.getTitle());
-        pack();
     }
 
     @Override

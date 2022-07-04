@@ -2,57 +2,59 @@ package app;
 
 import app.base.BaseClient;
 import app.base.BaseClientImpl;
-import app.base.GUIBase;
-import app.gui.GUIManager;
-import app.gui.GUIManagerImpl;
-import app.gui.GUIWindow;
+import app.manager.ClientWindow;
+import app.manager.client.Client;
+import app.manager.client.ClientManager;
+import app.manager.client.ClientManagerImpl;
+import app.manager.gui.GUI;
+import app.manager.gui.GUIManager;
+import app.manager.gui.GUIManagerImpl;
 import app.lobby.*;
-import app.login.GUILogin;
 
 import java.io.IOException;
 import java.net.Inet4Address;
 
 public class Launcher {
 
-    private static BaseClient client;
+    private static ClientManager clientManager;
     private static GUIManager guiManager;
 
-    private static String ip;
-
     public static void main(String[] args) throws IOException {
-        ip = Inet4Address.getLocalHost().getHostAddress();
-        guiManager = new GUIManagerImpl(GUIWindow.LOGIN);
+        clientManager = new ClientManagerImpl(ClientWindow.LOGIN);
+        guiManager = new GUIManagerImpl(ClientWindow.LOGIN);
         guiManager.open();
     }
 
-    public static void userLoginned(String nickname) {
-        client = new BaseClientImpl(ip, nickname);
-        guiManager.change(GUIWindow.BASE);
+    public static void userLoginned() {
+        clientManager.change(ClientWindow.BASE);
+        guiManager.change(ClientWindow.BASE);
     }
 
     public static void gameStarted() {
-        ((LobbyClient) client).stop();
-        // client = new gameClient();
+        // clientManager.change(ClientWindow.GAME);
         // guiManager.change(GUIWindow.GAME);
     }
 
     public static void lobbyClosed() {
-        ((LobbyClient) client).stop();
-        client = new BaseClientImpl(client.getIp(), client.getNickname());
-        guiManager.change(GUIWindow.BASE);
+        clientManager.change(ClientWindow.BASE);
+        guiManager.change(ClientWindow.BASE);
     }
 
-    public static void lobbyJoinedSuccessfully(String managerClientIp) {
-        client = new LobbyClientImpl(client.getIp(), client.getNickname(), 0, managerClientIp);
-        ((LobbyClient) client).start();
-        guiManager.change(GUIWindow.LOBBY);
+    public static void lobbyJoinedSuccessfully() {
+        clientManager.change(ClientWindow.LOBBY);
+        guiManager.change(ClientWindow.LOBBY);
     }
 
     public static void lobbyCreatedSuccessfully() {
-        client = new ManagerClientImpl(client.getIp(), client.getNickname(), 0, 5);
-        ((ManagerClient) client).start();
-        guiManager.change(GUIWindow.MANAGER);
+        clientManager.change(ClientWindow.MANAGER);
+        guiManager.change(ClientWindow.MANAGER);
     }
 
+    public static Client getCurrentClient() {
+        return clientManager.getCurrentClient();
+    }
 
+    public static GUI getCurrentGui() {
+        return guiManager.getCurrentGUI();
+    }
 }
