@@ -14,7 +14,7 @@ public interface GUIManager {
     /**
      * Change gui.
      */
-    void change(GUI newGUI);
+    void change(GUIWindow newGUI);
 
     /**
      * Get current GUI java interface.

@@ -1,14 +1,39 @@
 package app.gui;
 
+import app.base.GUIBase;
+import app.lobby.GUILobby;
+import app.lobby.GUIManagerGui;
+import app.login.GUILogin;
+
 import javax.swing.*;
 
 public class GUIManagerImpl extends JFrame implements GUIManager {
     private GUI currentGUI;
 
-    public GUIManagerImpl(GUI firstGUI) {
-        this.currentGUI = firstGUI;
-        setContentPane((JPanel)firstGUI);
+    public GUIManagerImpl(GUIWindow firstGUI) {
+        setGUIFromEnum(firstGUI);
+        setContentPane((JPanel)this.currentGUI);
         pack();
+    }
+
+    private void setGUIFromEnum(GUIWindow window) {
+        switch (window){
+            case LOGIN:
+                this.currentGUI = new GUILogin();
+                break;
+            case BASE:
+                this.currentGUI = new GUIBase();
+                break;
+            case LOBBY:
+                this.currentGUI = new GUILobby();
+                break;
+            case MANAGER:
+                this.currentGUI = new GUIManagerGui();
+                break;
+            default:
+                this.currentGUI = () -> "This should not happen";
+                break;
+        }
     }
 
     @Override
@@ -23,10 +48,10 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
     }
 
     @Override
-    public void change(GUI newGUI) {
-        this.currentGUI = newGUI;
-        setContentPane((JPanel) newGUI);
-        setTitle(newGUI.getTitle());
+    public void change(GUIWindow newGUI) {
+        setGUIFromEnum(newGUI);
+        setContentPane((JPanel) this.currentGUI);
+        setTitle(this.currentGUI.getTitle());
         pack();
     }
 
