@@ -18,8 +18,9 @@ public class ClientManagerImpl implements ClientManager{
     private ClientParameters clientParameters;
 
     public ClientManagerImpl(ClientWindow firstClient) throws IOException {
-        setClientFromEnum(firstClient);
         this.clientParameters = new ClientParameters();
+
+        setClientFromEnum(firstClient);
     }
 
     @Override

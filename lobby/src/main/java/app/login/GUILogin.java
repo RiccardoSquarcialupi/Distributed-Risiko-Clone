@@ -9,6 +9,11 @@ import java.awt.event.ActionListener;
 
 public class GUILogin extends JPanel implements GUI {
 
+    @Override
+    public String getTitle() {
+        return "Login";
+    }
+
     JLabel jlbDescr;
     JTextField jtfName;
     JButton jbtEnter;
@@ -38,10 +43,5 @@ public class GUILogin extends JPanel implements GUI {
                 jlbDescr.setText(jlbDescr.getText() + "!");
             }
         };
-    }
-
-    @Override
-    public String getTitle() {
-        return "Login";
     }
 }

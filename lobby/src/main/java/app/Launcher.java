@@ -16,6 +16,7 @@ import java.net.Inet4Address;
 
 public class Launcher {
 
+    public static final String serverIP = "127.0.0.1";
     private static ClientManager clientManager;
     private static GUIManager guiManager;
 

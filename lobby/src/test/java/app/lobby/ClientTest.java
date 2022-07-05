@@ -2,6 +2,7 @@ package app.lobby;
 
 import app.base.BaseClient;
 import app.base.BaseClientImpl;
+import app.base.JSONClient;
 import app.manager.client.ClientParameters;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -69,7 +70,7 @@ public class ClientTest{
 
         var fut = WebClient.create(vertx)
                 .post(8080, client1.getIP(), "/client/lobby/clients")
-                .sendJsonObject(client1.toJson());
+                .sendJsonObject(JSONClient.fromBase(client1).toJson());
         waitForCompletion(fut);
         assertEquals(client1.getIP(), ((ManagerClientImpl) client1).getClientList().get(0).getIP());
 
@@ -85,7 +86,7 @@ public class ClientTest{
 
         fut = WebClient.create(vertx)
                 .delete(8080, client1.getIP(), "/client/lobby/clients")
-                .sendJsonObject(client1.toJson());
+                .sendJsonObject(JSONClient.fromBase(client1).toJson());
         waitForCompletion(fut);
         assertEquals(0, ((ManagerClientImpl) client1).getClientList().size());
 

@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientParameters {
-    private String ip;
+    private final String ip;
     private String nickname;
     private int idLobby;
     private String ipManager;
     private int maxPlayer;
-    private List<JSONClient> clientList;
+    private final List<JSONClient> clientList;
 
     public ClientParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();

@@ -23,6 +23,10 @@ public class JSONClient{
         return jo;
     }
 
+    public static JSONClient fromBase(BaseClient bc) {
+        return new JSONClient(bc.getIP(), bc.getNickname());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
