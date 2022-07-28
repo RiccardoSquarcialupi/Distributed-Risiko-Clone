@@ -1,6 +1,6 @@
 import unittest
 
-from WebServer.src.ServerLobby import ServerLobby
+from src.ServerLobby import ServerLobby
 
 
 class MyTestCase(unittest.TestCase):

@@ -2,6 +2,8 @@ from flask import *
 from ServerLobby import ServerLobby
 
 app = Flask(__name__)
+temporary_dict_of_lobbies = {}
+count = 0
 
 
 @app.route('/server/lobbies/<max_players>', methods=['GET'])
@@ -18,7 +20,7 @@ def lobbies_matching_client_filter(max_players):
     global temporary_dict_of_lobbies
     result = []
     for lobby in temporary_dict_of_lobbies.values():
-        if lobby.max_players == max_players:
+        if int(lobby.max_players) == int(max_players):
             result.append(lobby.to_json())
     return jsonify(result), 200
 
@@ -39,8 +41,8 @@ def match_started_lobby_deleted(lobby_id):
 
 @app.route('/server/lobbies', methods=['POST'])
 def create_new_lobby():
-    if request.form.get('name') is not None and request.form.get('max_players') is not None:
-        add_lobby_to_dict(request.form['name'], request.remote_addr, request.form['max_players'])
+    if request.get_json().get('name') is not None and request.get_json().get('max_players') is not None:
+        add_lobby_to_dict(request.get_json()['name'], request.remote_addr, request.get_json()['max_players'])
         return "", 200
     else:
         return "Arguments not found", 401
@@ -72,10 +74,10 @@ def update_manager_client_info(lobby_id):
     if lobby_id not in temporary_dict_of_lobbies:
         return "Lobby not found", 404
 
-    if request.form.get('new_manager_client_ip') is None:
+    if request.get_json().get('new_manager_client_ip') is None:
         return "New manager not set", 400
 
-    temporary_dict_of_lobbies[lobby_id].manager_client_ip = request.form.get('new_manager_client_ip')
+    temporary_dict_of_lobbies[lobby_id].manager_client_ip = request.get_json().get('new_manager_client_ip')
     return '', 200
 
 
@@ -103,6 +105,4 @@ def add_lobby_to_dict(name, manager_ip, max_players):
 
 
 if __name__ == '__main__':
-    temporary_dict_of_lobbies = {}
-    count = 0
     app.run()
