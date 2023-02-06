@@ -21,6 +21,7 @@ import jdk.jshell.spi.ExecutionControl;
 public class BaseClientImpl extends LoginClient implements BaseClient {
     private WebClient client;
     private ClientParameters cltPar;
+    private int serverPort = 5000;
 
     public BaseClientImpl(ClientParameters cltPar) {
         super(cltPar);
@@ -36,7 +37,7 @@ public class BaseClientImpl extends LoginClient implements BaseClient {
         // TODO: Missing server communication to inform.
         // TODO: Missing manager communication to get clients.
         this.client
-                .post(8080, managerClientIp, "/client/lobby/clients")
+                .post(serverPort, managerClientIp, "/client/lobby/clients")
                 .sendJsonObject(JSONClient.fromBase(this).toJson())
                 .onSuccess(response -> {
                     this.cltPar.setIpManager(managerClientIp);
@@ -48,21 +49,22 @@ public class BaseClientImpl extends LoginClient implements BaseClient {
     @Override
     public Future<HttpResponse<Buffer>> getFilteredLobbies(int maxPlayers) {
         return this.client
-                .get(8080, Launcher.serverIP, "/server/lobbies/" + maxPlayers)
+                .get(serverPort, Launcher.serverIP, "/server/lobbies/" + maxPlayers)
                 .send();
     }
 
     @Override
     public void createNewLobby(String name, int maxPlayers) {
         this.client
-                .post(8080, Launcher.serverIP, "/server/lobbies")
+                .post(serverPort, Launcher.serverIP, "/server/lobbies")
+                .putHeader("Content-Type", "application/json")
                 .sendJsonObject(new JsonObject(Map.of("name", name, "max_players", maxPlayers)))
                 .onSuccess(response -> {
                     this.cltPar.setIpManager(this.cltPar.getIp());
                     this.cltPar.setMaxPlayer(maxPlayers);
                     this.cltPar.addClient(JSONClient.fromBase(this));
                     // TODO: lobby id.
-                    Launcher.lobbyCreatedSuccessfully();
+                    //Launcher.lobbyCreatedSuccessfully();
                 })
                 .onFailure(System.out::println);
     }

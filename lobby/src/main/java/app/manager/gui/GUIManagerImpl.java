@@ -1,5 +1,6 @@
 package app.manager.gui;
 
+import app.game.GUIGame;
 import app.manager.ClientWindow;
 import app.base.GUIBase;
 import app.lobby.GUILobby;
@@ -29,6 +30,9 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
                 break;
             case MANAGER:
                 this.currentGUI = new GUIManagerGui();
+                break;
+            case GAME:
+                this.currentGUI = new GUIGame();
                 break;
             default:
                 this.currentGUI = () -> "This should not happen";

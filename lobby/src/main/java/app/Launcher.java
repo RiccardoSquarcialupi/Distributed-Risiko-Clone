@@ -32,8 +32,8 @@ public class Launcher {
     }
 
     public static void gameStarted() {
-        // clientManager.change(ClientWindow.GAME);
-        // guiManager.change(GUIWindow.GAME);
+        clientManager.change(ClientWindow.GAME);
+        guiManager.change(ClientWindow.GAME);
     }
 
     public static void lobbyClosed() {

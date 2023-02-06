@@ -1,5 +1,6 @@
 package app.base;
 
+import app.Launcher;
 import app.manager.gui.GUI;
 
 import javax.swing.*;
@@ -57,6 +58,7 @@ public class GUIBase extends JPanel implements GUI, GUIBaseActions{
         this.rightPanel.add(this.jblMaxPlayers);
 
         this.jtfMaxPlayers = new JTextField();
+        this.jtfMaxPlayers.setText("4");
         this.rightPanel.add(this.jtfMaxPlayers);
 
         this.jbtCreate = new JButton("Create");
@@ -69,18 +71,23 @@ public class GUIBase extends JPanel implements GUI, GUIBaseActions{
     }
 
     private void refreshTable() {
-        Object[] tableHeader = {"Name", "ID", "Manager", "Slots"};
-        Object[][] obj = new Object[][]{
-                {"name", "id", "manager", "4/5"},
-                {"eman", "di", "reganam", "5/4"}
-        };
-        JTable jtb = new JTable(obj, tableHeader);
-        jtb.setDefaultEditor(Object.class, null);
-        jtb.setCellSelectionEnabled(false);
-        jtb.setColumnSelectionAllowed(false);
-        jtb.setRowSelectionAllowed(true);
-        jtb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.jspLobbies.setViewportView(jtb);
+        ((BaseClient)Launcher.getCurrentClient()).getFilteredLobbies(Integer.parseInt(this.jtfMaxPlayers.getText()))
+                .onSuccess((httpResponse) -> SwingUtilities.invokeLater(() -> {
+                    Object[] tableHeader = {"Name", "ID", "Manager", "Slots"};
+                    Object[][] obj = new Object[][]{
+                            {"name", "id", "manager", "4/5"},
+                            {"eman", "di", "reganam", "5/4"}};
+                    System.out.println(httpResponse.body().toJson());
+                    JTable jtb = new JTable(obj, tableHeader);
+                    jtb.setDefaultEditor(Object.class, null);
+                    jtb.setCellSelectionEnabled(false);
+                    jtb.setColumnSelectionAllowed(false);
+                    jtb.setRowSelectionAllowed(true);
+                    jtb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    this.jspLobbies.setViewportView(jtb);
+                    ((JFrame) SwingUtilities.getWindowAncestor(this)).pack();
+                }))
+                .onFailure(System.out::println);
     }
 
     private ActionListener onRefresh() {
@@ -95,7 +102,8 @@ public class GUIBase extends JPanel implements GUI, GUIBaseActions{
 
     private ActionListener onCreate() {
         return (e) -> {
-
+            ((BaseClient)Launcher.getCurrentClient()).createNewLobby(
+                    this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText()));
         };
     }
 }

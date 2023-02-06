@@ -2,6 +2,7 @@ package app.manager.client;
 
 import app.base.BaseClientImpl;
 import app.base.GUIBase;
+import app.game.GameClientImpl;
 import app.lobby.GUILobby;
 import app.lobby.GUIManagerGui;
 import app.lobby.LobbyClientImpl;
@@ -45,6 +46,8 @@ public class ClientManagerImpl implements ClientManager{
             case MANAGER:
                 this.currentClient = new ManagerClientImpl(this.clientParameters);
                 break;
+            case GAME:
+                this.currentClient = new GameClientImpl(this.clientParameters);
             default:
                 throw new RuntimeException("This can't happen");
         }

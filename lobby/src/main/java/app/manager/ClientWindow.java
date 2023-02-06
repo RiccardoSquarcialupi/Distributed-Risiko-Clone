@@ -4,5 +4,7 @@ public enum ClientWindow {
     LOGIN,
     BASE,
     LOBBY,
-    MANAGER
+    MANAGER,
+
+    GAME
 }
