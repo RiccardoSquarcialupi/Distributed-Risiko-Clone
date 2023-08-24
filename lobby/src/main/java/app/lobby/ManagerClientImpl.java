@@ -1,7 +1,7 @@
 package app.lobby;
 
 import app.base.JSONClient;
-import app.game.Card;
+import app.game.card.Territory;
 import app.manager.client.ClientParameters;
 import io.vertx.core.json.JsonObject;
 
@@ -10,13 +10,13 @@ import java.util.Collections;
 import java.util.List;
 
 public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient {
-    private final List<Card> cards;
+    private final List<Territory> cards;
     private ClientParameters cltPar;
 
     public ManagerClientImpl(ClientParameters cltPar) {
         super(cltPar);
         this.cltPar = cltPar;
-        this.cards = new ArrayList<>(List.of(Card.values()));
+        this.cards = new ArrayList<>(List.of(Territory.values()));
     }
 
     @Override
@@ -31,11 +31,10 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
 
     @Override
     public void startGame() {
-        var deck = cards.subList(0, 41); //using first 42 card for assigning territory to players, last 2 cards are wilds cards
-        Collections.shuffle(deck);
+        Collections.shuffle(cards);
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
-            this.clientPart.gameHasStarted(JsonObject.mapFrom((deck.subList(0, deck.size() / (this.cltPar.getMaxPlayer() - i)))),this.cltPar.getClientList().get(i).getIP());
-            deck.subList(0, deck.size() / (this.cltPar.getMaxPlayer() - i)).clear();
+            this.clientPart.gameHasStarted(JsonObject.mapFrom((cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)))),this.cltPar.getClientList().get(i).getIP());
+            cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)).clear();
         }
     }
 }
