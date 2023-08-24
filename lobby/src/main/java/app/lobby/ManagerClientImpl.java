@@ -31,10 +31,11 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
 
     @Override
     public void startGame() {
-        Collections.shuffle(cards);
+        var deck = cards.subList(0, 41); //using first 42 card for assigning territory to players, last 2 cards are wilds cards
+        Collections.shuffle(deck);
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
-            this.clientPart.gameHasStarted(JsonObject.mapFrom((cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)))),this.cltPar.getClientList().get(i).getIP());
-            cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)).clear();
+            this.clientPart.gameHasStarted(JsonObject.mapFrom((deck.subList(0, deck.size() / (this.cltPar.getMaxPlayer() - i)))),this.cltPar.getClientList().get(i).getIP());
+            deck.subList(0, deck.size() / (this.cltPar.getMaxPlayer() - i)).clear();
         }
     }
 }
