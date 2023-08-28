@@ -1,7 +1,7 @@
 package app.base;
 
+import app.Launcher;
 import app.login.LoginClient;
-import app.manager.client.Client;
 import app.manager.client.ClientParameters;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -10,18 +10,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
-import app.Launcher;
-import jdk.jshell.spi.ExecutionControl;
 
 public class BaseClientImpl extends LoginClient implements BaseClient {
-    private WebClient client;
-    private ClientParameters cltPar;
-    private int serverPort = 5000;
+    private final WebClient client;
+    private final ClientParameters cltPar;
+    private final int serverPort = 5001;
+    private final static int FLASK_SERVER_PORT = 5000;
 
     public BaseClientImpl(ClientParameters cltPar) {
         super(cltPar);
@@ -34,16 +29,21 @@ public class BaseClientImpl extends LoginClient implements BaseClient {
 
     @Override
     public void joinLobby(String managerClientIp) {
-        // TODO: Missing server communication to inform.
-        // TODO: Missing manager communication to get clients.
         this.client
                 .post(serverPort, managerClientIp, "/client/lobby/clients")
                 .sendJsonObject(JSONClient.fromBase(this).toJson())
                 .onSuccess(response -> {
                     this.cltPar.setIpManager(managerClientIp);
+                    int lobbyId= response.bodyAsJsonObject().getInteger("lobbyId");
+                    //INFORM THE FLASK SERVER
+                    this.client
+                            .put(FLASK_SERVER_PORT, "localhost", "server/lobby/"+lobbyId)
+                            .send().onFailure(err -> System.out.println("Something went wrong when sending joinLobby Notification to the FLASK server" + err.getMessage()));
                     Launcher.lobbyJoinedSuccessfully();
                 })
                 .onFailure(System.out::println);
+
+        // TODO: Missing manager communication to get clients.
     }
 
     @Override
@@ -63,7 +63,7 @@ public class BaseClientImpl extends LoginClient implements BaseClient {
                     this.cltPar.setIpManager(this.cltPar.getIp());
                     this.cltPar.setMaxPlayer(maxPlayers);
                     this.cltPar.addClient(JSONClient.fromBase(this));
-                    // TODO: lobby id.
+                    this.cltPar.setIdLobby(JsonObject.mapFrom(response.body().toJson()).getInteger("id"));
                     //Launcher.lobbyCreatedSuccessfully();
                 })
                 .onFailure(System.out::println);

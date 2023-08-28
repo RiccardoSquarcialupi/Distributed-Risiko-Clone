@@ -1,18 +1,16 @@
 package app.lobby;
 
-import app.base.BaseClient;
-import app.base.BaseClientImpl;
 import app.base.JSONClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 public class ServerPart extends AbstractVerticle {
     private final HttpServer httpServer;
     private final Router router;
-
     private final LobbyClientImpl lobbyClient;
 
     public ServerPart(LobbyClient lobbyClient) {
@@ -27,8 +25,12 @@ public class ServerPart extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh->{
                         this.lobbyClient.addNewClient(JSONClient.fromJson(bh.toJsonObject()));
-                        routingContext.response().setStatusCode(200).end();
+                        int lobbyId = lobbyClient.getLobbyId();
+                        routingContext.response().putHeader("Content-Type", "application/json")
+                                .setStatusCode(200)
+                                .end(JsonObject.mapFrom(lobbyId).toBuffer());
                     });
+
                 });
 
         router

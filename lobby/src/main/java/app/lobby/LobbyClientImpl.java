@@ -1,14 +1,9 @@
 package app.lobby;
 
 import app.Launcher;
-import app.base.BaseClient;
 import app.base.BaseClientImpl;
 import app.base.JSONClient;
-import app.manager.client.Client;
 import app.manager.client.ClientParameters;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class LobbyClientImpl extends BaseClientImpl implements LobbyClient {
     private ClientParameters cltPar;
@@ -62,5 +57,5 @@ public class LobbyClientImpl extends BaseClientImpl implements LobbyClient {
         Launcher.lobbyClosed();
     }
 
-
+    protected int getLobbyId() { return cltPar.getIdLobby(); }
 }
