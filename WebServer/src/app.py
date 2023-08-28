@@ -41,10 +41,11 @@ def match_started_lobby_deleted(lobby_id):
 
 @app.route('/server/lobbies', methods=['POST'])
 def create_new_lobby():
-    global count;
+    global count
+    id = count
     if request.get_json().get('name') is not None and request.get_json().get('max_players') is not None:
         add_lobby_to_dict(request.get_json()['name'], request.remote_addr, request.get_json()['max_players'])
-        return count, 200
+        return jsonify(id), 200
     else:
         return "Arguments not found", 401
 
