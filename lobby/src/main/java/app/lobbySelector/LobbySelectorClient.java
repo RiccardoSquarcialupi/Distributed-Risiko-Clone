@@ -1,18 +1,11 @@
-package app.base;
+package app.lobbySelector;
 
-import app.manager.client.Client;
+import app.common.Client;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
 
-import java.util.List;
-
-public interface BaseClient extends Client {
-    /**
-     * Returns the nickname of the user.
-     * @return user nickname.
-     */
-    String getNickname();
+public interface LobbySelectorClient extends Client {
 
     /**
      * Join the lobby identified by his manager IP.
@@ -33,4 +26,7 @@ public interface BaseClient extends Client {
      * @param maxPlayers maximum players of the lobby.
      */
     void createNewLobby(String name, int maxPlayers);
+
+    @Override
+    String getNickname();
 }

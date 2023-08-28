@@ -1,14 +1,12 @@
 package app.login;
 
 import app.Launcher;
-import app.manager.client.Client;
-import app.manager.client.ClientManager;
-import app.manager.client.ClientManagerImpl;
-import app.manager.client.ClientParameters;
+import app.common.Client;
+import app.manager.contextManager.ContextManagerParameters;
 
 public class LoginClient implements Client {
-    protected ClientParameters cltPar;
-    public LoginClient(ClientParameters cltPar){
+    protected ContextManagerParameters cltPar;
+    public LoginClient(ContextManagerParameters cltPar){
         this.cltPar = cltPar;
     }
     @Override
@@ -17,8 +15,12 @@ public class LoginClient implements Client {
     }
 
     @Override
+    public String getNickname() throws IllegalAccessException {
+        throw new IllegalAccessException("LoginClient doesn't have a nickname");
+    }
+
     public void login(String nickname) {
         this.cltPar.setNickname(nickname);
-        Launcher.userLoginned();
+        Launcher.userLogged();
     }
 }

@@ -1,4 +1,4 @@
-package app.base;
+package app.lobbySelector;
 
 import io.vertx.core.json.JsonObject;
 
@@ -23,7 +23,7 @@ public class JSONClient{
         return jo;
     }
 
-    public static JSONClient fromBase(BaseClient bc) {
+    public static JSONClient fromBase(LobbySelectorClient bc) {
         return new JSONClient(bc.getIP(), bc.getNickname());
     }
 

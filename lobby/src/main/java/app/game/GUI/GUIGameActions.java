@@ -1,4 +1,4 @@
-package app.game;
+package app.game.GUI;
 
 public interface GUIGameActions {
 }

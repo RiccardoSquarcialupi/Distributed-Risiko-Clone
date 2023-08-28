@@ -1,8 +1,8 @@
-package app.base;
+package app.lobbySelector;
 
 import app.Launcher;
 import app.login.LoginClient;
-import app.manager.client.ClientParameters;
+import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -12,13 +12,13 @@ import io.vertx.ext.web.client.WebClient;
 
 import java.util.Map;
 
-public class BaseClientImpl extends LoginClient implements BaseClient {
+public class LobbySelectorClientImpl extends LoginClient implements LobbySelectorClient {
     private final WebClient client;
-    private final ClientParameters cltPar;
+    private final ContextManagerParameters cltPar;
     private final int serverPort = 5001;
     private final static int FLASK_SERVER_PORT = 5000;
 
-    public BaseClientImpl(ClientParameters cltPar) {
+    public LobbySelectorClientImpl(ContextManagerParameters cltPar) {
         super(cltPar);
         this.client = WebClient.create(Vertx.vertx());
         this.cltPar = cltPar;

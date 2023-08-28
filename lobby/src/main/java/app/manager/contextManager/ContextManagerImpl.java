@@ -1,53 +1,49 @@
-package app.manager.client;
+package app.manager.contextManager;
 
-import app.base.BaseClientImpl;
-import app.base.GUIBase;
+import app.lobbySelector.LobbySelectorClientImpl;
+import app.common.Client;
 import app.game.GameClientImpl;
-import app.lobby.GUILobby;
-import app.lobby.GUIManagerGui;
 import app.lobby.LobbyClientImpl;
 import app.lobby.ManagerClientImpl;
-import app.login.GUILogin;
 import app.login.LoginClient;
-import app.manager.ClientWindow;
+import app.manager.Window;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 
-public class ClientManagerImpl implements ClientManager{
+public class ContextManagerImpl implements ContextManager {
     private Client currentClient;
-    private ClientParameters clientParameters;
+    private ContextManagerParameters contextManagerParameters;
 
-    public ClientManagerImpl(ClientWindow firstClient) throws IOException {
-        this.clientParameters = new ClientParameters();
+    public ContextManagerImpl(Window firstClient) throws IOException {
+        this.contextManagerParameters = new ContextManagerParameters();
 
         setClientFromEnum(firstClient);
     }
 
     @Override
-    public void change(ClientWindow newClient) {
+    public void change(Window newClient) {
         setClientFromEnum(newClient);
     }
 
-    private void setClientFromEnum(ClientWindow window) {
+    private void setClientFromEnum(Window window) {
         if (this.currentClient instanceof LobbyClientImpl) {
             ((LobbyClientImpl) this.currentClient).stop();
         }
         switch (window){
             case LOGIN:
-                this.currentClient = new LoginClient(this.clientParameters);
+                this.currentClient = new LoginClient(this.contextManagerParameters);
                 break;
             case BASE:
-                this.currentClient = new BaseClientImpl(this.clientParameters);
+                this.currentClient = new LobbySelectorClientImpl(this.contextManagerParameters);
                 break;
             case LOBBY:
-                this.currentClient = new LobbyClientImpl(this.clientParameters);
+                this.currentClient = new LobbyClientImpl(this.contextManagerParameters);
                 break;
             case MANAGER:
-                this.currentClient = new ManagerClientImpl(this.clientParameters);
+                this.currentClient = new ManagerClientImpl(this.contextManagerParameters);
                 break;
             case GAME:
-                this.currentClient = new GameClientImpl(this.clientParameters);
+                this.currentClient = new GameClientImpl(this.contextManagerParameters);
             default:
                 throw new RuntimeException("This can't happen");
         }

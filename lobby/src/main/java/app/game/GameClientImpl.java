@@ -1,27 +1,36 @@
 package app.game;
 
 
-import app.base.BaseClientImpl;
-import app.manager.client.ClientParameters;
+import app.game.comunication.GameReceiver;
+import app.game.comunication.GameSender;
+import app.manager.contextManager.ContextManagerParameters;
 
 
-public class GameClientImpl extends BaseClientImpl implements GameClient{
-    private ClientParameters cltPar;
-    private GameActionSender gameActionSender = new GameActionSender();
-    private GameActionReceiver gameActionReceiver = new GameActionReceiver();
-    public GameClientImpl(ClientParameters cltPar) {
-        super(cltPar);
+public class GameClientImpl implements GameClient{
+    private ContextManagerParameters cltPar;
+    private GameSender gameSender = new GameSender();
+    private GameReceiver gameReceiver = new GameReceiver();
+    public GameClientImpl(ContextManagerParameters cltPar) {
         this.cltPar = cltPar;
-        gameActionReceiver.start();
+        gameReceiver.start();
     }
 
     public void loop(){
-        while(gameActionReceiver.isRunning()){
+        while(gameReceiver.isRunning()){
             //TODO: STRUCTURE OF THE LOOP
             //TODO: DIVIDE RISIKO GAME LOGIC IN SUB-FUNCTION
-            gameActionReceiver.stop();
+            gameReceiver.stop();
         }
 
     }
 
+    @Override
+    public String getIP() {
+        return this.cltPar.getIp();
+    }
+
+    @Override
+    public String getNickname() throws IllegalAccessException {
+        return this.cltPar.getNickname();
+    }
 }

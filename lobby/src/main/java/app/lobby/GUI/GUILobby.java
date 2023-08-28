@@ -1,4 +1,4 @@
-package app.lobby;
+package app.lobby.GUI;
 
 import app.manager.gui.GUI;
 

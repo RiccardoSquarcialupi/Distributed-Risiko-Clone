@@ -1,10 +1,9 @@
 package app.manager.gui;
 
-import app.game.GUIGame;
-import app.manager.ClientWindow;
-import app.base.GUIBase;
-import app.lobby.GUILobby;
-import app.lobby.GUIManagerGui;
+import app.game.GUI.GUIGame;
+import app.manager.Window;
+import app.lobbySelector.GUILobbySelector;
+import app.lobby.GUI.GUILobby;
 import app.login.GUILogin;
 
 import javax.swing.*;
@@ -12,24 +11,22 @@ import javax.swing.*;
 public class GUIManagerImpl extends JFrame implements GUIManager {
     private GUI currentGUI;
 
-    public GUIManagerImpl(ClientWindow firstGUI) {
+    public GUIManagerImpl(Window firstGUI) {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setGUIFromEnum(firstGUI);
     }
 
-    private void setGUIFromEnum(ClientWindow window) {
+    private void setGUIFromEnum(Window window) {
         switch (window){
             case LOGIN:
                 this.currentGUI = new GUILogin();
                 break;
             case BASE:
-                this.currentGUI = new GUIBase();
+                this.currentGUI = new GUILobbySelector();
                 break;
             case LOBBY:
-                this.currentGUI = new GUILobby();
-                break;
             case MANAGER:
-                this.currentGUI = new GUIManagerGui();
+                this.currentGUI = new GUILobby();
                 break;
             case GAME:
                 this.currentGUI = new GUIGame();
@@ -54,7 +51,7 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
     }
 
     @Override
-    public void change(ClientWindow newGUI) {
+    public void change(Window newGUI) {
         setGUIFromEnum(newGUI);
     }
 

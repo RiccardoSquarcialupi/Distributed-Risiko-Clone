@@ -1,4 +1,4 @@
-package app.base;
+package app.lobbySelector;
 
 import app.Launcher;
 import app.manager.gui.GUI;
@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class GUIBase extends JPanel implements GUI, GUIBaseActions{
+public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorActions {
     @Override
     public String getTitle() {
         return "Lobby selector";
@@ -26,7 +26,7 @@ public class GUIBase extends JPanel implements GUI, GUIBaseActions{
     JTextField jtfMaxPlayers;
     JButton jbtCreate;
 
-    public GUIBase() {
+    public GUILobbySelector() {
         setLayout(new FlowLayout());
 
         this.leftPanel = new JPanel();
@@ -71,7 +71,7 @@ public class GUIBase extends JPanel implements GUI, GUIBaseActions{
     }
 
     private void refreshTable() {
-        ((BaseClient)Launcher.getCurrentClient()).getFilteredLobbies(Integer.parseInt(this.jtfMaxPlayers.getText()))
+        ((LobbySelectorClient)Launcher.getCurrentClient()).getFilteredLobbies(Integer.parseInt(this.jtfMaxPlayers.getText()))
                 .onSuccess((httpResponse) -> SwingUtilities.invokeLater(() -> {
                     Object[] tableHeader = {"Name", "ID", "Manager", "Slots"};
                     Object[][] obj = new Object[][]{
@@ -102,7 +102,7 @@ public class GUIBase extends JPanel implements GUI, GUIBaseActions{
 
     private ActionListener onCreate() {
         return (e) -> {
-            ((BaseClient)Launcher.getCurrentClient()).createNewLobby(
+            ((LobbySelectorClient)Launcher.getCurrentClient()).createNewLobby(
                     this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText()));
         };
     }

@@ -1,4 +1,6 @@
 package app.game;
 
-public interface GameClient {
+import app.common.Client;
+
+public interface GameClient extends Client {
 }

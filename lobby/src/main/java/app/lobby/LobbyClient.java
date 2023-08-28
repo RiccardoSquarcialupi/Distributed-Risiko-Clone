@@ -1,8 +1,8 @@
 package app.lobby;
 
-import app.base.BaseClient;
+import app.common.Client;
 
-public interface LobbyClient extends BaseClient {
+public interface LobbyClient extends Client {
     String getIpManager();
 
     void start();
@@ -10,4 +10,7 @@ public interface LobbyClient extends BaseClient {
     void stop();
 
     void exitLobby();
+
+    @Override
+    String getNickname();
 }

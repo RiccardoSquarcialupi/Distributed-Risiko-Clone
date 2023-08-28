@@ -1,20 +1,22 @@
 package app.lobby;
 
 import app.Launcher;
-import app.base.BaseClientImpl;
-import app.base.JSONClient;
-import app.manager.client.ClientParameters;
+import app.lobby.comunication.LobbySender;
+import app.lobby.comunication.LobbyReceiver;
+import app.lobbySelector.LobbySelectorClientImpl;
+import app.lobbySelector.JSONClient;
+import app.manager.contextManager.ContextManagerParameters;
 
-public class LobbyClientImpl extends BaseClientImpl implements LobbyClient {
-    private ClientParameters cltPar;
-    protected ServerPart serverPart;
-    protected ClientPart clientPart;
+public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyClient {
+    private ContextManagerParameters cltPar;
+    public LobbyReceiver lobbyReceiver;
+    public LobbySender sender;
 
-    public LobbyClientImpl(ClientParameters cltPar) {
+    public LobbyClientImpl(ContextManagerParameters cltPar) {
         super(cltPar);
         this.cltPar = cltPar;
-        this.clientPart = new ClientPart();
-        this.serverPart = new ServerPart(this);
+        this.sender = new LobbySender();
+        this.lobbyReceiver = new LobbyReceiver(this);
     }
 
     @Override
@@ -24,38 +26,38 @@ public class LobbyClientImpl extends BaseClientImpl implements LobbyClient {
 
     @Override
     public void start() {
-        this.serverPart.start();
+        this.lobbyReceiver.start();
     }
 
     @Override
     public void stop() {
-        this.serverPart.stop();
+        this.lobbyReceiver.stop();
     }
 
     @Override
     public void exitLobby(){
-        this.clientPart.exitLobby();
+        this.sender.exitLobby();
     }
 
-    protected void addNewClient(JSONClient newClient) {
+    public void addNewClient(JSONClient newClient) {
         this.cltPar.addClient(newClient);
     }
 
-    protected void deleteClient(JSONClient toDeleteClient) {
+    public void deleteClient(JSONClient toDeleteClient) {
         this.cltPar.deleteClient(toDeleteClient);
     }
 
-    protected void updateManager(String newManagerIp) {
+    public void updateManager(String newManagerIp) {
         this.cltPar.setIpManager(newManagerIp);
     }
 
-    protected void gameStarted() {
+    public void gameStarted() {
         Launcher.gameStarted();
     }
 
-    protected void lobbyClosed() {
+    public void lobbyClosed() {
         Launcher.lobbyClosed();
     }
 
-    protected int getLobbyId() { return cltPar.getIdLobby(); }
+    public int getLobbyId() { return cltPar.getIdLobby(); }
 }

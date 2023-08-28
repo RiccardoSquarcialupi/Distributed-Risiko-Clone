@@ -1,6 +1,5 @@
-package app.game;
+package app.game.GUI;
 
-import app.base.GUIBaseActions;
 import app.manager.gui.GUI;
 
 import javax.swing.*;

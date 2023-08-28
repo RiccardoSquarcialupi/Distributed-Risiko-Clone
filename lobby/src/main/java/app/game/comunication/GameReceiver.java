@@ -1,16 +1,16 @@
-package app.game;
+package app.game.comunication;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 
-public class GameActionReceiver extends AbstractVerticle {
+public class GameReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
     private final Router router;
     private boolean isRunning = false;
 
-    public GameActionReceiver() {
+    public GameReceiver() {
         this.httpServer = Vertx.vertx().createHttpServer();
         this.router = Router.router(vertx);
     }
@@ -93,7 +93,7 @@ public class GameActionReceiver extends AbstractVerticle {
         isRunning= false;
     }
 
-    protected boolean isRunning(){
+    public boolean isRunning(){
         return isRunning;
     }
 

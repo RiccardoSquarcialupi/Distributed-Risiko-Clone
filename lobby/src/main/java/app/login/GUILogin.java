@@ -38,7 +38,7 @@ public class GUILogin extends JPanel implements GUI {
     private ActionListener onEnter(){
         return (e) -> {
             if(jtfName.getText().length() > 0) {
-                Launcher.getCurrentClient().login(jtfName.getText());
+                ( (LoginClient) Launcher.getCurrentClient()).login(jtfName.getText());
             } else {
                 jlbDescr.setText(jlbDescr.getText() + "!");
             }

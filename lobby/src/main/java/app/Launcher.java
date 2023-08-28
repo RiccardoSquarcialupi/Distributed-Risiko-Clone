@@ -1,58 +1,54 @@
 package app;
 
-import app.base.BaseClient;
-import app.base.BaseClientImpl;
-import app.manager.ClientWindow;
-import app.manager.client.Client;
-import app.manager.client.ClientManager;
-import app.manager.client.ClientManagerImpl;
+import app.manager.Window;
+import app.common.Client;
+import app.manager.contextManager.ContextManager;
+import app.manager.contextManager.ContextManagerImpl;
 import app.manager.gui.GUI;
 import app.manager.gui.GUIManager;
 import app.manager.gui.GUIManagerImpl;
-import app.lobby.*;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 
 public class Launcher {
 
     public static final String serverIP = "127.0.0.1";
-    private static ClientManager clientManager;
+    private static ContextManager contextManager;
     private static GUIManager guiManager;
 
     public static void main(String[] args) throws IOException {
-        clientManager = new ClientManagerImpl(ClientWindow.LOGIN);
-        guiManager = new GUIManagerImpl(ClientWindow.LOGIN);
+        contextManager = new ContextManagerImpl(Window.LOGIN);
+        guiManager = new GUIManagerImpl(Window.LOGIN);
         guiManager.open();
     }
 
-    public static void userLoginned() {
-        clientManager.change(ClientWindow.BASE);
-        guiManager.change(ClientWindow.BASE);
+    public static void userLogged() {
+        contextManager.change(Window.BASE);
+        guiManager.change(Window.BASE);
     }
 
     public static void gameStarted() {
-        clientManager.change(ClientWindow.GAME);
-        guiManager.change(ClientWindow.GAME);
+        contextManager.change(Window.GAME);
+        guiManager.change(Window.GAME);
     }
 
     public static void lobbyClosed() {
-        clientManager.change(ClientWindow.BASE);
-        guiManager.change(ClientWindow.BASE);
+        contextManager.change(Window.BASE);
+        guiManager.change(Window.BASE);
     }
 
     public static void lobbyJoinedSuccessfully() {
-        clientManager.change(ClientWindow.LOBBY);
-        guiManager.change(ClientWindow.LOBBY);
+        contextManager.change(Window.LOBBY);
+        guiManager.change(Window.LOBBY);
     }
 
     public static void lobbyCreatedSuccessfully() {
-        clientManager.change(ClientWindow.MANAGER);
-        guiManager.change(ClientWindow.MANAGER);
+        contextManager.change(Window.MANAGER);
+        guiManager.change(Window.MANAGER);
     }
 
     public static Client getCurrentClient() {
-        return clientManager.getCurrentClient();
+        return contextManager.getCurrentClient();
     }
 
     public static GUI getCurrentGui() {

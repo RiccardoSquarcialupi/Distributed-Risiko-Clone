@@ -1,4 +1,4 @@
-package app.base;
+package app.lobbySelector;
 
 import io.vertx.core.json.JsonObject;
 

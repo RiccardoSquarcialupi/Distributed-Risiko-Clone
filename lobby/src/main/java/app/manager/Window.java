@@ -1,10 +1,9 @@
 package app.manager;
 
-public enum ClientWindow {
+public enum Window {
     LOGIN,
     BASE,
     LOBBY,
     MANAGER,
-
     GAME
 }

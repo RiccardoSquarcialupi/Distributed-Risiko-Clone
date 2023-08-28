@@ -1,7 +1,6 @@
 package app.lobby;
 
-import app.base.BaseClient;
-import app.base.JSONClient;
+import app.lobbySelector.JSONClient;
 
 import java.util.List;
 

@@ -1,12 +1,11 @@
 package app.lobby;
 
-import app.base.BaseClient;
-import app.base.BaseClientImpl;
-import app.base.JSONClient;
-import app.manager.client.ClientParameters;
+import app.lobbySelector.LobbySelectorClient;
+import app.lobbySelector.LobbySelectorClientImpl;
+import app.lobbySelector.JSONClient;
+import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.cli.CLI;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ClientTest{
 
-    static BaseClient client1;
-    static ClientParameters cltPar;
+    static LobbySelectorClient client1;
+    static ContextManagerParameters cltPar;
 
     @BeforeAll
     static void setupParameters() throws IOException {
-        cltPar = new ClientParameters();
+        cltPar = new ContextManagerParameters();
         cltPar.setNickname("Ricky");
         cltPar.setIdLobby(0);
         cltPar.setIpManager("0.0.0.0");
@@ -32,7 +31,7 @@ public class ClientTest{
     }
     @Test
     void testBaseClient() throws UnknownHostException {
-        client1 = new BaseClientImpl(cltPar);
+        client1 = new LobbySelectorClientImpl(cltPar);
         assertEquals("Ricky",client1.getNickname());
         assertEquals(Inet4Address.getLocalHost().getHostAddress(),client1.getIP());
     }

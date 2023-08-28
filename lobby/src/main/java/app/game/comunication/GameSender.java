@@ -1,4 +1,4 @@
-package app.game;
+package app.game.comunication;
 
 import app.game.card.CardType;
 import app.game.card.Goal;
@@ -10,11 +10,11 @@ import io.vertx.ext.web.client.WebClient;
 
 import java.util.List;
 
-public class GameActionSender extends AbstractVerticle{
+public class GameSender extends AbstractVerticle{
 
     WebClient client;
 
-    public GameActionSender() {
+    public GameSender() {
         client = WebClient.create(Vertx.vertx());
     }
     //TODO: THOSE BELOW ARE ONLY SKELETONS, IMPLEMENT THEM

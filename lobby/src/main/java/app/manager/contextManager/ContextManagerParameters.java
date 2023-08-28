@@ -1,13 +1,13 @@
-package app.manager.client;
+package app.manager.contextManager;
 
-import app.base.JSONClient;
+import app.lobbySelector.JSONClient;
 
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientParameters {
+public class ContextManagerParameters {
     private final String ip;
     private String nickname;
     private int idLobby;
@@ -15,7 +15,7 @@ public class ClientParameters {
     private int maxPlayer;
     private final List<JSONClient> clientList;
 
-    public ClientParameters() throws IOException {
+    public ContextManagerParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();
         this.nickname = "";
         this.idLobby = -1;

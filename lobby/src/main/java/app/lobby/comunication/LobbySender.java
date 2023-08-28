@@ -1,7 +1,6 @@
-package app.lobby;
+package app.lobby.comunication;
 
-import app.base.BaseClient;
-import app.base.JSONClient;
+import app.lobbySelector.JSONClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -9,10 +8,10 @@ import io.vertx.ext.web.client.WebClient;
 
 import java.util.List;
 
-public class ClientPart extends AbstractVerticle {
+public class LobbySender extends AbstractVerticle {
     private final WebClient client;
 
-    public ClientPart() {
+    public LobbySender() {
         this.client = WebClient.create(Vertx.vertx());
     }
 
