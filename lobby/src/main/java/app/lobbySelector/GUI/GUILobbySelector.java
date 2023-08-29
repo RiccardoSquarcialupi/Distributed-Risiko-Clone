@@ -1,6 +1,7 @@
-package app.lobbySelector;
+package app.lobbySelector.GUI;
 
 import app.Launcher;
+import app.lobbySelector.LobbySelectorClient;
 import app.manager.gui.GUI;
 
 import javax.swing.*;

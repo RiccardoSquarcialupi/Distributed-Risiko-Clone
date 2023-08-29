@@ -56,7 +56,7 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
     @Override
     public void createNewLobby(String name, int maxPlayers) {
         this.client
-                .post(serverPort, Launcher.serverIP, "/server/lobbies")
+                .post(FLASK_SERVER_PORT, Launcher.serverIP, "/server/lobbies")
                 .putHeader("Content-Type", "application/json")
                 .sendJsonObject(new JsonObject(Map.of("name", name, "max_players", maxPlayers)))
                 .onSuccess(response -> {

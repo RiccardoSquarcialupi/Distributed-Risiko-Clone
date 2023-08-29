@@ -2,7 +2,7 @@ package app.manager.gui;
 
 import app.game.GUI.GUIGame;
 import app.manager.Window;
-import app.lobbySelector.GUILobbySelector;
+import app.lobbySelector.GUI.GUILobbySelector;
 import app.lobby.GUI.GUILobby;
 import app.login.GUILogin;
 

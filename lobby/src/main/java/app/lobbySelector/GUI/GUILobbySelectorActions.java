@@ -1,3 +1,3 @@
-package app.lobbySelector;
+package app.lobbySelector.GUI;
 
 public interface GUILobbySelectorActions {}
