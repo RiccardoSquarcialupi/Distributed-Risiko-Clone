@@ -168,9 +168,9 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
                 .onSuccess((httpResponse) -> SwingUtilities.invokeLater(() -> {
                     obj = new Object[][]{};
                     ObjectMapper mapper = new ObjectMapper();
-                    List<JsonObject> temp = null;
+                    List<JsonObject> temp;
                     try {
-                        temp = mapper.readValue(httpResponse.bodyAsString(), new TypeReference<List<JsonObject>>() {
+                        temp = mapper.readValue(httpResponse.bodyAsString(), new TypeReference<>() {
                         });
                         obj = temp.stream().map((JsonObject j) ->
                                         new Object[]{
@@ -192,8 +192,8 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
                     jtb.setRowSelectionAllowed(true);
                     jtb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     this.jspLobbies.setViewportView(jtb);
-                    ((JFrame) SwingUtilities.getWindowAncestor(this)).setPreferredSize(new Dimension(470, 300));
-                    ((JFrame) SwingUtilities.getWindowAncestor(this)).pack();
+                    SwingUtilities.getWindowAncestor(this).setPreferredSize(new Dimension(470, 300));
+                    SwingUtilities.getWindowAncestor(this).pack();
                 }))
                 .onFailure(System.out::println);
     }
@@ -214,9 +214,7 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
     }
 
     private ActionListener onCreate() {
-        return (e) -> {
-            ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
-                    this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText()));
-        };
+        return (e) -> ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
+                this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText()));
     }
 }

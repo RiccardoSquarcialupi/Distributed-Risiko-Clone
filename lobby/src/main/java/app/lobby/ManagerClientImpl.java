@@ -11,7 +11,7 @@ import java.util.List;
 
 public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient {
     private final List<Territory> cards;
-    private ContextManagerParameters cltPar;
+    private final ContextManagerParameters cltPar;
 
     public ManagerClientImpl(ContextManagerParameters cltPar) {
         super(cltPar);

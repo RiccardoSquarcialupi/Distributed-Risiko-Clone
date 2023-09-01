@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class ContextManagerImpl implements ContextManager {
     private Client currentClient;
-    private ContextManagerParameters contextManagerParameters;
+    private final ContextManagerParameters contextManagerParameters;
 
     public ContextManagerImpl(Window firstClient) throws IOException {
         this.contextManagerParameters = new ContextManagerParameters();

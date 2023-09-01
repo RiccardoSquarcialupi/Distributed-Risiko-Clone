@@ -6,6 +6,9 @@ import app.manager.gui.GUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 public class GUILogin extends JPanel implements GUI {
 
@@ -62,7 +65,16 @@ public class GUILogin extends JPanel implements GUI {
         return e -> {
             String username = nameField.getText().trim();
             if (!username.isEmpty()) {
-                ( (LoginClient) Launcher.getCurrentClient()).login(username);
+                try {
+                    Socket socket = new Socket();
+                    socket.connect(new InetSocketAddress("127.0.0.1", 5000), 5000);
+                    ((LoginClient) Launcher.getCurrentClient()).login(username);
+                } catch (IOException ignore) {
+                    JOptionPane.showMessageDialog(null,
+                            "SERVER IS NOT RESPONDING!!!\nMAYBE YOU SHOULD CHECK YOUR INTERNET CONNECTION...",
+                            "WARNING",
+                            JOptionPane.WARNING_MESSAGE);
+                }
             } else {
                 nameLabel.setText("Please enter a valid username!");
             }

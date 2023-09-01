@@ -5,8 +5,8 @@ import io.vertx.core.json.JsonObject;
 import java.util.Objects;
 
 public class JSONClient {
-    private String ip;
-    private String nickname;
+    private final String ip;
+    private final String nickname;
 
     public JSONClient(String ip, String nickname) {
         this.ip = ip;

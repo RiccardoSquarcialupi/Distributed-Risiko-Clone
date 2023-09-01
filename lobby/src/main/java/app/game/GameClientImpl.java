@@ -7,9 +7,9 @@ import app.manager.contextManager.ContextManagerParameters;
 
 
 public class GameClientImpl implements GameClient {
-    private ContextManagerParameters cltPar;
-    private GameSender gameSender = new GameSender();
-    private GameReceiver gameReceiver = new GameReceiver();
+    private final ContextManagerParameters cltPar;
+    private final GameSender gameSender = new GameSender();
+    private final GameReceiver gameReceiver = new GameReceiver();
 
     public GameClientImpl(ContextManagerParameters cltPar) {
         this.cltPar = cltPar;
@@ -31,7 +31,7 @@ public class GameClientImpl implements GameClient {
     }
 
     @Override
-    public String getNickname() throws IllegalAccessException {
+    public String getNickname() {
         return this.cltPar.getNickname();
     }
 }
