@@ -19,10 +19,10 @@ public class JSONLobby {
 
     public static JSONLobby fromJson(JsonObject json) {
         return new JSONLobby(json.getString("name"),
-                            json.getInteger("lobby_id"),
-                            json.getString("manager_client_ip"),
-                            json.getInteger("max_players"),
-                            json.getInteger("players_inside"));
+                json.getInteger("lobby_id"),
+                json.getString("manager_client_ip"),
+                json.getInteger("max_players"),
+                json.getInteger("players_inside"));
     }
 
     public String getName() {

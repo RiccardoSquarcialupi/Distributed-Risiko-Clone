@@ -1,8 +1,8 @@
 package app.lobby;
 
+import app.lobbySelector.JSONClient;
 import app.lobbySelector.LobbySelectorClient;
 import app.lobbySelector.LobbySelectorClientImpl;
-import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -14,9 +14,11 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
-import static org.junit.jupiter.api.Assertions.*;
 
-public class ClientTest{
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+public class ClientTest {
 
     static LobbySelectorClient client1;
     static ContextManagerParameters cltPar;
@@ -29,38 +31,42 @@ public class ClientTest{
         cltPar.setIpManager("0.0.0.0");
         cltPar.setMaxPlayer(5);
     }
+
     @Test
     void testBaseClient() throws UnknownHostException {
         client1 = new LobbySelectorClientImpl(cltPar);
-        assertEquals("Ricky",client1.getNickname());
-        assertEquals(Inet4Address.getLocalHost().getHostAddress(),client1.getIP());
-    }
-    @Test
-    void testLobbyClient(){
-        client1 = new LobbyClientImpl(cltPar);
-        assertEquals(LobbyClientImpl.class, client1.getClass());
-        ((LobbyClient)client1).stop();
-    }
-    @Test
-    void testManagerClient(){
-        client1 = new ManagerClientImpl(cltPar);
-        assertEquals(ManagerClientImpl.class, client1.getClass());
-        ((ManagerClient)client1).stop();
+        assertEquals("Ricky", client1.getNickname());
+        assertEquals(Inet4Address.getLocalHost().getHostAddress(), client1.getIP());
     }
 
-    void waitForCompletion(Future<?> fut){
-        while(!fut.isComplete()){
+    @Test
+    void testLobbyClient() {
+        client1 = new LobbyClientImpl(cltPar);
+        assertEquals(LobbyClientImpl.class, client1.getClass());
+        ((LobbyClient) client1).stop();
+    }
+
+    @Test
+    void testManagerClient() {
+        client1 = new ManagerClientImpl(cltPar);
+        assertEquals(ManagerClientImpl.class, client1.getClass());
+        ((ManagerClient) client1).stop();
+    }
+
+    void waitForCompletion(Future<?> fut) {
+        while (!fut.isComplete()) {
             try {
                 Thread.sleep(100);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         } // Deliberately busy waiting.
-        if(fut.failed()){
+        if (fut.failed()) {
             fail();
         }
     }
 
     @Test
-    void testClientServerPartAPI(){
+    void testClientServerPartAPI() {
         client1 = new ManagerClientImpl(cltPar);
         ((ManagerClient) client1).start();
         Vertx vertx = Vertx.vertx();
@@ -94,7 +100,7 @@ public class ClientTest{
     }
 
     @Test
-    void testManagerChange(){
+    void testManagerChange() {
         client1 = new ManagerClientImpl(cltPar);
         ((ManagerClient) client1).start();
         Vertx vertx = Vertx.vertx();

@@ -1,16 +1,16 @@
 package app.lobby;
 
 import app.Launcher;
-import app.lobby.comunication.LobbySender;
 import app.lobby.comunication.LobbyReceiver;
-import app.lobbySelector.LobbySelectorClientImpl;
+import app.lobby.comunication.LobbySender;
 import app.lobbySelector.JSONClient;
+import app.lobbySelector.LobbySelectorClientImpl;
 import app.manager.contextManager.ContextManagerParameters;
 
 public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyClient {
-    private ContextManagerParameters cltPar;
     public LobbyReceiver lobbyReceiver;
     public LobbySender sender;
+    private final ContextManagerParameters cltPar;
 
     public LobbyClientImpl(ContextManagerParameters cltPar) {
         super(cltPar);
@@ -20,7 +20,7 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
     }
 
     @Override
-    public String getIpManager(){
+    public String getIpManager() {
         return this.cltPar.getIpManager();
     }
 
@@ -35,7 +35,7 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
     }
 
     @Override
-    public void exitLobby(){
+    public void exitLobby() {
         this.sender.exitLobby();
     }
 
@@ -59,5 +59,7 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
         Launcher.lobbyClosed();
     }
 
-    public int getLobbyId() { return cltPar.getIdLobby(); }
+    public int getLobbyId() {
+        return cltPar.getIdLobby();
+    }
 }

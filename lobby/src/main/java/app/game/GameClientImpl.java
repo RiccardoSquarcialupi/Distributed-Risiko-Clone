@@ -6,17 +6,18 @@ import app.game.comunication.GameSender;
 import app.manager.contextManager.ContextManagerParameters;
 
 
-public class GameClientImpl implements GameClient{
+public class GameClientImpl implements GameClient {
     private ContextManagerParameters cltPar;
     private GameSender gameSender = new GameSender();
     private GameReceiver gameReceiver = new GameReceiver();
+
     public GameClientImpl(ContextManagerParameters cltPar) {
         this.cltPar = cltPar;
         gameReceiver.start();
     }
 
-    public void loop(){
-        while(gameReceiver.isRunning()){
+    public void loop() {
+        while (gameReceiver.isRunning()) {
             //TODO: STRUCTURE OF THE LOOP
             //TODO: DIVIDE RISIKO GAME LOGIC IN SUB-FUNCTION
             gameReceiver.stop();

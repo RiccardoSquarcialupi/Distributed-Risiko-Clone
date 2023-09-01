@@ -7,6 +7,7 @@ import app.lobby.GUI.GUILobby;
 import app.login.GUILogin;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class GUIManagerImpl extends JFrame implements GUIManager {
     private GUI currentGUI;
@@ -35,9 +36,23 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
                 this.currentGUI = () -> "This should not happen";
                 break;
         }
+        switch(window){
+            case LOGIN:
+            case BASE:
+            case LOBBY:
+            case MANAGER:
+                setSize(470, 300);
+                getContentPane().setBackground(new Color(0x34495E));
+                setResizable(false);
+                break;
+            case GAME:
+                setSize(1200, 750);
+                getContentPane().setBackground(new Color(0x34495E));
+                setResizable(false);
+                break;
+        }
         setContentPane((JPanel) this.currentGUI);
         setTitle(this.currentGUI.getTitle());
-        pack();
     }
 
     @Override

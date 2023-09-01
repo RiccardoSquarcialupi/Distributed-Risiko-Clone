@@ -39,7 +39,7 @@ public class LobbySender extends AbstractVerticle {
     public void gameHasStarted(JsonObject body, String ip) {
         this.client
                 .put(8080, ip, "/client/lobby/game")
-                .sendJsonObject(body.put("msg","Game has Started"))
+                .sendJsonObject(body.put("msg", "Game has Started"))
                 .onSuccess(response -> System.out
                         .println("Received response with status code" + response.statusCode()))
                 .onFailure(err ->

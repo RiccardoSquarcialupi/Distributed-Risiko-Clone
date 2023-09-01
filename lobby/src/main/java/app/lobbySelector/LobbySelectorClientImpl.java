@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
+import java.io.Console;
 import java.util.Map;
 
 public class LobbySelectorClientImpl extends LoginClient implements LobbySelectorClient {
@@ -49,7 +50,7 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
     @Override
     public Future<HttpResponse<Buffer>> getFilteredLobbies(int maxPlayers) {
         return this.client
-                .get(serverPort, Launcher.serverIP, "/server/lobbies/" + maxPlayers)
+                .get(FLASK_SERVER_PORT, Launcher.serverIP, "/server/lobbies/" + maxPlayers)
                 .send();
     }
 
@@ -63,8 +64,8 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                     this.cltPar.setIpManager(this.cltPar.getIp());
                     this.cltPar.setMaxPlayer(maxPlayers);
                     this.cltPar.addClient(JSONClient.fromBase(this));
-                    this.cltPar.setIdLobby(JsonObject.mapFrom(response.body().toJson()).getInteger("id"));
-                    //Launcher.lobbyCreatedSuccessfully();
+                    this.cltPar.setIdLobby(Integer.parseInt(response.bodyAsString().trim()));
+                    Launcher.lobbyCreatedSuccessfully();
                 })
                 .onFailure(System.out::println);
     }

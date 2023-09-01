@@ -11,36 +11,60 @@ public class GUILogin extends JPanel implements GUI {
 
     @Override
     public String getTitle() {
-        return "Login";
+        return "RiSiKo!!! Login Page";
     }
 
-    JLabel jlbDescr;
-    JTextField jtfName;
-    JButton jbtEnter;
+    private final JLabel nameLabel;
+    private final JTextField nameField;
 
     public GUILogin() {
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        setLayout(new BorderLayout());
+        setBackground(new Color(0x2E3842));
 
-        this.jlbDescr = new JLabel("Enter your name");
-        this.jlbDescr.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(this.jlbDescr);
+        JLabel titleLabel = new JLabel("Risiko Login");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(0xF7DC6F));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(titleLabel, BorderLayout.NORTH);
 
-        this.jtfName = new JTextField();
-        this.jtfName.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(this.jtfName);
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setOpaque(false);
 
-        this.jbtEnter = new JButton("Enter");
-        this.jbtEnter.setAlignmentX(Component.CENTER_ALIGNMENT);
-        this.jbtEnter.addActionListener(this.onEnter());
-        add(this.jbtEnter);
+        nameLabel = new JLabel("Enter your username:");
+        nameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        nameLabel.setForeground(new Color(0xECF0F1));
+        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        centerPanel.add(nameLabel);
+
+        centerPanel.add(Box.createVerticalStrut(10));
+
+        nameField = new JTextField(15);
+        nameField.setFont(new Font("Arial", Font.PLAIN, 14));
+        nameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        nameField.setMaximumSize(new Dimension(120, 20));
+        nameField.setPreferredSize(new Dimension(120, 20));
+        centerPanel.add(nameField);
+
+        centerPanel.add(Box.createVerticalStrut(10));
+
+        JButton loginButton = new JButton("Login");
+        loginButton.setFont(new Font("Arial", Font.BOLD, 16));
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loginButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+        loginButton.addActionListener(onLogin());
+        centerPanel.add(loginButton);
+
+        add(centerPanel, BorderLayout.CENTER);
     }
 
-    private ActionListener onEnter(){
-        return (e) -> {
-            if(!jtfName.getText().isEmpty()) {
-                ( (LoginClient) Launcher.getCurrentClient()).login(jtfName.getText());
+    private ActionListener onLogin() {
+        return e -> {
+            String username = nameField.getText().trim();
+            if (!username.isEmpty()) {
+                ( (LoginClient) Launcher.getCurrentClient()).login(username);
             } else {
-                jlbDescr.setText(jlbDescr.getText() + "!");
+                nameLabel.setText("Please enter a valid username!");
             }
         };
     }

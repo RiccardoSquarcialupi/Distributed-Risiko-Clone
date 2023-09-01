@@ -1,7 +1,7 @@
 package app.lobby;
 
-import app.lobbySelector.JSONClient;
 import app.game.card.Territory;
+import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.json.JsonObject;
 
@@ -33,7 +33,7 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
     public void startGame() {
         Collections.shuffle(cards);
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
-            this.sender.gameHasStarted(JsonObject.mapFrom((cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)))),this.cltPar.getClientList().get(i).getIP());
+            this.sender.gameHasStarted(JsonObject.mapFrom((cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)))), this.cltPar.getClientList().get(i).getIP());
             cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)).clear();
         }
     }

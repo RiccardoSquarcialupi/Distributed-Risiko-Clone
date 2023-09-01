@@ -3,93 +3,201 @@ package app.lobbySelector.GUI;
 import app.Launcher;
 import app.lobbySelector.LobbySelectorClient;
 import app.manager.gui.GUI;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.JsonObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorActions {
     @Override
     public String getTitle() {
-        return "Lobby selector";
+        return "RiSiKo!!! Lobby selector";
     }
 
-    JPanel leftPanel;
-    JPanel rightPanel;
+    private final CardLayout cardLayout;
+    private final JPanel cards;
+    private boolean isJoinPage = true;
 
-    JButton jbtRefresh;
-    JButton jbtJoin;
-    JScrollPane jspLobbies;
+    private JScrollPane jspLobbies;
+    private JTable jtb;
+    private final Object[] tableHeader = {"ID", "Server IP", "Players Inside", "Max Players"};
+    Object[][] obj = new Object[][]{};
 
-    JLabel jblName;
-    JTextField jtfName;
-    JLabel jblMaxPlayers;
-    JTextField jtfMaxPlayers;
-    JButton jbtCreate;
+    private JTextField jtfName;
+    private JTextField jtfMaxPlayers;
 
     public GUILobbySelector() {
-        setLayout(new FlowLayout());
+        setLayout(new BorderLayout());
+        setBackground(new Color(0x2E3842));
 
-        this.leftPanel = new JPanel();
-        this.leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
+        JPanel titlePanel = new JPanel();
+        JLabel titleLabel = new JLabel("Lobby Selector");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titlePanel.add(titleLabel);
+        titlePanel.setBackground(new Color(0x2E3842));
+        titleLabel.setForeground(new Color(0xF7DC6F));
+        add(titlePanel, BorderLayout.NORTH);
 
-        this.jbtRefresh = new JButton("Refresh");
-        this.jbtRefresh.addActionListener(this.onRefresh());
-        this.leftPanel.add(this.jbtRefresh);
+        cards = new JPanel();
+        cardLayout = new CardLayout();
+        cards.setLayout(cardLayout);
 
-        this.jbtJoin = new JButton("Join");
-        this.jbtJoin.addActionListener(this.onJoin());
-        this.leftPanel.add(this.jbtJoin);
+        cards.add(createJoinLobbyPanel(), "join");
+        cards.add(createCreateLobbyPanel(), "create");
 
-        this.jspLobbies = new JScrollPane();
-        this.leftPanel.add(this.jspLobbies);
+        add(cards, BorderLayout.CENTER);
 
-        add(this.leftPanel);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(0x2E3842));
 
-        this.rightPanel = new JPanel();
-        this.rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
+        jtb = new JTable(obj, tableHeader);
+        jtb.setDefaultEditor(Object.class, null);
+        jtb.setCellSelectionEnabled(false);
+        jtb.setColumnSelectionAllowed(false);
+        jtb.setRowSelectionAllowed(true);
+        jtb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.jspLobbies.setViewportView(jtb);
 
-        this.jblName = new JLabel("Lobby name:");
-        this.rightPanel.add(this.jblName);
+        JButton switchButton = new JButton("Switch");
+        switchButton.setFont(new Font("Arial", Font.BOLD, 16));
+        switchButton.addActionListener(onSwitch());
+        buttonPanel.add(switchButton);
 
-        this.jtfName = new JTextField();
-        this.rightPanel.add(this.jtfName);
+        add(buttonPanel, BorderLayout.SOUTH);
 
-        this.jblMaxPlayers = new JLabel("Lobby max players:");
-        this.rightPanel.add(this.jblMaxPlayers);
+        // Initially show the join lobby page
+        cardLayout.show(cards, "join");
+        refreshTable();
+    }
 
-        this.jtfMaxPlayers = new JTextField();
-        this.jtfMaxPlayers.setText("4");
-        this.rightPanel.add(this.jtfMaxPlayers);
+    private ActionListener onSwitch() {
+        return e -> {
+            // Toggle between "join" and "create" panels
+            if (isJoinPage) {
+                cardLayout.show(cards, "create");
+            } else {
+                cardLayout.show(cards, "join");
+            }
+            isJoinPage = !isJoinPage;
+        };
+    }
 
-        this.jbtCreate = new JButton("Create");
-        this.jbtCreate.addActionListener(this.onCreate());
-        this.rightPanel.add(this.jbtCreate);
+    private JPanel createJoinLobbyPanel() {
+        JPanel joinPanel = new JPanel(new BorderLayout());
+        joinPanel.setBackground(new Color(0x2E3842));
 
-        add(this.rightPanel);
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setOpaque(false);
 
-        this.refreshTable();
+        JButton jbtRefresh = new JButton("Refresh");
+        jbtRefresh.setFont(new Font("Arial", Font.BOLD, 16));
+        jbtRefresh.setAlignmentX(Component.CENTER_ALIGNMENT);
+        jbtRefresh.addActionListener(onRefresh());
+        leftPanel.add(jbtRefresh);
+
+        JButton jbtJoin = new JButton("Join");
+        jbtJoin.setFont(new Font("Arial", Font.BOLD, 16));
+        jbtJoin.setAlignmentX(Component.CENTER_ALIGNMENT);
+        jbtJoin.addActionListener(onJoin());
+        leftPanel.add(jbtJoin);
+
+        JTable lobbyTable = new JTable();
+        lobbyTable.setFont(new Font("Arial", Font.PLAIN, 14));
+        lobbyTable.setRowSelectionAllowed(true);
+        lobbyTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        jspLobbies = new JScrollPane(lobbyTable);
+        jspLobbies.setMaximumSize(new Dimension(400, 200));
+        leftPanel.add(jspLobbies);
+
+        joinPanel.add(leftPanel, BorderLayout.WEST);
+
+        return joinPanel;
+    }
+
+    private JPanel createCreateLobbyPanel() {
+        JPanel createPanel = new JPanel();
+        createPanel.setBackground(new Color(0x2E3842));
+        createPanel.setLayout(new BoxLayout(createPanel, BoxLayout.Y_AXIS));
+
+        jtfName = new JTextField();
+        jtfName.setFont(new Font("Arial", Font.PLAIN, 14));
+        setupFormField(createPanel, "Lobby name:", jtfName);
+
+        jtfMaxPlayers = new JTextField("4");
+        jtfMaxPlayers.setFont(new Font("Arial", Font.PLAIN, 14));
+        setupFormField(createPanel, "Lobby max players:", jtfMaxPlayers);
+
+        JButton jbtCreate = new JButton("Create");
+        jbtCreate.setFont(new Font("Arial", Font.BOLD, 16));
+        jbtCreate.setAlignmentX(Component.CENTER_ALIGNMENT);
+        jbtCreate.addActionListener(onCreate());
+        createPanel.add(jbtCreate);
+
+        return createPanel;
+    }
+
+    private void setupFormField(JPanel panel, String label, JTextField textField) {
+        JPanel fieldPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        fieldPanel.setBackground(new Color(0x2E3842));
+        fieldPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel jLabel = new JLabel(label);
+        jLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        jLabel.setForeground(new Color(0xECF0F1));
+        fieldPanel.add(jLabel);
+
+        textField.setFont(new Font("Arial", Font.PLAIN, 14));
+        textField.setPreferredSize(new Dimension(200, 25));
+        fieldPanel.add(textField);
+
+        panel.add(fieldPanel);
     }
 
     private void refreshTable() {
-        ((LobbySelectorClient)Launcher.getCurrentClient()).getFilteredLobbies(Integer.parseInt(this.jtfMaxPlayers.getText()))
+        ((LobbySelectorClient) Launcher.getCurrentClient()).getFilteredLobbies(Integer.parseInt(this.jtfMaxPlayers.getText()))
                 .onSuccess((httpResponse) -> SwingUtilities.invokeLater(() -> {
-                    Object[] tableHeader = {"Name", "ID", "Manager", "Slots"};
-                    Object[][] obj = new Object[][]{
-                            {"name", "id", "manager", "4/5"},
-                            {"eman", "di", "reganam", "5/4"}};
-                    System.out.println(httpResponse.body().toJson());
-                    JTable jtb = new JTable(obj, tableHeader);
+                    obj = new Object[][]{};
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<JsonObject> temp = null;
+                    try {
+                        temp = mapper.readValue(httpResponse.bodyAsString(), new TypeReference<List<JsonObject>>() {
+                        });
+                        obj = temp.stream().map((JsonObject j) ->
+                                        new Object[]{
+                                                j.getInteger("lobby_id"),
+                                                j.getString("manager_client_ip"),
+                                                j.getString("players_inside"),
+                                                j.getInteger("max_players")})
+                                .collect(Collectors.toList())
+                                .toArray(obj);
+                    } catch (JsonProcessingException e) {
+                        System.out.println("Something went wrong when parsing the JSON response from the server");
+                        throw new RuntimeException(e);
+                    }
+
+                    jtb = new JTable(obj, tableHeader);
                     jtb.setDefaultEditor(Object.class, null);
                     jtb.setCellSelectionEnabled(false);
                     jtb.setColumnSelectionAllowed(false);
                     jtb.setRowSelectionAllowed(true);
                     jtb.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     this.jspLobbies.setViewportView(jtb);
+                    ((JFrame) SwingUtilities.getWindowAncestor(this)).setPreferredSize(new Dimension(470, 300));
                     ((JFrame) SwingUtilities.getWindowAncestor(this)).pack();
                 }))
                 .onFailure(System.out::println);
     }
+
 
     private ActionListener onRefresh() {
         return (e) -> this.refreshTable();
@@ -97,13 +205,17 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
 
     private ActionListener onJoin() {
         return (e) -> {
-
+            int selectedRow = jtb.getSelectedRow();
+            if (selectedRow != -1) {
+                String managerIp = Arrays.stream(obj).map((o) -> (String) o[1]).collect(Collectors.toList()).get(selectedRow);
+                ((LobbySelectorClient) Launcher.getCurrentClient()).joinLobby(managerIp);
+            }
         };
     }
 
     private ActionListener onCreate() {
         return (e) -> {
-            ((LobbySelectorClient)Launcher.getCurrentClient()).createNewLobby(
+            ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
                     this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText()));
         };
     }

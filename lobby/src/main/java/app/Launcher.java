@@ -1,7 +1,7 @@
 package app;
 
-import app.manager.Window;
 import app.common.Client;
+import app.manager.Window;
 import app.manager.contextManager.ContextManager;
 import app.manager.contextManager.ContextManagerImpl;
 import app.manager.gui.GUI;

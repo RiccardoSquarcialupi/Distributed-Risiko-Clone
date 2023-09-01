@@ -1,6 +1,7 @@
 package app.game.card;
 
 import java.util.List;
+
 public enum Territory implements Card {
     ALASKA("Alaska", Continent.NORTH_AMERICA, List.of("Kamchatka", "Alberta", "Northwest territory")),
     ALBERTA("Alberta", Continent.NORTH_AMERICA, List.of("Alaska", "Northwest territory", "Ontario", "Western United States")),
@@ -49,6 +50,7 @@ public enum Territory implements Card {
     private final Continent continent;
     private final List<String> neighbours;
     private final CardType type;
+
     Territory(String name, Continent continent, List<String> neighbours) {
         this.name = name;
         this.continent = continent;

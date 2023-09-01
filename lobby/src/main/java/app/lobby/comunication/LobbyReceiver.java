@@ -27,7 +27,7 @@ public class LobbyReceiver extends AbstractVerticle {
         router
                 .post("/client/lobby/clients")
                 .handler(routingContext -> {
-                    routingContext.request().bodyHandler(bh->{
+                    routingContext.request().bodyHandler(bh -> {
                         this.lobbyClient.addNewClient(JSONClient.fromJson(bh.toJsonObject()));
                         int lobbyId = lobbyClient.getLobbyId();
                         routingContext.response().putHeader("Content-Type", "application/json")
@@ -40,7 +40,7 @@ public class LobbyReceiver extends AbstractVerticle {
         router
                 .delete("/client/lobby/clients")
                 .handler(routingContext -> {
-                    routingContext.request().bodyHandler(bh-> {
+                    routingContext.request().bodyHandler(bh -> {
                         this.lobbyClient.deleteClient(JSONClient.fromJson(bh.toJsonObject()));
                         routingContext.response().setStatusCode(200).end();
                     });
@@ -49,7 +49,7 @@ public class LobbyReceiver extends AbstractVerticle {
         router
                 .put("/client/lobby/manager")
                 .handler(routingContext -> {
-                    routingContext.request().bodyHandler(bh-> {
+                    routingContext.request().bodyHandler(bh -> {
                         this.lobbyClient.updateManager(bh.toJsonObject().getString("manager_ip"));
                         routingContext.response().setStatusCode(200).end();
                     });
@@ -74,7 +74,7 @@ public class LobbyReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     if (this.lobbyClient instanceof ManagerClientImpl) {
                         JsonArray jarr = new JsonArray();
-                        for(JSONClient bc : ((ManagerClient) this.lobbyClient).getClientList()){
+                        for (JSONClient bc : ((ManagerClient) this.lobbyClient).getClientList()) {
                             jarr.add(bc.toJson());
                         }
                         routingContext.response()

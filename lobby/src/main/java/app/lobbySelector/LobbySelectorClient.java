@@ -9,12 +9,14 @@ public interface LobbySelectorClient extends Client {
 
     /**
      * Join the lobby identified by his manager IP.
+     *
      * @param managerClientIp the manager IP.
      */
     void joinLobby(String managerClientIp);
 
     /**
      * Returns a Future with a buffer HTTP response to get lobbies.
+     *
      * @param maxPlayers filter on number of players.
      * @return the future with lobbies.
      */
@@ -22,7 +24,8 @@ public interface LobbySelectorClient extends Client {
 
     /**
      * Create a new lobby.
-     * @param name name of the lobby.
+     *
+     * @param name       name of the lobby.
      * @param maxPlayers maximum players of the lobby.
      */
     void createNewLobby(String name, int maxPlayers);

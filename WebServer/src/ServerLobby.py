@@ -8,15 +8,16 @@ class ServerLobby:
     max_players = 0
     players_inside = 1
 
-    def __init__(self, name, lobby_id, manager_client_ip, max_players):
+    def __init__(self, name, lobby_id, manager_client_ip, max_players, players_inside):
         self.name = name
         self.lobby_id = lobby_id
         self.manager_client_ip = manager_client_ip
         self.max_players = max_players
+        self.players_inside = players_inside # Needed otherwise to_json() will not send the players_inside value
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
+                          sort_keys=True, indent=None)
 
     def add_players_inside(self):
         if self.players_inside == self.max_players:

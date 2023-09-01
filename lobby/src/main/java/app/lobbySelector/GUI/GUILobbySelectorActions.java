@@ -1,3 +1,4 @@
 package app.lobbySelector.GUI;
 
-public interface GUILobbySelectorActions {}
+public interface GUILobbySelectorActions {
+}

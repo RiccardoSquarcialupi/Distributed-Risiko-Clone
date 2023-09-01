@@ -18,12 +18,9 @@ dependencies {
     implementation 'io.vertx:vertx-codegen:4.4.4'
     implementation 'io.vertx:vertx-web-client:4.4.4'
     implementation 'io.vertx:vertx-web-api-service:4.4.4'
-    implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'io.vertx:vertx-dependencies:4.4.4'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
-
-
 }
 
 test {

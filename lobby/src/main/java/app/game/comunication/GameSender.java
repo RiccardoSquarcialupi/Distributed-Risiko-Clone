@@ -10,51 +10,52 @@ import io.vertx.ext.web.client.WebClient;
 
 import java.util.List;
 
-public class GameSender extends AbstractVerticle{
+public class GameSender extends AbstractVerticle {
 
     WebClient client;
 
     public GameSender() {
         client = WebClient.create(Vertx.vertx());
     }
+
     //TODO: THOSE BELOW ARE ONLY SKELETONS, IMPLEMENT THEM
-    protected void clientStartTurn(int idClient){
+    protected void clientStartTurn(int idClient) {
         jsonify(idClient);
     }
 
-    protected void clientEndTurn(int idClient){
+    protected void clientEndTurn(int idClient) {
         jsonify(idClient);
     }
 
-    protected void clientGetStateCard(int idClient){
+    protected void clientGetStateCard(int idClient) {
         jsonify(idClient);
     }
 
-    protected void clientChangeArmiesInTerritory(int idClient, Territory territory, int armies){
+    protected void clientChangeArmiesInTerritory(int idClient, Territory territory, int armies) {
         jsonify(idClient, territory, armies);
     }
 
-    protected void clientUseStateCardBonus(int idClient, List<CardType> listCardType, int bonusArmies, int extraBonusArmies){
+    protected void clientUseStateCardBonus(int idClient, List<CardType> listCardType, int bonusArmies, int extraBonusArmies) {
         jsonify(idClient, listCardType, bonusArmies, extraBonusArmies);
     }
 
 
-    protected void clientAttackTerritory(int idClientAttack, int idClientDefend, int diceATKResult, int numberofDices){
+    protected void clientAttackTerritory(int idClientAttack, int idClientDefend, int diceATKResult, int numberofDices) {
         jsonify(idClientAttack, idClientDefend, diceATKResult, numberofDices);
     }
 
-    protected void clientDefendTerritory(int idClientAttack, int idClientDefend, int diceATKResult, int numberofDices){
+    protected void clientDefendTerritory(int idClientAttack, int idClientDefend, int diceATKResult, int numberofDices) {
         jsonify(idClientAttack, idClientDefend, diceATKResult, numberofDices);
     }
 
 
-    protected void clientWin(int idClient, Goal goalCard, List<Territory> territoryOwnedList){
+    protected void clientWin(int idClient, Goal goalCard, List<Territory> territoryOwnedList) {
         jsonify(idClient, goalCard, territoryOwnedList);
     }
 
-    private JsonArray jsonify(Object ... args){
+    private JsonArray jsonify(Object... args) {
         JsonArray jsonArray = new JsonArray();
-        for ( Object o : args) {
+        for (Object o : args) {
             jsonArray.add(o);
         }
         return jsonArray;

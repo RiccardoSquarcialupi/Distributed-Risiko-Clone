@@ -4,19 +4,20 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
 
-public class JSONClient{
+public class JSONClient {
     private String ip;
     private String nickname;
-    public JSONClient(String ip, String nickname){
+
+    public JSONClient(String ip, String nickname) {
         this.ip = ip;
         this.nickname = nickname;
     }
 
     public static JSONClient fromJson(JsonObject bodyAsJson) {
-        return new JSONClient(bodyAsJson.getString("ip"),bodyAsJson.getString("nickname"));
+        return new JSONClient(bodyAsJson.getString("ip"), bodyAsJson.getString("nickname"));
     }
 
-    public JsonObject toJson(){
+    public JsonObject toJson() {
         JsonObject jo = new JsonObject();
         jo.put("ip", this.ip);
         jo.put("nickname", this.nickname);

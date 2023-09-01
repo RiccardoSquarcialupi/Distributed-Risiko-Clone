@@ -7,6 +7,6 @@ import javax.swing.*;
 public class GUIGame extends JPanel implements GUI, GUIGameActions {
     @Override
     public String getTitle() {
-        return "Risiko! game";
+        return "RiSiKo!!!";
     }
 }

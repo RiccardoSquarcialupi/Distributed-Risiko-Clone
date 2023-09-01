@@ -22,7 +22,7 @@ def lobbies_matching_client_filter(max_players):
     for lobby in temporary_dict_of_lobbies.values():
         if int(lobby.max_players) == int(max_players):
             result.append(lobby.to_json())
-    return jsonify(result), 200
+    return result, 200
 
 
 @app.route('/server/lobby/<lobby_id>', methods=['DELETE'])
@@ -44,7 +44,7 @@ def create_new_lobby():
     global count
     id = count
     if request.get_json().get('name') is not None and request.get_json().get('max_players') is not None:
-        add_lobby_to_dict(request.get_json()['name'], request.remote_addr, request.get_json()['max_players'])
+        add_lobby_to_dict(request.get_json()['name'], request.remote_addr, request.get_json()['max_players'],1)
         return jsonify(id), 200
     else:
         return "Arguments not found", 401
@@ -99,10 +99,10 @@ def connect_to_lobby(lobby_id):
     return '', 200
 
 
-def add_lobby_to_dict(name, manager_ip, max_players):
+def add_lobby_to_dict(name, manager_ip, max_players, players_inside):
     global count
     global temporary_dict_of_lobbies
-    temporary_dict_of_lobbies[count] = ServerLobby(name, count, manager_ip, max_players)
+    temporary_dict_of_lobbies[count] = ServerLobby(name, count, manager_ip, max_players, players_inside)
     count += 1
 
 

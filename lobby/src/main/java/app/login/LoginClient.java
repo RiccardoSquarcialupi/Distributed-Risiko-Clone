@@ -6,9 +6,11 @@ import app.manager.contextManager.ContextManagerParameters;
 
 public class LoginClient implements Client {
     protected ContextManagerParameters cltPar;
-    public LoginClient(ContextManagerParameters cltPar){
+
+    public LoginClient(ContextManagerParameters cltPar) {
         this.cltPar = cltPar;
     }
+
     @Override
     public String getIP() {
         return this.cltPar.getIp();

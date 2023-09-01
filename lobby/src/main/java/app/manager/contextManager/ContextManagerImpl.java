@@ -37,8 +37,10 @@ public class ContextManagerImpl implements ContextManager {
                 this.currentClient = new LobbySelectorClientImpl(this.contextManagerParameters);
                 break;
             case LOBBY:
-            case MANAGER:
                 this.currentClient = new LobbyClientImpl(this.contextManagerParameters);
+                break;
+            case MANAGER:
+                this.currentClient = new ManagerClientImpl(this.contextManagerParameters);
                 break;
             case GAME:
                 this.currentClient = new GameClientImpl(this.contextManagerParameters);
