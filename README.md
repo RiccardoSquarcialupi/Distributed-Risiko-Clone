@@ -1,3 +1,7 @@
+The first time you clone the repo you need to:
+
+`git submodule update --init --recursive`
+
 To pull updates exec:
 
 `git pull --recurse-submodules`
