@@ -11,3 +11,5 @@ If you want to avoid using the *--recurse-submodules* option, you can configure 
 `git config --global submodule.recurse true`
 
 From now on you just need to `git pull` to update the entire project.
+
+## Git is not collaborating... just run the update script
