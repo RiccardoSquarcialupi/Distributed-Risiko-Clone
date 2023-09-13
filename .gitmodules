@@ -1,3 +1,6 @@
 [submodule "server"]
 	path = server
 	url = https://gitlab.com/pika-lab/courses/ds/projects/ds-project-benvenuti-squarcialupi-ay2122.git
+[submodule "client"]
+	path = client
+	url = https://gitlab.com/pika-lab/courses/ds/projects/ds-project-benvenuti-squarcialupi-ay2122.git
