@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-jammy
+FROM gradle:4.7.0-jdk8-alpine
 WORKDIR .
 COPY client/lobby .
 RUN gradle build
