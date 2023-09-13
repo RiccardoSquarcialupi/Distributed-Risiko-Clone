@@ -12,4 +12,4 @@ If you want to avoid using the *--recurse-submodules* option, you can configure 
 
 From now on you just need to `git pull` to update the entire project.
 
-## Git is not collaborating... just run the update script
+## Git is not collaborating... just run the update script (Be sure to be in the same folder as the script)
