@@ -29,5 +29,5 @@ test {
 }
 
 application {
-    mainClassName = 'main.java.app.Launcher'
+    mainClassName = 'app.Launcher'
 }
