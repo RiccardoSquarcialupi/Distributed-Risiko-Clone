@@ -1,0 +1,1 @@
+gradle run -x test --warning-mode all
