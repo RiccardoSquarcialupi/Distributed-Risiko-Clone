@@ -1,4 +1,4 @@
-FROM alpine:3.16
+FROM edgelevel/alpine-xfce-vnc
 
 # Copy the all lobby folder
 # Copy the "lobby" folder from your host machine into the container
@@ -10,10 +10,12 @@ WORKDIR /lobby
 
 RUN apk add openjdk11
 RUN apk add gradle
-RUN apk add xvfb x11vnc
+RUN apk add xterm
+RUN apk add xhost
 
-RUN x11vnc -create -forever
-
+RUN x11vnc -create -reopen -forever &
 RUN gradle build --no-daemon -x test
+RUN xhost +
 
-CMD gradle run -x test --warning-mode all
+CMD xterm
+#CMD DISPLAY=:0.0 gradle run --args="-Djava.awt.headless=true" -x test --warning-mode all
