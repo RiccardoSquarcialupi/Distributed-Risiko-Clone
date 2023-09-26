@@ -11,7 +11,10 @@ services:
     build:
       context: .
       dockerfile: client.Dockerfile
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
     ports:
-      - "6080:6080"
+      - "8080:8080"
       - "5900:5900"
-    
+      - "6080:6080"
+
