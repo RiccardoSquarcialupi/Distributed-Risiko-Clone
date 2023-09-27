@@ -4,17 +4,11 @@ services:
     build:
       context: .
       dockerfile: server.Dockerfile
-    ports:
-      - "8000:5000"
+    network_mode: host
 
   client:
     build:
       context: .
       dockerfile: client.Dockerfile
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
-    ports:
-      - "8080:8080"
-      - "5900:5900"
-      - "6080:6080"
+    network_mode: host
 

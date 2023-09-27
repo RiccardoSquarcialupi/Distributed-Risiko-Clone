@@ -1,6 +1,10 @@
-FROM edgelevel/alpine-xfce-vnc
+FROM ubuntu:latest
 
 USER root
+
+RUN \
+    apt update && \
+    apt install -y openjdk-11-jdk xterm nano
 
 # Copy the all lobby folder
 # Copy the "lobby" folder from your host machine into the container
@@ -10,10 +14,9 @@ COPY client/lobby /lobby
 # set workdir to lobby
 WORKDIR /lobby
 
-RUN apk add openjdk11
-RUN apk add gradle
-RUN apk add xterm
+CMD gradlew shadowJar
 
-RUN gradle build --no-daemon -x test
+# Set the display to the host machine
+ENV DISPLAY=host.docker.internal:0.0
 
-RUN DISPLAY=:0.0 gradle run -x test --warning-mode all &
+CMD java -jar build/libs/lobby-1.0-SNAPSHOT-all.jar
