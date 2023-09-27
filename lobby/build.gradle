@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group 'org.example'
@@ -22,6 +23,7 @@ dependencies {
     implementation 'io.vertx:vertx-dependencies:4.4.4'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+
 }
 
 test {
@@ -30,4 +32,15 @@ test {
 
 application {
     mainClassName = 'app.Launcher'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'app.Launcher'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
