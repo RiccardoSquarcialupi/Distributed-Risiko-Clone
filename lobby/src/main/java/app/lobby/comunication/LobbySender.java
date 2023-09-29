@@ -5,6 +5,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import app.Launcher;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ public class LobbySender extends AbstractVerticle {
     private final WebClient client;
 
     public LobbySender() {
-        this.client = WebClient.create(Vertx.vertx());
+        this.client = WebClient.create(Launcher.getVertx());
     }
 
     public void exitLobby() {

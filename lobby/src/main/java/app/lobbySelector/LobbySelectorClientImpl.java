@@ -21,7 +21,7 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
 
     public LobbySelectorClientImpl(ContextManagerParameters cltPar) {
         super(cltPar);
-        this.client = WebClient.create(Vertx.vertx());
+        this.client = WebClient.create(Launcher.getVertx());
         this.cltPar = cltPar;
     }
 

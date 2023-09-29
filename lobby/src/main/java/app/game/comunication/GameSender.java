@@ -7,6 +7,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.client.WebClient;
+import app.Launcher;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class GameSender extends AbstractVerticle {
     WebClient client;
 
     public GameSender() {
-        client = WebClient.create(Vertx.vertx());
+        client = WebClient.create(Launcher.getVertx());
     }
 
     //TODO: THOSE BELOW ARE ONLY SKELETONS, IMPLEMENT THEM

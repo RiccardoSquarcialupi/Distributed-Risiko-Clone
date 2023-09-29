@@ -4,6 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
+import app.Launcher;
 
 public class GameReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
@@ -11,7 +12,7 @@ public class GameReceiver extends AbstractVerticle {
     private boolean isRunning = false;
 
     public GameReceiver() {
-        this.httpServer = Vertx.vertx().createHttpServer();
+        this.httpServer = Launcher.getVertx().createHttpServer();
         this.router = Router.router(vertx);
     }
 

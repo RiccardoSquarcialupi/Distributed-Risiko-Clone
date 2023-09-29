@@ -11,6 +11,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import app.Launcher;
 
 public class LobbyReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
@@ -18,7 +19,7 @@ public class LobbyReceiver extends AbstractVerticle {
     private final LobbyClientImpl lobbyClient;
 
     public LobbyReceiver(LobbyClient lobbyClient) {
-        this.httpServer = Vertx.vertx().createHttpServer();
+        this.httpServer = Launcher.getVertx().createHttpServer();
         this.lobbyClient = (LobbyClientImpl) lobbyClient;
         this.router = Router.router(vertx);
     }

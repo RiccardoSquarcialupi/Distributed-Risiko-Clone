@@ -7,6 +7,7 @@ import app.manager.contextManager.ContextManagerImpl;
 import app.manager.gui.GUI;
 import app.manager.gui.GUIManager;
 import app.manager.gui.GUIManagerImpl;
+import io.vertx.core.Vertx;
 
 import java.io.IOException;
 
@@ -15,11 +16,19 @@ public class Launcher {
     public static final String serverIP = "127.0.0.1";
     private static ContextManager contextManager;
     private static GUIManager guiManager;
+    private static Vertx vertx = null;
 
     public static void main(String[] args) throws IOException {
         contextManager = new ContextManagerImpl(Window.LOGIN);
         guiManager = new GUIManagerImpl(Window.LOGIN);
         guiManager.open();
+    }
+
+    public static Vertx getVertx() {
+        if(vertx == null){
+            vertx = Vertx.vertx();
+        }
+        return vertx;
     }
 
     public static void userLogged() {
