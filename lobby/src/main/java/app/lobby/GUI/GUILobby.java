@@ -24,12 +24,14 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         setLayout(new BorderLayout());
         setBackground(new Color(0x2E3842));
 
+
         JPanel titlePanel = new JPanel();
         JLabel titleLabel = new JLabel("Please Wait for the game to start...");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
         titlePanel.setBackground(new Color(0x2E3842));
         titleLabel.setForeground(new Color(0xF7DC6F));
+        add(titlePanel, BorderLayout.NORTH);
 
 
         // Loading Image

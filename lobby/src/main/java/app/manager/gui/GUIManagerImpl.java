@@ -53,6 +53,8 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
         }
         setContentPane((JPanel) this.currentGUI);
         setTitle(this.currentGUI.getTitle());
+        repaint();
+        revalidate();
     }
 
     @Override
