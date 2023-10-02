@@ -1,12 +1,17 @@
 package app.lobby.GUI;
 
+import app.Launcher;
+import app.lobby.ManagerClient;
+import app.lobbySelector.LobbySelectorClient;
 import app.manager.gui.GUI;
 
 import javax.swing.*;
-
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Objects;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class GUILobby extends JPanel implements GUI, GUILobbyActions {
     @Override
@@ -14,16 +19,13 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         return "RiSiKo!!! Lobby Pre Game";
     }
 
-    private JLabel loadingLabel;
     private DefaultListModel<String> playersListModel;
     private JList<String> playersList;
-    private JButton exitButton;
 
 
     public GUILobby() {
         setLayout(new BorderLayout());
         setBackground(new Color(0x2E3842));
-
 
         JPanel titlePanel = new JPanel();
         JLabel titleLabel = new JLabel("Please Wait for the game to start...");
@@ -33,21 +35,34 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         titleLabel.setForeground(new Color(0xF7DC6F));
         add(titlePanel, BorderLayout.NORTH);
 
-
-        // Loading Image
-        ImageIcon imgIcon = new ImageIcon("/assets/image/RisikoLoading.gif");
-        loadingLabel = new JLabel(imgIcon);
+        //LOAD GIF IMAGE
+        ImageIcon icon = new ImageIcon(getAbsoluteCurrentPathOfGif());
+        JLabel loadingLabel = new JLabel(icon);
         add(loadingLabel, BorderLayout.CENTER);
 
-
-        // Players List
-        /*playersListModel = new DefaultListModel<>();
-        playersList = new JList<>(playersListModel);
-        JScrollPane playersScrollPane = new JScrollPane(playersList);
-        add(playersScrollPane, BorderLayout.NORTH);*/
-
         // Exit Button
-        exitButton = new JButton("Exit Lobby");
+        JButton exitButton = new JButton("Exit Lobby");
+        exitButton.setFont(new Font("Arial", Font.BOLD, 16));
+        exitButton.addActionListener(onClick());
         add(exitButton, BorderLayout.SOUTH);
+    }
+
+    private String getAbsoluteCurrentPathOfGif(){
+        Path currRelativePath = Paths.get("");
+        return currRelativePath.toAbsolutePath().toString().concat("\\\\src\\\\main\\\\java\\\\assets\\\\image\\\\RisikoLoading.gif");
+    }
+
+    private ActionListener onClick() {
+        return e -> {
+            if ( ((ManagerClient) Launcher.getCurrentClient()).getClientList().isEmpty()){
+                System.out.println("No one have joined, i can close the server");
+                //TODO: close the server
+            }else {
+                System.out.println("Someone have joined, i can't close the server");
+                //new manager is the first client to have joined
+                ((ManagerClient) Launcher.getCurrentClient()).managerClientChange(String.valueOf(((ManagerClient) Launcher.getCurrentClient()).getClientList().get(0)));
+            }
+            System.exit(0);
+        };
     }
 }
