@@ -30,6 +30,11 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
     }
 
     @Override
+    public void closeLobby() {
+        this.sender.lobbyClosed();
+    }
+
+    @Override
     public void startGame() {
         Collections.shuffle(cards);
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {

@@ -54,15 +54,14 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
 
     private ActionListener onClick() {
         return e -> {
-            if ( ((ManagerClient) Launcher.getCurrentClient()).getClientList().isEmpty()){
-                System.out.println("No one have joined, i can close the server");
-                //TODO: close the server
+            if ( ((ManagerClient) Launcher.getCurrentClient()).getClientList().size() == 1 ){
+                //System.out.println("No one have joined, i can close the server");
+                ((ManagerClient) Launcher.getCurrentClient()).closeLobby();
             }else {
                 System.out.println("Someone have joined, i can't close the server");
-                //new manager is the first client to have joined
-                ((ManagerClient) Launcher.getCurrentClient()).managerClientChange(String.valueOf(((ManagerClient) Launcher.getCurrentClient()).getClientList().get(0)));
+                //new manager is the second client in the list, the first is me.
+                ((ManagerClient) Launcher.getCurrentClient()).managerClientChange(String.valueOf(((ManagerClient) Launcher.getCurrentClient()).getClientList().get(1)));
             }
-            System.exit(0);
         };
     }
 }

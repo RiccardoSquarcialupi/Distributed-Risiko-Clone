@@ -71,4 +71,11 @@ public class ContextManagerParameters {
     public List<JSONClient> getClientList() {
         return this.clientList;
     }
+
+    public void resetLobby() {
+        this.idLobby = -1;
+        this.ipManager = "";
+        this.maxPlayer = -1;
+        this.clientList.clear();
+    }
 }

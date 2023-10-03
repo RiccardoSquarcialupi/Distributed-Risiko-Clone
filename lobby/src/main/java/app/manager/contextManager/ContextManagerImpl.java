@@ -34,6 +34,7 @@ public class ContextManagerImpl implements ContextManager {
                 this.currentClient = new LoginClient(this.contextManagerParameters);
                 break;
             case BASE:
+                this.contextManagerParameters.resetLobby();
                 this.currentClient = new LobbySelectorClientImpl(this.contextManagerParameters);
                 break;
             case LOBBY:

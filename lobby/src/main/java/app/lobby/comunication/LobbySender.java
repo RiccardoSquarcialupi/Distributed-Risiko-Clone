@@ -51,9 +51,11 @@ public class LobbySender extends AbstractVerticle {
     public void lobbyClosed() {
         this.client
                 .delete(8080, "127.0.0.1", "/client/lobby")
-                .sendJsonObject(JsonObject.mapFrom("Lobby is closed"))
-                .onSuccess(response -> System.out
-                        .println("Received response with status code" + response.statusCode()))
+                .sendJsonObject(new JsonObject("{\"msg\":\"Lobby is closed!\"}"))
+                .onSuccess(response -> {
+                        System.out.println("Received response with status code" + response.statusCode());
+                        Launcher.lobbyClosed();
+                })
                 .onFailure(err ->
                         System.out.println("Something went wrong " + err.getMessage()));
 

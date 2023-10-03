@@ -10,4 +10,6 @@ public interface ManagerClient extends LobbyClient {
     List<JSONClient> getClientList();
 
     void managerClientChange(String newManagerIP);
+
+    void closeLobby();
 }
