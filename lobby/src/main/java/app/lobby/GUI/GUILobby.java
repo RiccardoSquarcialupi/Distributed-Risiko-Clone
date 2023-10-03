@@ -36,6 +36,7 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         add(titlePanel, BorderLayout.NORTH);
 
         //LOAD GIF IMAGE
+        System.out.println(getAbsoluteCurrentPathOfGif());
         ImageIcon icon = new ImageIcon(getAbsoluteCurrentPathOfGif());
         JLabel loadingLabel = new JLabel(icon);
         add(loadingLabel, BorderLayout.CENTER);
@@ -48,8 +49,7 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
     }
 
     private String getAbsoluteCurrentPathOfGif(){
-        Path currRelativePath = Paths.get("");
-        return currRelativePath.toAbsolutePath().toString().concat("\\\\src\\\\main\\\\java\\\\assets\\\\image\\\\RisikoLoading.gif");
+        return Paths.get("src/main/java/assets/image/RisikoLoading.gif").toAbsolutePath().toString();
     }
 
     private ActionListener onClick() {
