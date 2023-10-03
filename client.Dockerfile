@@ -2,8 +2,10 @@ FROM ubuntu:latest
 
 USER root
 
+RUN sed -i "s/archive.ubuntu.com/it.archive.ubuntu.com/" /etc/apt/sources.list
+
 RUN \
-    apt update && \
+    apt -o Acquire::http::Pipeline-Depth=0 -o Acquire::ForceIPv4=true update && \
     apt install -y openjdk-11-jdk xterm nano dos2unix
 
 # Copy the all lobby folder
