@@ -3,6 +3,7 @@ package app.lobby;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
@@ -20,18 +21,15 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
     }
 
     @Override
-    public List<JSONClient> getClientList() {
-        return this.cltPar.getClientList();
-    }
-
-    @Override
     public void managerClientChange(String newManagerIP) {
-        this.sender.managerClientChange(JsonObject.mapFrom(newManagerIP), this.cltPar.getClientList());
+        this.sender.managerClientChange(new JsonObject().put("manager_ip",newManagerIP), this.cltPar.getClientList());
+        //exit lobby for removing the manager from the list
+        exitLobby(new JSONClient(this.cltPar.getIp(), this.cltPar.getNickname()));
     }
 
     @Override
     public void closeLobby() {
-        this.sender.lobbyClosed();
+        this.sender.lobbyClosed(this.cltPar.getIdLobby());
     }
 
     @Override

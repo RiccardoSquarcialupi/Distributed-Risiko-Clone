@@ -60,6 +60,11 @@ public class Launcher {
         return contextManager.getCurrentClient();
     }
 
+    public static void becomeManager() {
+        contextManager.change(Window.MANAGER);
+        guiManager.change(Window.MANAGER);
+    }
+
     public static GUI getCurrentGui() {
         return guiManager.getCurrentGUI();
     }

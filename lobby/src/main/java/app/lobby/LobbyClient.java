@@ -1,6 +1,9 @@
 package app.lobby;
 
 import app.common.Client;
+import app.lobbySelector.JSONClient;
+
+import java.util.List;
 
 public interface LobbyClient extends Client {
     String getIpManager();
@@ -9,7 +12,9 @@ public interface LobbyClient extends Client {
 
     void stop();
 
-    void exitLobby();
+    void exitLobby(JSONClient client);
+
+    List<JSONClient> getClientList();
 
     @Override
     String getNickname();

@@ -35,7 +35,8 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                 .sendJsonObject(JSONClient.fromBase(this).toJson())
                 .onSuccess(response -> {
                     this.cltPar.setIpManager(managerClientIp);
-                    int lobbyId= response.bodyAsJsonObject().getInteger("lobbyId");
+                    int lobbyId= response.bodyAsJsonObject().getInteger("lobby_id");
+                    this.cltPar.setIdLobby(lobbyId);
                     //INFORM THE FLASK SERVER
                     this.client
                             .put(FLASK_SERVER_PORT, "localhost", "server/lobby/"+lobbyId)

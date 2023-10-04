@@ -7,6 +7,8 @@ import app.lobbySelector.JSONClient;
 import app.lobbySelector.LobbySelectorClientImpl;
 import app.manager.contextManager.ContextManagerParameters;
 
+import java.util.List;
+
 public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyClient {
     public LobbyReceiver lobbyReceiver;
     public LobbySender sender;
@@ -35,8 +37,13 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
     }
 
     @Override
-    public void exitLobby() {
-        this.sender.exitLobby();
+    public void exitLobby(JSONClient client){
+        this.sender.exitLobby(client,cltPar.getIdLobby());
+    }
+
+    @Override
+    public List<JSONClient> getClientList() {
+        return this.cltPar.getClientList();
     }
 
     public void addNewClient(JSONClient newClient) {
@@ -49,6 +56,12 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
 
     public void updateManager(String newManagerIp) {
         this.cltPar.setIpManager(newManagerIp);
+        if(cltPar.getIp().equals(newManagerIp)){
+            //LobbyClient become ManagerClient, update GUI and Client type
+            Launcher.becomeManager();
+        }
+
+
     }
 
     public void gameStarted() {

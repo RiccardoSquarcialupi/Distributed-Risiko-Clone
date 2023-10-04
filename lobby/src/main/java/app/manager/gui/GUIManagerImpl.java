@@ -1,6 +1,7 @@
 package app.manager.gui;
 
 import app.game.GUI.GUIGame;
+import app.lobby.GUI.GUILobbyManager;
 import app.manager.Window;
 import app.lobbySelector.GUI.GUILobbySelector;
 import app.lobby.GUI.GUILobby;
@@ -26,8 +27,10 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
                 this.currentGUI = new GUILobbySelector();
                 break;
             case LOBBY:
-            case MANAGER:
                 this.currentGUI = new GUILobby();
+                break;
+            case MANAGER:
+                this.currentGUI = new GUILobbyManager();
                 break;
             case GAME:
                 this.currentGUI = new GUIGame();

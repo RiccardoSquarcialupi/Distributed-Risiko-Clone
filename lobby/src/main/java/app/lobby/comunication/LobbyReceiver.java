@@ -33,7 +33,7 @@ public class LobbyReceiver extends AbstractVerticle {
                         int lobbyId = lobbyClient.getLobbyId();
                         routingContext.response().putHeader("Content-Type", "application/json")
                                 .setStatusCode(200)
-                                .end(JsonObject.mapFrom("lobbyId").toBuffer());
+                                .end(new JsonObject().put("lobby_id", lobbyId).toBuffer());
                     });
 
                 });
@@ -87,7 +87,7 @@ public class LobbyReceiver extends AbstractVerticle {
                     }
                 });
 
-        httpServer.requestHandler(router).listen(8080);
+        httpServer.requestHandler(router).listen(5001);
     }
 
     public void stop() {
