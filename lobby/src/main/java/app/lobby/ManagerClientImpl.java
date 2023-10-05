@@ -22,7 +22,7 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
 
     @Override
     public void managerClientChange(String newManagerIP) {
-        this.sender.managerClientChange(new JsonObject().put("manager_ip",newManagerIP), this.cltPar.getClientList());
+        this.sender.managerClientChange(new JsonObject().put("manager_ip",newManagerIP), this.cltPar.getClientList(),this.cltPar.getIdLobby());
         //exit lobby for removing the manager from the list
         exitLobby(new JSONClient(this.cltPar.getIp(), this.cltPar.getNickname()));
     }

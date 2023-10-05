@@ -29,7 +29,7 @@ public class LobbySender extends AbstractVerticle {
                 .delete(5000,Launcher.serverIP,"/server/lobby/"+ lobbyId +"/numberOfPlayer").send();
     }
 
-    public void managerClientChange(JsonObject body, List<JSONClient> clientList) {
+    public void managerClientChange(JsonObject body, List<JSONClient> clientList,int lobbyId){
         clientList.forEach(c -> this.client
                 .put(5001, c.getIP(), "/client/lobby/manager")
                 .sendJsonObject(body)
@@ -37,6 +37,13 @@ public class LobbySender extends AbstractVerticle {
                         .println("Received response with status code" + response.statusCode()))
                 .onFailure(err ->
                         System.out.println("Something went wrong " + err.getMessage())));
+
+        this.client.put(5000,Launcher.serverIP, "/server/lobby/"+lobbyId+"/managerClientIp")
+                .sendJsonObject(new JsonObject().put("new_manager_client_ip",body.getString("manager_ip")))
+                .onSuccess(response -> System.out
+                .println("Received response with status code" + response.statusCode()))
+                .onFailure(err ->
+                        System.out.println("Something went wrong " + err.getMessage()));
 
     }
 
