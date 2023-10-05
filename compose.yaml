@@ -4,11 +4,19 @@ services:
     build:
       context: .
       dockerfile: server.Dockerfile
-    network_mode: host
+    ports:
+      - "8000:5000"
 
-  client:
+  client1:
     build:
       context: .
       dockerfile: client.Dockerfile
-    network_mode: host
+    ports:
+      - "8001:5001"
 
+  client2:
+    build:
+      context: .
+      dockerfile: client.Dockerfile
+    ports:
+      - "8002:5001"
