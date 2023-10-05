@@ -39,7 +39,7 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                     this.cltPar.setIdLobby(lobbyId);
                     //INFORM THE FLASK SERVER
                     this.client
-                            .put(FLASK_SERVER_PORT, "localhost", "server/lobby/"+lobbyId)
+                            .put(FLASK_SERVER_PORT, Launcher.serverIP, "server/lobby/"+lobbyId)
                             .send().onFailure(err -> System.out.println("Something went wrong when sending joinLobby Notification to the FLASK server" + err.getMessage()));
                     Launcher.lobbyJoinedSuccessfully();
                 })

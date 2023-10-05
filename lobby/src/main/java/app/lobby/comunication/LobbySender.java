@@ -17,16 +17,16 @@ public class LobbySender extends AbstractVerticle {
         this.client = WebClient.create(Launcher.getVertx());
     }
 
-    public void exitLobby(JSONClient client,int lobbyId) {
+    public void exitLobby(JSONClient client,int lobbyId,String managerIp) {
         this.client
-                .delete(5001, "127.0.0.1", "/client/lobby/clients")
+                .delete(5001, managerIp, "/client/lobby/clients")
                 .sendJson(client.toJson())
                 .onSuccess(response -> System.out
                         .println("Received response with status code" + response.statusCode()))
                 .onFailure(err ->
                         System.out.println("Something went wrong " + err.getMessage()));
         this.client
-                .delete(5000,"127.0.0.1","/server/lobby/"+ lobbyId +"/numberOfPlayer").send();
+                .delete(5000,Launcher.serverIP,"/server/lobby/"+ lobbyId +"/numberOfPlayer").send();
     }
 
     public void managerClientChange(JsonObject body, List<JSONClient> clientList) {
@@ -65,13 +65,13 @@ public class LobbySender extends AbstractVerticle {
                 .onFailure(err ->
                         System.out.println("Something went wrong " + err.getMessage()));*/
         //INSTEAD we just remove the lobby from the server
-        this.client.delete(5000, "127.0.0.1","/server/lobby/"+lobby).send();
+        this.client.delete(5000, Launcher.serverIP,"/server/lobby/"+lobby).send();
 
     }
 
-    public void getClientInfo() {
+    public void getClientInfo(JSONClient client) {
         this.client
-                .get(5001, "127.0.0.1", "/manager/lobby/clients")
+                .get(5001, client.getIP(), "/manager/lobby/clients")
                 .send()
                 .onSuccess(response -> System.out
                         .println("Received response with status code" + response.statusCode()))

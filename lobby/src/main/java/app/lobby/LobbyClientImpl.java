@@ -38,7 +38,7 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
 
     @Override
     public void exitLobby(JSONClient client){
-        this.sender.exitLobby(client,cltPar.getIdLobby());
+        this.sender.exitLobby(client,cltPar.getIdLobby(),cltPar.getIpManager());
     }
 
     @Override

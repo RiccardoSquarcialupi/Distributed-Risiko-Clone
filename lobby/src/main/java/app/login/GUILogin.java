@@ -67,7 +67,7 @@ public class GUILogin extends JPanel implements GUI {
             if (!username.isEmpty()) {
                 try {
                     Socket socket = new Socket();
-                    socket.connect(new InetSocketAddress("127.0.0.1", 5000), 5000);
+                    socket.connect(new InetSocketAddress(Launcher.serverIP, Launcher.serverPort), 5000);
                     ((LoginClient) Launcher.getCurrentClient()).login(username);
                 } catch (IOException ignore) {
                     JOptionPane.showMessageDialog(null,

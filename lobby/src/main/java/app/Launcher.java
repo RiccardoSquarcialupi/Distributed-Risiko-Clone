@@ -10,18 +10,48 @@ import app.manager.gui.GUIManagerImpl;
 import io.vertx.core.Vertx;
 
 import java.io.IOException;
+import java.net.*;
 
 public class Launcher {
 
-    public static final String serverIP = "127.0.0.1";
+    public static String serverIP = "";
+    public static final int serverPort = 5000;
     private static ContextManager contextManager;
     private static GUIManager guiManager;
     private static Vertx vertx = null;
 
     public static void main(String[] args) throws IOException {
+        searchForServer();
         contextManager = new ContextManagerImpl(Window.LOGIN);
         guiManager = new GUIManagerImpl(Window.LOGIN);
         guiManager.open();
+    }
+
+    private static void searchForServer() throws IOException {
+        System.out.println("Supposing I'm in a type C network ('/24' type networks...):");
+        String ip = Inet4Address.getLocalHost().getHostAddress();
+        System.out.println("My ip is " + ip);
+        //get subnet from my ip
+        String subnet = ip.substring(0, ip.lastIndexOf("."));
+        System.out.println("My subnet is " + subnet.concat(".0"));
+        System.out.println("Searching for server...");
+        for (int i=1;i<255;i++){
+            String host=subnet + "." + i;
+            if (InetAddress.getByName(host).isReachable(500)){
+                try {
+                    Socket socket = new Socket(host, serverPort);
+                    System.out.println("Server found at " + host);
+                    socket.close();
+                    serverIP=host;
+                } catch (IOException e) {
+                    System.out.println("Server not found at " + host);
+                    continue;
+                }
+                break;
+            }
+        }
+
+
     }
 
     public static Vertx getVertx() {
@@ -68,4 +98,6 @@ public class Launcher {
     public static GUI getCurrentGui() {
         return guiManager.getCurrentGUI();
     }
+
+
 }
