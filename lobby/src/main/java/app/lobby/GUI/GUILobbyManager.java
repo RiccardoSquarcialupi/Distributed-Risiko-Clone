@@ -18,7 +18,7 @@ public class GUILobbyManager extends GUILobby{
     @Override
     protected ActionListener onClick() {
         return e -> {
-            if (((ManagerClient) Launcher.getCurrentClient()).getClientList().isEmpty()){
+            if (((ManagerClient) Launcher.getCurrentClient()).getClientList().size() == 1){
                 //System.out.println("No one have joined, i can close the server");
                 ((ManagerClient) Launcher.getCurrentClient()).closeLobby();
             }else {

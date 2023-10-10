@@ -42,6 +42,7 @@ public class LobbyReceiver extends AbstractVerticle {
                 .delete("/client/lobby/clients")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh -> {
+                        System.out.println(bh.toJsonObject());
                         this.lobbyClient.deleteClient(JSONClient.fromJson(bh.toJsonObject()));
                         routingContext.response().setStatusCode(200).end();
                     });
