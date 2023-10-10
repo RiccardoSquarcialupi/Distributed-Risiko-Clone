@@ -8,20 +8,22 @@ count = 0
 
 @app.route('/server/lobbies/<max_players>', methods=['GET'])
 def lobbies_matching_client_filter(max_players):
-    if max_players is None:
-        return "Argument not set", 404
-
-    if not str(max_players).isnumeric():
-        return "Number of player is not a number", 404
-
-    if int(max_players) < 3 or int(max_players) > 6:
-        return "Number of player is inconsistent", 404
-
     global temporary_dict_of_lobbies
-    result = []
-    for lobby in temporary_dict_of_lobbies.values():
-        if int(lobby.max_players) == int(max_players):
+    result=[]
+    if max_players is None:
+        for lobby in temporary_dict_of_lobbies.values():
             result.append(lobby.to_json())
+    else:
+        if not str(max_players).isnumeric():
+            return "Number of player is not a number", 404
+
+        if int(max_players) < 3 or int(max_players) > 6:
+            return "Number of player is inconsistent", 404
+
+        for lobby in temporary_dict_of_lobbies.values():
+            if int(lobby.max_players) == int(max_players):
+                result.append(lobby.to_json())
+
     return jsonify(result), 200
 
 
@@ -53,7 +55,7 @@ def create_new_lobby():
 @app.route('/server/lobby/<lobby_id>/numberOfPlayer', methods=['DELETE'])
 def exit_lobby_decrement_number_of_players(lobby_id):
     if not str(lobby_id).isnumeric():
-        return "Lobby id is not a number", 404
+        return "Lobby id is not a number", 403
 
     lobby_id = int(lobby_id)
     global temporary_dict_of_lobbies
