@@ -10,13 +10,13 @@ count = 0
 def lobbies_matching_client_filter(max_players):
     global temporary_dict_of_lobbies
     result=[]
-    if max_players is None:
+    if not str(max_players).isnumeric():
         for lobby in temporary_dict_of_lobbies.values():
-            result.append(lobby.to_json())
+            result.append(lobby.to_json())    
     else:
-        if not str(max_players).isnumeric():
-            return "Number of player is not a number", 404
-
+        if max_players is None:
+            return "Number of player is not valid", 404
+        
         if int(max_players) < 3 or int(max_players) > 6:
             return "Number of player is inconsistent", 404
 
