@@ -18,13 +18,19 @@ public class GUILobbyManager extends GUILobby{
     @Override
     protected ActionListener onClick() {
         return e -> {
-            if (((ManagerClient) Launcher.getCurrentClient()).getClientList().size() == 1){
+            var currClient = ((ManagerClient) Launcher.getCurrentClient());
+            if (currClient.getClientList().size() == 1){
                 //System.out.println("No one have joined, i can close the server");
-                ((ManagerClient) Launcher.getCurrentClient()).closeLobby();
+                currClient.closeLobby();
             }else {
                 System.out.println("Someone have joined, i can't close the server. Proceed to change manager.");
                 //new manager is the second client in the list, the first is me.
-                ((ManagerClient) Launcher.getCurrentClient()).managerClientChange(String.valueOf(((ManagerClient) Launcher.getCurrentClient()).getClientList().get(1).getIP()));
+                for (var client : currClient.getClientList()){
+                    if(!client.getIP().equals(currClient.getIP())){
+                        currClient.managerClientChange(client.getIP());
+                        break;
+                    }
+                }
             }
             Launcher.lobbyClosed();
         };
