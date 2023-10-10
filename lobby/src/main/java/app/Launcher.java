@@ -28,6 +28,11 @@ public class Launcher {
     }
 
     private static void searchForServer() throws IOException {
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("Supposing I'm in a type C network ('/24' type networks...):");
         String ip = Inet4Address.getLocalHost().getHostAddress();
         System.out.println("My ip is " + ip);
