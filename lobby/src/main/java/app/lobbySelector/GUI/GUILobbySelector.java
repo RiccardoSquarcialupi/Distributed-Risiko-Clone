@@ -164,7 +164,7 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
     }
 
     private void refreshTable() {
-        ((LobbySelectorClient) Launcher.getCurrentClient()).getFilteredLobbies(Integer.parseInt(this.jtfMaxPlayers.getText()))
+        ((LobbySelectorClient) Launcher.getCurrentClient()).getFilteredLobbies(-1)
                 .onSuccess((httpResponse) -> SwingUtilities.invokeLater(() -> {
                     obj = new Object[][]{};
                     ObjectMapper mapper = new ObjectMapper();

@@ -50,9 +50,8 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
 
     @Override
     public Future<HttpResponse<Buffer>> getFilteredLobbies(int maxPlayers) {
-        return this.client
-                .get(FLASK_SERVER_PORT, Launcher.serverIP, "/server/lobbies/" + maxPlayers)
-                .send();
+        return maxPlayers == -1 ? this.client.get(FLASK_SERVER_PORT, Launcher.serverIP, "/server/lobbies/").send() :
+                this.client.get(FLASK_SERVER_PORT, Launcher.serverIP, "/server/lobbies/" + maxPlayers).send();
     }
 
     @Override
