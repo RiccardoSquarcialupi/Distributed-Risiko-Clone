@@ -37,6 +37,8 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                     this.cltPar.setIpManager(managerClientIp);
                     int lobbyId= response.bodyAsJsonObject().getInteger("lobby_id");
                     this.cltPar.setIdLobby(lobbyId);
+                    response.bodyAsJsonObject().getJsonArray("client_list").forEach(c -> this.cltPar.addClient((JSONClient) c));
+                    System.out.println(this.cltPar.getClientList());
                     //INFORM THE FLASK SERVER
                     this.client
                             .put(FLASK_SERVER_PORT, Launcher.serverIP, "server/lobby/"+lobbyId)
@@ -44,8 +46,6 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                     Launcher.lobbyJoinedSuccessfully();
                 })
                 .onFailure(System.out::println);
-
-        // TODO: Missing manager communication to get clients.
     }
 
     @Override

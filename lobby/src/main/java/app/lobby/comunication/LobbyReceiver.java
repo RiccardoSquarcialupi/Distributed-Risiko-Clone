@@ -31,9 +31,11 @@ public class LobbyReceiver extends AbstractVerticle {
                     routingContext.request().bodyHandler(bh -> {
                         this.lobbyClient.addNewClient(JSONClient.fromJson(bh.toJsonObject()));
                         int lobbyId = lobbyClient.getLobbyId();
+                        JsonArray clientList = new JsonArray(lobbyClient.getClientList());
+                        JsonObject body = new JsonObject().put("lobby_id",lobbyId).put("client_list", clientList);
                         routingContext.response().putHeader("Content-Type", "application/json")
                                 .setStatusCode(200)
-                                .end(new JsonObject().put("lobby_id", lobbyId).toBuffer());
+                                .send(body.toBuffer());
                     });
 
                 });
