@@ -7,12 +7,11 @@ count = 0
 
 
 @app.route('/server/lobbies/', methods=['GET'])
-def lobbies_matching_client_filter(max_players):
+def lobbies_matching_client_filter():
     global temporary_dict_of_lobbies
     result=[]
     for lobby in temporary_dict_of_lobbies.values():
-            if int(lobby.max_players) == int(max_players):
-                result.append(lobby.to_json())
+            result.append(lobby.to_json())
     return jsonify(result), 200
 
 
