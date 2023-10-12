@@ -54,8 +54,8 @@ public class LobbyReceiver extends AbstractVerticle {
                 .put("/client/lobby/manager")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh -> {
-                        this.lobbyClient.updateManager(bh.toJsonObject().getString("manager_ip"));
                         routingContext.response().setStatusCode(200).end();
+                        this.lobbyClient.updateManager(bh.toJsonObject().getString("manager_ip"));
                     });
                 });
 

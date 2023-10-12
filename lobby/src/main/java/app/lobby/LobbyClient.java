@@ -2,6 +2,7 @@ package app.lobby;
 
 import app.common.Client;
 import app.lobbySelector.JSONClient;
+import io.vertx.core.Future;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface LobbyClient extends Client {
 
     void stop();
 
-    void exitLobby();
+    Future<Void> exitLobby();
 
     List<JSONClient> getClientList();
 

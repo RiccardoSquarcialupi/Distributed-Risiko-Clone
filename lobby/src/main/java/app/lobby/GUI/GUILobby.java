@@ -55,8 +55,8 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
 
     protected ActionListener onClick() {
         return e -> {
-            ((LobbyClient) Launcher.getCurrentClient()).exitLobby();
-            Launcher.lobbyClosed();
+            ((LobbyClient) Launcher.getCurrentClient()).exitLobby()
+                    .onSuccess(s -> Launcher.lobbyClosed());
         };
     }
 }

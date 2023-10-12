@@ -6,6 +6,7 @@ import app.lobby.comunication.LobbySender;
 import app.lobbySelector.JSONClient;
 import app.lobbySelector.LobbySelectorClientImpl;
 import app.manager.contextManager.ContextManagerParameters;
+import io.vertx.core.Future;
 
 import java.util.List;
 
@@ -37,8 +38,8 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
     }
 
     @Override
-    public void exitLobby(){
-        this.sender.exitLobby(new JSONClient(cltPar.getIp(), cltPar.getNickname()),cltPar.getIdLobby(),cltPar.getIpManager());
+    public Future<Void> exitLobby(){
+        return this.sender.exitLobby(new JSONClient(cltPar.getIp(), cltPar.getNickname()),cltPar.getIdLobby(),cltPar.getIpManager());
     }
 
     @Override
@@ -60,8 +61,6 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
             //LobbyClient become ManagerClient, update GUI and Client type
             Launcher.becomeManager();
         }
-
-
     }
 
     public void gameStarted() {
