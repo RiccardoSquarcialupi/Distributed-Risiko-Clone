@@ -12,7 +12,7 @@ public interface LobbyClient extends Client {
 
     void stop();
 
-    void exitLobby(JSONClient client);
+    void exitLobby();
 
     List<JSONClient> getClientList();
 

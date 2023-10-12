@@ -28,6 +28,7 @@ public class GUILobbyManager extends GUILobby{
                 for (var client : currClient.getClientList()){
                     if(!client.getIP().equals(currClient.getIP())){
                         currClient.managerClientChange(client.getIP());
+                        currClient.exitLobby();
                         break;
                     }
                 }
