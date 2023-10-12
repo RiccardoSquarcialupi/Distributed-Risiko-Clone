@@ -2,6 +2,7 @@ package app.lobby.GUI;
 
 import app.Launcher;
 import app.lobby.LobbyClient;
+import app.lobby.LobbyClientImpl;
 import app.lobbySelector.JSONClient;
 import app.manager.gui.GUI;
 import io.vertx.core.json.JsonObject;
@@ -45,6 +46,8 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         exitButton.setFont(new Font("Arial", Font.BOLD, 16));
         exitButton.addActionListener(onClick());
         add(exitButton, BorderLayout.SOUTH);
+
+        ((LobbyClientImpl) Launcher.getCurrentClient()).broadcastClientIp();
 
 
     }

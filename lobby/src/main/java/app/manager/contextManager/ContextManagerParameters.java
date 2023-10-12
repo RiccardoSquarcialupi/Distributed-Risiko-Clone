@@ -61,6 +61,7 @@ public class ContextManagerParameters {
     }
 
     public void addClient(JSONClient client) {
+        this.clientList.remove(client);
         this.clientList.add(client);
     }
 
@@ -70,6 +71,11 @@ public class ContextManagerParameters {
 
     public List<JSONClient> getClientList() {
         return this.clientList;
+    }
+
+    public void setClientList(List<JSONClient> clientList) {
+        this.clientList.clear();
+        this.clientList.addAll(clientList);
     }
 
     public void resetLobby() {

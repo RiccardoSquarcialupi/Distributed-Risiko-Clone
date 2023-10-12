@@ -29,7 +29,7 @@ public class Launcher {
 
     private static void searchForServer() throws IOException {
         try {
-            Thread.sleep(4000);
+            Thread.sleep(6000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -96,6 +96,7 @@ public class Launcher {
     }
 
     public static void becomeManager() {
+        System.out.println(getCurrentClient().getIP()+" says: I'm the new manager");
         contextManager.change(Window.MANAGER);
         guiManager.change(Window.MANAGER);
     }

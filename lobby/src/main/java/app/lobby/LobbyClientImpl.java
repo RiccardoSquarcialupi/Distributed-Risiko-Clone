@@ -39,7 +39,7 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
 
     @Override
     public Future<Void> exitLobby(){
-        return this.sender.exitLobby(new JSONClient(cltPar.getIp(), cltPar.getNickname()),cltPar.getIdLobby(),cltPar.getIpManager());
+        return this.sender.exitLobby(new JSONClient(cltPar.getIp(), cltPar.getNickname()),cltPar.getIdLobby(),cltPar.getClientList());
     }
 
     @Override
@@ -73,5 +73,9 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
 
     public int getLobbyId() {
         return cltPar.getIdLobby();
+    }
+
+    public void broadcastClientIp() {
+        this.sender.broadcast();
     }
 }

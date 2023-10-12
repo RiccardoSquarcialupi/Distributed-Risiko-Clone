@@ -4,13 +4,12 @@ import app.Launcher;
 import app.login.LoginClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
-import java.io.Console;
 import java.util.Map;
 
 public class LobbySelectorClientImpl extends LoginClient implements LobbySelectorClient {
@@ -26,7 +25,9 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
     }
 
     @Override
-    public String getNickname(){return this.cltPar.getNickname();}
+    public String getNickname() {
+        return this.cltPar.getNickname();
+    }
 
     @Override
     public void joinLobby(String managerClientIp) {
@@ -35,14 +36,20 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                 .sendJsonObject(JSONClient.fromBase(this).toJson())
                 .onSuccess(response -> {
                     this.cltPar.setIpManager(managerClientIp);
-                    int lobbyId= response.bodyAsJsonObject().getInteger("lobby_id");
+                    var lobbyId = response.bodyAsJsonObject().getInteger("lobby_id");
                     this.cltPar.setIdLobby(lobbyId);
-                    response.bodyAsJsonObject().getJsonArray("client_list").forEach(c -> this.cltPar.addClient(JSONClient.fromJson((JsonObject)c)));
-                    System.out.println(this.cltPar.getClientList());
+
+                    JsonArray clientList = response.bodyAsJsonObject().getJsonArray("client_list");
+                    //Print EACH client
+                    clientList.forEach(c -> this.cltPar.addClient(JSONClient.fromJson((JsonObject) c)));
+                    this.cltPar.getClientList().forEach(c -> System.out.println("Client: " + c.getIP() + " - " + c.getNickname() + " is on the List of " + Launcher.getCurrentClient().getIP()));
+
                     //INFORM THE FLASK SERVER
                     this.client
-                            .put(FLASK_SERVER_PORT, Launcher.serverIP, "server/lobby/"+lobbyId)
-                            .send().onFailure(err -> System.out.println("Something went wrong when sending joinLobby Notification to the FLASK server" + err.getMessage()));
+                            .put(FLASK_SERVER_PORT, Launcher.serverIP, "server/lobby/" + lobbyId)
+                            .send()
+                            .onComplete(s -> System.out.println("FLASK Server receive the join joinLobby Notification"))
+                            .onFailure(err -> System.out.println("Something went wrong when sending joinLobby Notification to the FLASK server" + err.getMessage()));
                     Launcher.lobbyJoinedSuccessfully();
                 })
                 .onFailure(System.out::println);
