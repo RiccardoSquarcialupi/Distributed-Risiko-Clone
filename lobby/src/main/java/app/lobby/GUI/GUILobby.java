@@ -47,7 +47,16 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         exitButton.addActionListener(onClick());
         add(exitButton, BorderLayout.SOUTH);
 
-        ((LobbyClientImpl) Launcher.getCurrentClient()).broadcastClientIp();
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Thread.sleep(2000);
+                ((LobbyClientImpl) Launcher.getCurrentClient()).broadcastClientIp();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+
 
 
     }

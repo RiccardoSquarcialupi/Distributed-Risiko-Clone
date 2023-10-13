@@ -38,7 +38,7 @@ public class LobbySender extends AbstractVerticle {
                                 " receive the info about me: "+Launcher.getCurrentClient().getIP()+ " , "+ response.statusCode());
                     })
                     .onFailure(err ->
-                            System.out.println("Client " + c.getNickname() + "doesn't receive the info about me: " + err.getMessage()));
+                            System.out.println("Client " + c.getNickname() + " doesn't receive the info about me: " + err.getMessage()));
         });
     }
 
@@ -69,7 +69,6 @@ public class LobbySender extends AbstractVerticle {
                 .send()
                 .onSuccess(r -> {
                     CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
-                    prm.complete();
                 });
         return prm.future();
     }
