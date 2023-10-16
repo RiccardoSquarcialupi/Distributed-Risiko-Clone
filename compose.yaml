@@ -27,3 +27,10 @@ services:
       dockerfile: client.Dockerfile
     ports:
       - "8003:5001"
+
+  client4:
+    build:
+      context: .
+      dockerfile: client.Dockerfile
+    ports:
+      - "8004:5001"
