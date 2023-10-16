@@ -3,9 +3,7 @@ package app.lobby.GUI;
 import app.Launcher;
 import app.lobby.LobbyClient;
 import app.lobby.LobbyClientImpl;
-import app.lobbySelector.JSONClient;
 import app.manager.gui.GUI;
-import io.vertx.core.json.JsonObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,25 +25,44 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         setLayout(new BorderLayout());
         setBackground(new Color(0x2E3842));
 
+        // ############ TOP #############
+
         JPanel titlePanel = new JPanel();
         titleLabel = new JLabel("<html>Waiting for other players<br></br>before starting the game...</html>");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         titlePanel.add(titleLabel);
         titlePanel.setBackground(new Color(0x2E3842));
         titleLabel.setForeground(new Color(0xF7DC6F));
-
         add(titlePanel, BorderLayout.NORTH);
-        //LOAD GIF IMAGE
+
+        // ############ MID ##############
+
+        // LOAD GIF IMAGE
         System.out.println(getAbsoluteCurrentPathOfGif());
         ImageIcon icon = new ImageIcon(getAbsoluteCurrentPathOfGif());
         JLabel loadingLabel = new JLabel(icon);
         add(loadingLabel, BorderLayout.CENTER);
 
+        // ############ BOT #############
+        JPanel botPanel = new JPanel();
+        botPanel.setLayout(new BoxLayout(botPanel, BoxLayout.Y_AXIS));
+        botPanel.setBackground(new Color(0x2E3842));
+
+        // START GAME BUTTON (manager)
+        if(this instanceof GUILobbyManager) {
+            JButton startButton = new JButton("Start Game");
+            startButton.setFont(new Font("Arial", Font.BOLD, 16));
+            startButton.addActionListener(onStartClick());
+            botPanel.add(startButton);
+        }
+
         // Exit Button
         JButton exitButton = new JButton("Exit Lobby");
         exitButton.setFont(new Font("Arial", Font.BOLD, 16));
-        exitButton.addActionListener(onClick());
-        add(exitButton, BorderLayout.SOUTH);
+        exitButton.addActionListener(onExitClick());
+        botPanel.add(exitButton);
+
+        add(botPanel, BorderLayout.SOUTH);
 
         SwingUtilities.invokeLater(() -> {
             try {
@@ -54,18 +71,18 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
         });
-
-
-
     }
 
     private String getAbsoluteCurrentPathOfGif() {
         return Paths.get("src/main/java/assets/image/RisikoLoading.gif").toAbsolutePath().toString();
     }
 
-    protected ActionListener onClick() {
+    protected ActionListener onStartClick() {
+        return null;
+    }
+
+    protected ActionListener onExitClick() {
         return e -> {
             ((LobbyClient) Launcher.getCurrentClient()).exitLobby()
                     .onSuccess(s -> Launcher.lobbyClosed());

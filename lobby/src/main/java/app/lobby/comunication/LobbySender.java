@@ -114,11 +114,11 @@ public class LobbySender extends AbstractVerticle {
                 .sendJsonObject(body.put("msg", "Game has Started"))
                 .onSuccess(response -> {
                     System.out
-                            .println("Client " + ip + "receive the msg HAME HAS STARTED" + response.statusCode());
+                            .println("Client " + ip + "receive the msg GAME HAS STARTED" + response.statusCode());
                     prm.complete();
                 })
                 .onFailure(err ->
-                        System.out.println("Client " + ip + "DOESN'T receive the msg HAME HAS STARTED" + err.getMessage()));
+                        System.out.println("Client " + ip + "DOESN'T receive the msg GAME HAS STARTED" + err.getMessage()));
         return prm.future();
     }
 

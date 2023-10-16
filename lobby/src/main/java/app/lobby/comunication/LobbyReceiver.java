@@ -62,8 +62,11 @@ public class LobbyReceiver extends AbstractVerticle {
         router
                 .put("/client/lobby/game")
                 .handler(routingContext -> {
-                    this.lobbyClient.gameStarted();
-                    routingContext.response().setStatusCode(200).end();
+                    routingContext.request().bodyHandler(bh -> {
+                        System.out.println(lobbyClient.getNickname() + ": " + bh.toJsonObject());
+                        routingContext.response().setStatusCode(200).end();
+                        this.lobbyClient.gameStarted();
+                    });
                 });
 
         router

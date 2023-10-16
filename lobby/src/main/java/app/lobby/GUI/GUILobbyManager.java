@@ -18,7 +18,7 @@ public class GUILobbyManager extends GUILobby {
     }
 
     @Override
-    protected ActionListener onClick() {
+    protected ActionListener onExitClick() {
         return e -> {
             var currClient = ((ManagerClientImpl) Launcher.getCurrentClient());
             Promise<Void> prm = Promise.promise();
@@ -45,6 +45,14 @@ public class GUILobbyManager extends GUILobby {
                 }
             }
             prm.future().onSuccess(s -> Launcher.lobbyClosed());
+        };
+    }
+
+    @Override
+    protected ActionListener onStartClick(){
+        return e -> {
+            var currClient = ((ManagerClientImpl) Launcher.getCurrentClient());
+            currClient.startGame();
         };
     }
 }
