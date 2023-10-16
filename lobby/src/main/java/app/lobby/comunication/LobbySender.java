@@ -107,11 +107,11 @@ public class LobbySender extends AbstractVerticle {
         return prm.future();
     }
 
-    public Future<Void> gameHasStarted(JsonObject body, String ip) {
+    public Future<Void> gameHasStarted(JsonArray body, String ip) {
         Promise<Void> prm = Promise.promise();
         this.client
                 .put(5001, ip, "/client/lobby/game")
-                .sendJsonObject(body.put("msg", "Game has Started"))
+                .sendJson(body)
                 .onSuccess(response -> {
                     System.out
                             .println("Client " + ip + "receive the msg GAME HAS STARTED" + response.statusCode());

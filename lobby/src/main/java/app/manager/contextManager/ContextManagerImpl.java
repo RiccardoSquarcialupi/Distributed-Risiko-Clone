@@ -45,6 +45,7 @@ public class ContextManagerImpl implements ContextManager {
                 break;
             case GAME:
                 this.currentClient = new GameClientImpl(this.contextManagerParameters);
+                break;
             default:
                 throw new RuntimeException("This can't happen");
         }
