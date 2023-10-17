@@ -1,6 +1,7 @@
 package app.lobby;
 
 import app.Launcher;
+import app.lobby.GUI.GUILobby;
 import app.lobby.comunication.LobbyReceiver;
 import app.lobby.comunication.LobbySender;
 import app.lobbySelector.JSONClient;
@@ -45,6 +46,11 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
     @Override
     public List<JSONClient> getClientList() {
         return this.cltPar.getClientList();
+    }
+
+    @Override
+    public int getLobbyMaxPlayers() {
+        return this.cltPar.getMaxPlayer();
     }
 
     public void addNewClient(JSONClient newClient) {

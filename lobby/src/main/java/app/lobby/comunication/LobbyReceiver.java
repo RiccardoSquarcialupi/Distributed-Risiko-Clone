@@ -1,5 +1,6 @@
 package app.lobby.comunication;
 
+import app.lobby.GUI.GUILobby;
 import app.lobby.LobbyClient;
 import app.lobby.LobbyClientImpl;
 import app.lobby.ManagerClient;
@@ -30,6 +31,10 @@ public class LobbyReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh -> {
                         this.lobbyClient.addNewClient(JSONClient.fromJson(bh.toJsonObject()));
+                        ((GUILobby)Launcher.getCurrentGui()).updateClientList(this.lobbyClient.getClientList());
+                        if(this.lobbyClient.getClientList().size() == this.lobbyClient.getLobbyMaxPlayers()){
+                            ((GUILobby)Launcher.getCurrentGui()).enableStartButton();
+                        }
                         int lobbyId = lobbyClient.getLobbyId();
                         JsonArray clientList = new JsonArray(lobbyClient.getClientList());
                         JsonObject body = new JsonObject().put("lobby_id",lobbyId).put("client_list", clientList);
@@ -46,6 +51,8 @@ public class LobbyReceiver extends AbstractVerticle {
                     routingContext.request().bodyHandler(bh -> {
                         System.out.println("Client: "+bh.toJsonObject()+ "exit from lobby");
                         this.lobbyClient.deleteClient(JSONClient.fromJson(bh.toJsonObject()));
+                        ((GUILobby)Launcher.getCurrentGui()).updateClientList(this.lobbyClient.getClientList());
+                        ((GUILobby)Launcher.getCurrentGui()).disableStartButton();
                         routingContext.response().setStatusCode(200).end();
                     });
                 });

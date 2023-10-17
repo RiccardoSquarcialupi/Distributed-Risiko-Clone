@@ -3,9 +3,12 @@ package app.lobby.GUI;
 import app.Launcher;
 import app.lobby.LobbyClient;
 import app.lobby.LobbyClientImpl;
+import app.lobbySelector.JSONClient;
 import app.manager.gui.GUI;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.nio.file.Paths;
@@ -16,9 +19,10 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         return "RiSiKo!!! Waiting Lobby";
     }
 
-    private DefaultListModel<String> playersListModel;
-    private JList<String> playersList;
     JLabel titleLabel;
+    private JScrollPane jspClient;
+    private JTable clientTable;
+    private JButton startButton;
 
     public GUILobby() {
 
@@ -36,12 +40,31 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         add(titlePanel, BorderLayout.NORTH);
 
         // ############ MID ##############
+        JPanel midPanel = new JPanel();
+        midPanel.setLayout(new BoxLayout(midPanel, BoxLayout.Y_AXIS));
+        midPanel.setBackground(new Color(0x2E3842));
 
         // LOAD GIF IMAGE
         System.out.println(getAbsoluteCurrentPathOfGif());
         ImageIcon icon = new ImageIcon(getAbsoluteCurrentPathOfGif());
         JLabel loadingLabel = new JLabel(icon);
-        add(loadingLabel, BorderLayout.CENTER);
+        midPanel.add(loadingLabel);
+
+        // CLIENT LIST
+        clientTable = new JTable(new DefaultTableModel(new Object[]{"IP", "NICKNAME"}, 4));
+        clientTable.setFont(new Font("Arial", Font.PLAIN, 14));
+        clientTable.setDefaultEditor(Object.class, null);
+        clientTable.setCellSelectionEnabled(false);
+        clientTable.setColumnSelectionAllowed(false);
+        clientTable.setRowSelectionAllowed(this instanceof GUILobbyManager); // TRUE only for MANAGER
+        clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        jspClient = new JScrollPane(clientTable);
+        jspClient.setMaximumSize(new Dimension(400, 200));
+        jspClient.setViewportView(clientTable);
+        midPanel.add(jspClient);
+
+        add(midPanel, BorderLayout.CENTER);
 
         // ############ BOT #############
         JPanel botPanel = new JPanel();
@@ -49,10 +72,11 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         botPanel.setBackground(new Color(0x2E3842));
 
         // START GAME BUTTON (manager)
+        startButton = new JButton("Start Game");
         if(this instanceof GUILobbyManager) {
-            JButton startButton = new JButton("Start Game");
             startButton.setFont(new Font("Arial", Font.BOLD, 16));
             startButton.addActionListener(onStartClick());
+            startButton.setEnabled(false);
             botPanel.add(startButton);
         }
 
@@ -72,6 +96,8 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
                 throw new RuntimeException(e);
             }
         });
+
+        updateClientList(((LobbyClient)Launcher.getCurrentClient()).getClientList());
     }
 
     private String getAbsoluteCurrentPathOfGif() {
@@ -87,5 +113,33 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
             ((LobbyClient) Launcher.getCurrentClient()).exitLobby()
                     .onSuccess(s -> Launcher.lobbyClosed());
         };
+    }
+
+    @Override
+    public void disableStartButton() {
+        SwingUtilities.invokeLater(() -> {
+            this.startButton.setEnabled(false);
+        });
+    }
+
+    @Override
+    public void enableStartButton() {
+        SwingUtilities.invokeLater(() -> {
+            this.startButton.setEnabled(true);
+        });
+    }
+
+    @Override
+    public void updateClientList(java.util.List<JSONClient> clients) {
+        SwingUtilities.invokeLater(() -> {
+            var model = (DefaultTableModel)(this.clientTable.getModel());
+            model.setRowCount(0);
+            for(var client : clients){
+                model.addRow(new Object[]{client.getIP(), client.getNickname()});
+            }
+            SwingUtilities.getWindowAncestor(this).setPreferredSize(new Dimension(470, 300));
+            SwingUtilities.getWindowAncestor(this).pack();
+        });
+
     }
 }
