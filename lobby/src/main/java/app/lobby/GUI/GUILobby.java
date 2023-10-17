@@ -23,6 +23,7 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
     private JScrollPane jspClient;
     private JTable clientTable;
     private JButton startButton;
+    private JLabel jlClient;
 
     public GUILobby() {
 
@@ -41,8 +42,19 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
 
         // ############ MID ##############
         JPanel midPanel = new JPanel();
-        midPanel.setLayout(new BoxLayout(midPanel, BoxLayout.Y_AXIS));
+        midPanel.setLayout(new BoxLayout(midPanel, BoxLayout.X_AXIS));
         midPanel.setBackground(new Color(0x2E3842));
+
+        // LEFT MID PANEL
+        JPanel leftMidPanel = new JPanel();
+        leftMidPanel.setLayout(new BoxLayout(leftMidPanel, BoxLayout.Y_AXIS));
+        leftMidPanel.setBackground(new Color(0x2E3842));
+        midPanel.add(leftMidPanel);
+
+        // CLIENT LABEL COUNT
+        jlClient = new JLabel();
+        jlClient.setForeground(new Color(0xF7DC6F));
+        leftMidPanel.add(jlClient);
 
         // LOAD GIF IMAGE
         System.out.println(getAbsoluteCurrentPathOfGif());
@@ -62,7 +74,7 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         jspClient = new JScrollPane(clientTable);
         jspClient.setMaximumSize(new Dimension(400, 200));
         jspClient.setViewportView(clientTable);
-        midPanel.add(jspClient);
+        leftMidPanel.add(jspClient);
 
         add(midPanel, BorderLayout.CENTER);
 
@@ -132,6 +144,10 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
     @Override
     public void updateClientList(java.util.List<JSONClient> clients) {
         SwingUtilities.invokeLater(() -> {
+            this.jlClient.setText(
+                    "Number of players: " + clients.size() + "/" +
+                            ((LobbyClient)Launcher.getCurrentClient()).getLobbyMaxPlayers()
+            );
             var model = (DefaultTableModel)(this.clientTable.getModel());
             model.setRowCount(0);
             for(var client : clients){
