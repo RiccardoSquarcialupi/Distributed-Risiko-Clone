@@ -37,7 +37,10 @@ public class LobbyReceiver extends AbstractVerticle {
                         }
                         int lobbyId = lobbyClient.getLobbyId();
                         JsonArray clientList = new JsonArray(lobbyClient.getClientList());
-                        JsonObject body = new JsonObject().put("lobby_id",lobbyId).put("client_list", clientList);
+                        JsonObject body = new JsonObject()
+                                            .put("lobby_id",lobbyId)
+                                            .put("client_list", clientList)
+                                            .put("lobby_max_players", this.lobbyClient.getLobbyMaxPlayers());
                         routingContext.response().putHeader("Content-Type", "application/json")
                                 .setStatusCode(200)
                                 .send(body.toBuffer());

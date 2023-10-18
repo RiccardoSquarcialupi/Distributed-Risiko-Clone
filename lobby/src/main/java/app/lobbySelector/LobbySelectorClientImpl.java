@@ -36,8 +36,12 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                 .sendJsonObject(JSONClient.fromBase(this).toJson())
                 .onSuccess(response -> {
                     this.cltPar.setIpManager(managerClientIp);
+
                     var lobbyId = response.bodyAsJsonObject().getInteger("lobby_id");
                     this.cltPar.setIdLobby(lobbyId);
+
+                    var lobbyMaxPlayers = response.bodyAsJsonObject().getInteger("lobby_max_players");
+                    this.cltPar.setMaxPlayer(lobbyMaxPlayers);
 
                     JsonArray clientList = response.bodyAsJsonObject().getJsonArray("client_list");
                     //Print EACH client
