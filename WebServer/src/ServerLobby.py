@@ -6,13 +6,14 @@ class ServerLobby:
     lobby_id = 0
     manager_client_ip = '0.0.0.0'
     max_players = 0
-    players_inside = 1
+    players_inside = 0
 
     def __init__(self, name, lobby_id, manager_client_ip, max_players):
         self.name = name
         self.lobby_id = lobby_id
         self.manager_client_ip = manager_client_ip
         self.max_players = max_players
+        self.players_inside += 1
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__,
