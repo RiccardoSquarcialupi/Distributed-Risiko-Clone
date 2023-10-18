@@ -17,6 +17,8 @@ public interface LobbyClient extends Client {
 
     List<JSONClient> getClientList();
 
+    int getLobbyMaxPlayers();
+
     @Override
     String getNickname();
 }
