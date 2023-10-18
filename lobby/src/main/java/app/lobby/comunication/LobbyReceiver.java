@@ -1,5 +1,6 @@
 package app.lobby.comunication;
 
+import app.game.card.Territory;
 import app.lobby.GUI.GUILobby;
 import app.lobby.LobbyClient;
 import app.lobby.LobbyClientImpl;
@@ -13,6 +14,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import app.Launcher;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class LobbyReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
@@ -75,7 +80,9 @@ public class LobbyReceiver extends AbstractVerticle {
                     routingContext.request().bodyHandler(bh -> {
                         System.out.println(lobbyClient.getNickname() + ": " + bh.toJsonArray());
                         routingContext.response().setStatusCode(200).end();
-                        this.lobbyClient.gameStarted();
+                        List<Territory> territory = new ArrayList<>();
+                        bh.toJsonArray().getList().forEach(t -> territory.add(Territory.fromName(t.toString().charAt(0)+t.toString().substring(1).toLowerCase())));
+                        this.lobbyClient.gameStarted(territory);
                     });
                 });
 
