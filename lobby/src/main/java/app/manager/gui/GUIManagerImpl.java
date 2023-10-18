@@ -49,7 +49,7 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
                 setResizable(false);
                 break;
             case GAME:
-                setSize(1400, 750);
+                setSize(1600, 1000);
                 getContentPane().setBackground(new Color(0x34495E));
                 setResizable(false);
                 break;

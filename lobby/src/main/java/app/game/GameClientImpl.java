@@ -3,7 +3,10 @@ package app.game;
 
 import app.game.comunication.GameReceiver;
 import app.game.comunication.GameSender;
+import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
+
+import java.util.List;
 
 
 public class GameClientImpl implements GameClient {
@@ -33,5 +36,9 @@ public class GameClientImpl implements GameClient {
     @Override
     public String getNickname() {
         return this.cltPar.getNickname();
+    }
+
+    public List<JSONClient> getClientList() {
+        return this.cltPar.getClientList();
     }
 }

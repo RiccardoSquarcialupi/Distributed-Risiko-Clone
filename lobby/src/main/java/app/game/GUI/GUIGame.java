@@ -1,5 +1,8 @@
 package app.game.GUI;
 
+import app.Launcher;
+import app.game.GameClientImpl;
+import app.lobbySelector.JSONClient;
 import app.manager.gui.GUI;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,25 +24,46 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public GUIGame() {
-        ImageIcon mapImage = new ImageIcon("./assets/image/map.png");
-        JLabel gameBoard = new JLabel(mapImage);
-        add(gameBoard);
-        Map<String, List<PairOfCoordinates>> boardMap = parseJsonMap();
-        var mapBorder = addClickableCountries(boardMap);
-        mapBorder.forEach((panel) -> {
-            panel.addMouseListener(onCountryClick());
-            add(panel);
-        });
-
-
-
+        setLayout(new BorderLayout());
+        setTopPanel();
+        JLabel map = new JLabel();
+        map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
+        add(map, BorderLayout.CENTER);
+        map.addMouseListener(onMapClick());
     }
 
-    private MouseListener onCountryClick() {
+    private void setTopPanel() {
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+        topPanel.add(new JLabel("Player: "+ ((GameClientImpl)Launcher.getCurrentClient()).getNickname()));
+        topPanel.add(Box.createHorizontalGlue());
+        topPanel.add(new JLabel("Current Phase: "));
+        topPanel.add(Box.createHorizontalGlue());
+        topPanel.add(new JLabel("Current Action: "));
+        topPanel.add(Box.createHorizontalGlue());
+        final String[] enemies = {""};
+        ((GameClientImpl)Launcher.getCurrentClient()).getClientList().forEach((JSONClient client) -> {
+            if(!client.getNickname().equals(((GameClientImpl)Launcher.getCurrentClient()).getNickname())){
+                enemies[0] += client.getNickname() + " ";
+            }
+        });
+        topPanel.add(new JLabel("Enemies: " + enemies[0]));
+        add(topPanel, BorderLayout.NORTH);
+    }
+
+    private MouseListener onMapClick() {
         return new MouseListener() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                System.out.println("Clicked on " + ((JPanel) e.getSource()).getName());
+                parseJsonMap().forEach((country, coords) -> {
+                    Polygon p = new Polygon();
+                    coords.forEach((pair) -> {
+                        p.addPoint(pair.getX(), pair.getY());
+                    });
+                    if (p.contains(e.getPoint())) {
+                        System.out.println("Clicked on " + country);
+                    }
+                });
             }
 
             @Override
@@ -68,32 +92,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         };
     }
 
-    private List<JPanel> addClickableCountries(Map<String, List<PairOfCoordinates>> boardMap) {
-        List<JPanel> mapBorder = new ArrayList<>();
-        boardMap.forEach((country, coords) -> {
-            Polygon p = new Polygon();
-            coords.forEach((pair) -> {
-                p.addPoint(pair.getX(), pair.getY());
-            });
-            JPanel pan = new JPanel() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    g.setColor(Color.BLACK);
-                    g.drawPolygon(p);
-                }
-
-                @Override
-                public Dimension getPreferredSize() {
-                    return new Dimension(1200, 614);
-                }
-            };
-            pan.setName(country);
-            mapBorder.add(pan);
-        });
-        return mapBorder;
-    }
-
     private Map<String, List<PairOfCoordinates>> parseJsonMap() {
         String path = Paths.get("src/main/java/assets/json/RiskMap.json").toAbsolutePath().toString();
 
@@ -117,7 +115,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         boardMap.forEach((country, coords) -> {
             var l = new ArrayList<PairOfCoordinates>();
             for (int i = 0; i < coords.size() - 1; i = i + 2) {
-                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1));
+                //WINDOW is 1600x1000 +180 is magic number for fixing the map because is centered in the JFRAME
+                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1)+180);
                 l.add(p1);
             }
             finalMap.put(country, l);
