@@ -1,6 +1,7 @@
 package app.lobby;
 
 import app.Launcher;
+import app.game.card.Territory;
 import app.lobby.GUI.GUILobby;
 import app.lobby.comunication.LobbyReceiver;
 import app.lobby.comunication.LobbySender;
@@ -69,7 +70,8 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
         }
     }
 
-    public void gameStarted() {
+    public void gameStarted(List<Territory> listTerritory) {
+        listTerritory.forEach(this.cltPar::addTerritory);
         Launcher.gameStarted();
     }
 

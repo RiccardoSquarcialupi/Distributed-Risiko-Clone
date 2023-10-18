@@ -1,5 +1,6 @@
 package app.manager.contextManager;
 
+import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ public class ContextManagerParameters {
     private String ipManager;
     private int maxPlayer;
     private final List<JSONClient> clientList;
+    private final List<Territory> myTerritories;
 
     public ContextManagerParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();
@@ -22,6 +24,7 @@ public class ContextManagerParameters {
         this.ipManager = "";
         this.maxPlayer = -1;
         this.clientList = new ArrayList<>();
+        this.myTerritories = new ArrayList<>();
     }
 
     public String getIp() {
@@ -83,5 +86,13 @@ public class ContextManagerParameters {
         this.ipManager = "";
         this.maxPlayer = -1;
         this.clientList.clear();
+    }
+
+    public void addTerritory(Territory t) {
+        this.myTerritories.add(t);
+    }
+
+    public List<Territory> getMyTerritories() {
+        return this.myTerritories;
     }
 }

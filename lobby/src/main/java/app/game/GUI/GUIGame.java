@@ -48,6 +48,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             }
         });
         topPanel.add(new JLabel("Enemies: " + enemies[0]));
+        topPanel.add(Box.createHorizontalGlue());
         add(topPanel, BorderLayout.NORTH);
     }
 
