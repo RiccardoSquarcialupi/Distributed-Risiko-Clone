@@ -1,18 +1,25 @@
 package app.game.comunication;
 
+import app.game.GameClient;
+import app.game.GameClientImpl;
+import app.game.card.Territory;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import app.Launcher;
 
+import java.util.Optional;
+
 public class GameReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
     private final Router router;
     private boolean isRunning = false;
+    private final GameClientImpl gameClient;
 
-    public GameReceiver() {
+    public GameReceiver(GameClient gameClient) {
         this.httpServer = Launcher.getVertx().createHttpServer();
+        this.gameClient = (GameClientImpl) gameClient;
         this.router = Router.router(vertx);
     }
 
@@ -23,18 +30,45 @@ public class GameReceiver extends AbstractVerticle {
         router
                 .put("/client/game/turn/start")
                 .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        gameClient.disableActions();
+                    });
+
                     routingContext.response().setStatusCode(200).end();
                 });
         //GET NOTIFY A CLIENT END HIS TURN
         router
                 .put("/client/game/turn/finish")
                 .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        gameClient.checkforMyTurn(body.toJsonArray().getString(0));
+                    });
+
                     routingContext.response().setStatusCode(200).end();
                 });
-        //Get NOTIY WHEN A CLIENT NUMBER OF ARMIES CHANGE IN TERRITORY
+        //Get NOTIFY WHEN A CLIENT NUMBER OF ARMIES CHANGE IN TERRITORY
         router
                 .put("/client/game/{id}/armies")
                 .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        var ip = body.toJsonArray().getString(0);
+                        var territory = body.toJsonArray().getString(1);
+                        var nArmiesChange = body.toJsonArray().getInteger(2);
+                        this.gameClient.updateTerritory(ip, Territory.fromName(territory), nArmiesChange, Optional.empty());
+                    });
+                    routingContext.response().setStatusCode(200).end();
+                });
+        //Get NOTIFY WHEN A CLIENT NUMBER OF ARMIES CHANGE IN TERRITORY WITH A CONQUEROR
+        router
+                .put("/client/game/{id}/armies")
+                .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        var ip = body.toJsonArray().getString(0);
+                        var territory = body.toJsonArray().getString(1);
+                        var nArmiesChange = body.toJsonArray().getInteger(2);
+                        var conquerorIp = body.toJsonArray().getString(3);
+                        this.gameClient.updateTerritory(ip, Territory.fromName(territory), nArmiesChange,Optional.of(conquerorIp));
+                    });
                     routingContext.response().setStatusCode(200).end();
                 });
         //GET NOTIFY WHEN A BONUS FROM STATE CARD HAVE BEEN USED

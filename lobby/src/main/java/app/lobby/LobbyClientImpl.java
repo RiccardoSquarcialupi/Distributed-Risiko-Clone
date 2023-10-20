@@ -1,6 +1,7 @@
 package app.lobby;
 
 import app.Launcher;
+import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobby.GUI.GUILobby;
 import app.lobby.comunication.LobbyReceiver;
@@ -70,8 +71,9 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
         }
     }
 
-    public void gameStarted(List<Territory> listTerritory) {
+    public void gameStarted(List<Territory> listTerritory, Goal goalCard) {
         listTerritory.forEach(this.cltPar::addTerritory);
+        this.cltPar.setGoalCard(goalCard);
         Launcher.gameStarted();
     }
 

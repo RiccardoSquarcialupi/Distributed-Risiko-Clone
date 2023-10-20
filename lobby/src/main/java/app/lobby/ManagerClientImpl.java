@@ -1,5 +1,6 @@
 package app.lobby;
 
+import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
@@ -14,11 +15,13 @@ import java.util.List;
 
 public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient {
     private final List<Territory> cards;
+    private final List<Goal> goalCards;
     private final ContextManagerParameters cltPar;
 
     public ManagerClientImpl(ContextManagerParameters cltPar) {
         super(cltPar);
         this.cltPar = cltPar;
+        this.goalCards = new ArrayList<>(List.of(Goal.values()));
         this.cards = new ArrayList<>(List.of(Territory.values()));
     }
 
@@ -38,6 +41,7 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
     @Override
     public void startGame() {
         Collections.shuffle(cards);
+        Collections.shuffle(goalCards);
 
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
             // Move my CLIENT to be the last, so anyone will be informed before i close connection.
@@ -48,10 +52,11 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
                 this.cltPar.getClientList().add(tmp);
             }
             this.sender.gameHasStarted(
-                    JsonArray.of(cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i))),
+                    JsonArray.of(cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)),JsonObject.of("Goal",goalCards.get(0))),
                     this.cltPar.getClientList().get(i).getIP()
             );
             cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)).clear();
+            goalCards.remove(0);
         }
     }
 }

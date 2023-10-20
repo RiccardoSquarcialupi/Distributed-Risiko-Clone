@@ -1,12 +1,16 @@
 package app.manager.contextManager;
 
+import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
 
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ContextManagerParameters {
     private final String ip;
@@ -15,7 +19,11 @@ public class ContextManagerParameters {
     private String ipManager;
     private int maxPlayer;
     private final List<JSONClient> clientList;
-    private final List<Territory> myTerritories;
+    private List<Territory> myTerritories;
+
+    private Map<Map<JSONClient,Territory>,Integer> enemyTerritories;
+
+    private Goal goalCard;
 
     public ContextManagerParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();
@@ -25,6 +33,7 @@ public class ContextManagerParameters {
         this.maxPlayer = -1;
         this.clientList = new ArrayList<>();
         this.myTerritories = new ArrayList<>();
+        this.enemyTerritories = new HashMap<>();
     }
 
     public String getIp() {
@@ -94,5 +103,34 @@ public class ContextManagerParameters {
 
     public List<Territory> getMyTerritories() {
         return this.myTerritories;
+    }
+
+    public void setGoalCard(Goal goalCard) {
+        this.goalCard = goalCard;
+    }
+
+    public Goal getGoalCard() {
+        return this.goalCard;
+    }
+
+    public void setEnemyTerritory(JSONClient client, Territory territories, Integer nArmies) {
+        this.enemyTerritories.put(Map.of(client,territories),nArmies);
+    }
+
+    public void updateEnemyTerritory(JSONClient client,Territory territories, Integer nArmies) {
+        var newArmiesVal = this.enemyTerritories.get(Map.of(client,territories)) + nArmies;
+        this.enemyTerritories.put(Map.of(client,territories),newArmiesVal);
+    }
+
+    public void updateEnemyTerritoryWithConqueror(JSONClient client,Territory territories, Integer nArmies,String conquerorIp){
+        //REMOVE THE TERRITORY FROM THE PREVIOUS OWNER
+        this.enemyTerritories.remove(Map.of(client,territories));
+        //ADD THE TERRITORY TO THE NEW OWNER
+        //CHECK IF IS MYSELF OTHERWISE ADD TO THE ENEMY LIST
+        if(this.ip.equals(conquerorIp)){
+            this.myTerritories.add(territories);
+        }else{
+            this.enemyTerritories.put(Map.of((this.getClientList().stream().filter(c -> c.getIP().equals(conquerorIp)).collect(Collectors.toList()).get(0)),territories),nArmies);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package app.lobby.comunication;
 
+import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobby.GUI.GUILobby;
 import app.lobby.LobbyClient;
@@ -81,8 +82,9 @@ public class LobbyReceiver extends AbstractVerticle {
                         System.out.println(lobbyClient.getNickname() + ": " + bh.toJsonArray());
                         routingContext.response().setStatusCode(200).end();
                         List<Territory> territory = new ArrayList<>();
-                        bh.toJsonArray().getList().forEach(t -> territory.add(Territory.fromName(t.toString().charAt(0)+t.toString().substring(1).toLowerCase())));
-                        this.lobbyClient.gameStarted(territory);
+                        var arr = bh.toJsonArray();
+                        arr.getJsonArray(0).getList().forEach(t -> territory.add(Territory.fromName(t.toString().charAt(0)+t.toString().substring(1).toLowerCase())));
+                        this.lobbyClient.gameStarted(territory, Goal.fromJsonObject(arr.getJsonObject(1)));
                     });
                 });
 

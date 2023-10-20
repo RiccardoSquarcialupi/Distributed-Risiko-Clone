@@ -18,6 +18,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class GUIGame extends JPanel implements GUI, GUIGameActions {
+
+    public void disableActions() {
+        SwingUtilities.invokeLater(() -> {
+            this.setEnabled(false);
+            this.repaint();
+            this.revalidate();
+        });
+    }
+
+    public void enableActions() {
+        SwingUtilities.invokeLater(() -> {
+            this.setEnabled(true);
+            this.repaint();
+            this.revalidate();
+        });
+    }
+
     @Override
     public String getTitle() {
         return "RiSiKo!!!";
@@ -37,7 +54,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
         topPanel.add(new JLabel("Player: "+ ((GameClientImpl)Launcher.getCurrentClient()).getNickname()));
         topPanel.add(Box.createHorizontalGlue());
-        topPanel.add(new JLabel("Current Phase: "));
+        topPanel.add(new JLabel("Goal: "+ ((GameClientImpl)Launcher.getCurrentClient()).getGoal()));
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(new JLabel("Current Action: "));
         topPanel.add(Box.createHorizontalGlue());
