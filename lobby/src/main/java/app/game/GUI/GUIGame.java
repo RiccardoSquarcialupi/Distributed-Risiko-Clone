@@ -2,6 +2,10 @@ package app.game.GUI;
 
 import app.Launcher;
 import app.game.GameClientImpl;
+import app.game.card.CardType;
+import app.game.card.Goal;
+import app.game.card.Territory;
+import app.lobby.LobbyClientImpl;
 import app.lobbySelector.JSONClient;
 import app.manager.gui.GUI;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,6 +51,15 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
         add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
+
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Thread.sleep(2000);
+                ((GameClientImpl) Launcher.getCurrentClient()).broadcastTerritories();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void setTopPanel() {
@@ -142,6 +155,22 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         return finalMap;
 
 
+    }
+
+    public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies) {
+        JOptionPane.showMessageDialog(this, "Player " + ip + " get bonus of " + bonusArmies + " armies for " + cardsList.toString() + " cards and " + extraBonusArmies + " extra armies", "Bonus", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory territory) {
+    }
+
+    public void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory territory) {
+    }
+
+    public void someoneDrawStateCard(String ip) {
+    }
+
+    public void someoneWin(String ip, Goal goalCard, List<Territory> listTerritories) {
     }
 
     private class PairOfCoordinates {

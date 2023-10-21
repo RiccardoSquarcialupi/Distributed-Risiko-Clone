@@ -47,10 +47,31 @@ public class GameSender extends AbstractVerticle {
         return prm.future();
     }
 
+    public Future<Void> broadcastMyTerritories(String ipClient, List<Territory> territoryList) {
+        Promise<Void> prm = Promise.promise();
+        var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
+        List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
+        for (int i = 0; i < finalClientList.size(); i++) {
+            final int index = i;
+            this.client
+                    .put(5001, finalClientList.get(index).getIP(), "/client/game/territories")
+                    .sendJson(jsonify(ipClient, JsonArray.of(territoryList)))
+                    .onSuccess(response -> {
+                        System.out.println("Client " +
+                                finalClientList.get(index).getNickname() +
+                                " receive the info about my territories, " + response.statusCode());
+                        lpv.get(index).complete();
+                    })
+                    .onFailure(err ->
+                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my territories: " + err.getMessage()));
+        }
+        return prm.future();
+    }
+
     /*
      * Get notify a client finish his turn
      * */
-    public  Future<Void> clientEndTurn(String ipClient) {
+    public Future<Void> clientEndTurn(String ipClient) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -74,7 +95,7 @@ public class GameSender extends AbstractVerticle {
     /*
      * Get notify when someone get a State Card
      * */
-    public Future<Void> clientGetStateCard(String ipClient) {
+    public Future<Void> getStateCard(String ipClient) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -100,11 +121,11 @@ public class GameSender extends AbstractVerticle {
      * territories) in a specific territory(optional idClient is provided in case of obtained new territory
      * from a battle)
      * */
-    public Future<Void> clientChangeArmiesInTerritory(String ipClient, Territory territory, Integer armies, Optional<String> ipClientConqueror) {
+    public Future<Void> changeArmiesInTerritory(String ipClient, Territory territory, Optional<Territory> territoryReceiver, Integer armies, Optional<String> ipClientConqueror) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
-        if(ipClientConqueror.isPresent()){
+        if (ipClientConqueror.isPresent()) {
             for (int i = 0; i < finalClientList.size(); i++) {
                 final int index = i;
                 this.client
@@ -119,12 +140,12 @@ public class GameSender extends AbstractVerticle {
                         .onFailure(err ->
                                 System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies in territory: " + err.getMessage()));
             }
-        }else{
+        } else {
             for (int i = 0; i < finalClientList.size(); i++) {
                 final int index = i;
                 this.client
-                        .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/" + territory.ordinal() + "/armies")
-                        .sendJson(jsonify(ipClient, territory.name(), armies))
+                        .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/" + territoryReceiver.get().ordinal() + "/armies")
+                        .sendJson(jsonify(ipClient, territory.name(), territoryReceiver.get().name(), armies))
                         .onSuccess(response -> {
                             System.out.println("Client " +
                                     finalClientList.get(index).getNickname() +
@@ -153,7 +174,7 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .delete(5001, finalClientList.get(index).getIP(), "/client/game/card")
-                    .sendJson(jsonify(ipClient, listCardType, bonusArmies, extraBonusArmies))
+                    .sendJson(jsonify(ipClient, JsonArray.of(listCardType), bonusArmies, extraBonusArmies))
                     .onSuccess(response -> {
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +
@@ -169,7 +190,7 @@ public class GameSender extends AbstractVerticle {
     /*
     Get notify if an offense move is starting: attacker and defender are provided with the result of the dices roll
      */
-    public Future<Void> clientAttackTerritory(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Integer numberOfDices) {
+    public Future<Void> clientAttackTerritory(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory territory) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -177,7 +198,7 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/battle/offense")
-                    .sendJson(jsonify(ipClientAttack, ipClientDefend, diceATKResult, numberOfDices))
+                    .sendJson(jsonify(ipClientAttack, ipClientDefend, JsonArray.of(diceATKResult), territory.name()))
                     .onSuccess(response -> {
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +
@@ -193,7 +214,7 @@ public class GameSender extends AbstractVerticle {
     /*
     Get notify if a defense move is starting: attacker and defender are provided with the result of the dices roll
      */
-    public Future<Void> clientDefendTerritory(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Integer numberOfDices) {
+    public Future<Void> clientDefendTerritory(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory territory) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -201,7 +222,7 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/battle/defense")
-                    .sendJson(jsonify(ipClientAttack, ipClientDefend, diceDEFResult, numberOfDices))
+                    .sendJson(jsonify(ipClientAttack, ipClientDefend, JsonArray.of(diceDEFResult), territory.name()))
                     .onSuccess(response -> {
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +
@@ -225,7 +246,7 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/win")
-                    .sendJson(jsonify(ipClient, goalCard, territoryOwnedList))
+                    .sendJson(jsonify(ipClient, goalCard.name(), JsonArray.of(territoryOwnedList)))
                     .onSuccess(response -> {
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +
@@ -247,4 +268,13 @@ public class GameSender extends AbstractVerticle {
     }
 
 
+    public Future<List<Integer>> byzantineDiceLaunch(String ipClient, Integer nDices) {
+        Promise<List<Integer>> prm = Promise.promise();
+        var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
+        List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
+
+        //TODO BYZANTINE DICE LAUNCH
+
+        return prm.future();
+    }
 }

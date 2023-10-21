@@ -3,14 +3,15 @@ package app.game;
 
 import app.Launcher;
 import app.game.GUI.GUIGame;
+import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.game.comunication.GameReceiver;
 import app.game.comunication.GameSender;
 import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
+import io.vertx.core.Future;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,7 +22,6 @@ public class GameClientImpl implements GameClient {
     public GameSender gameSender;
     public GameReceiver gameReceiver;
 
-    private final List<Territory> myTerritories = new ArrayList<>();
     private GUIGame guiGame;
 
     public GameClientImpl(ContextManagerParameters cltPar) {
@@ -37,28 +37,28 @@ public class GameClientImpl implements GameClient {
             //TODO: DISPOSE ARMIES
 
             //TODO: WAIT FOR MY TURN
-                //TODO: SOMEONE WIN
-                //TODO: WHILE WAITING SOMEONE IS ATTACKING ME: DEFENSE PART
+            //TODO: SOMEONE WIN
+            //TODO: WHILE WAITING SOMEONE IS ATTACKING ME: DEFENSE PART
 
             //TODO: START TURN
 
-                //TODO: CHECK FOR BONUS CARD
-                    //TODO: USE BONUS
-                    //TODO: NOT USE BONUS
-                //TODO: DISPOSE ARMIES
+            //TODO: CHECK FOR BONUS CARD
+            //TODO: USE BONUS
+            //TODO: NOT USE BONUS
+            //TODO: DISPOSE ARMIES
 
-                //TODO: CYCLE ATTACK PHASE
-                    //TODO SEND RESULT OF THE ATTACK TO THE OTHERS PLAYERS
-                    //TODO WAIT FOR THE DEFENSE RESPONSE
-                    //TODO COMPUTE THE RESULT OF THE ATTACK
-                //TODO: CLOSE CYCLE
+            //TODO: CYCLE ATTACK PHASE
+            //TODO SEND RESULT OF THE ATTACK TO THE OTHERS PLAYERS
+            //TODO WAIT FOR THE DEFENSE RESPONSE
+            //TODO COMPUTE THE RESULT OF THE ATTACK
+            //TODO: CLOSE CYCLE
 
-                //TODO: CHECK IF I WIN
+            //TODO: CHECK IF I WIN
 
-                //TODO IF I HAVE CONQUERED A COUNTRY DRAW A CARD
+            //TODO IF I HAVE CONQUERED A COUNTRY DRAW A CARD
 
-                //TODO: STRATEGIC MOVE PHASE
-                //TODO: END TURN
+            //TODO: STRATEGIC MOVE PHASE
+            //TODO: END TURN
 
             gameReceiver.stop();
         }
@@ -80,52 +80,39 @@ public class GameClientImpl implements GameClient {
     }
 
     public void addTerritory(Territory territory) {
-        this.myTerritories.add(territory);
+        this.cltPar.addTerritory(territory);
     }
 
     public String getGoal() {
         checkForGoalCard();
-        switch(this.cltPar.getGoalCard()){
-            case CONQUER_24_TERRITORIES:
-                return "Conquer 24 territories";
-            case CONQUER_ASIA_AND_AFRICA:
-                return "Conquer Asia and Africa";
-            case CONQUER_ASIA_AND_SOUTH_AMERICA:
-                return "Conquer Asia and South America";
-            case CONQUER_EUROPE_AND_OCEANIA_AND_A_THIRD_CONTINENT:
-                return "Conquer Europe and Oceania and a third continent";
-            case CONQUER_EUROPE_AND_SOUTH_AMERICA_AND_A_THIRD_CONTINENT:
-                return "Conquer Europe and South America and a third continent";
-            case CONQUER_NORTH_AMERICA_AND_AFRICA:
-                return "Conquer North America and Africa";
-            case CONQUER_18_TERRITORIES_WITH_2_ARMIES_EACH:
-                return "Conquer 18 territories with 2 armies each";
+        switch (this.cltPar.getGoalCard()) {
             case DESTROY_PLAYER_1:
-                return "Destroy player 1: "+ this.getClientList().get(0).getNickname();
+                return "Destroy player 1: " + this.getClientList().get(0).getNickname();
             case DESTROY_PLAYER_2:
-                return "Destroy player 2: "+ this.getClientList().get(1).getNickname();
+                return "Destroy player 2: " + this.getClientList().get(1).getNickname();
             case DESTROY_PLAYER_3:
-                return "Destroy player 3: "+ this.getClientList().get(2).getNickname();
+                return "Destroy player 3: " + this.getClientList().get(2).getNickname();
             case DESTROY_PLAYER_4:
-                return "Destroy player 4: "+ this.getClientList().get(3).getNickname();
+                return "Destroy player 4: " + this.getClientList().get(3).getNickname();
             case DESTROY_PLAYER_5:
-                return "Destroy player 5: "+ this.getClientList().get(4).getNickname();
+                return "Destroy player 5: " + this.getClientList().get(4).getNickname();
             case DESTROY_PLAYER_6:
-                return "Destroy player 6: "+ this.getClientList().get(5).getNickname();
+                return "Destroy player 6: " + this.getClientList().get(5).getNickname();
+            default:
+                return this.cltPar.getGoalCard().name();
         }
-        return null;
     }
 
     private void checkForGoalCard() {
         var a = this.cltPar.getGoalCard().ordinal();
-        switch(a){
+        switch (a) {
             case 7:
             case 8:
             case 9:
             case 10:
             case 11:
             case 12:
-                if(this.cltPar.getClientList().size()<(a-6) || this.getClientList().get(a-7).getIP().equals(this.getIP())){
+                if (this.cltPar.getClientList().size() < (a - 6) || this.getClientList().get(a - 7).getIP().equals(this.getIP())) {
                     this.cltPar.setGoalCard(Goal.CONQUER_24_TERRITORIES);
                 }
                 break;
@@ -138,29 +125,116 @@ public class GameClientImpl implements GameClient {
         guiGame.disableActions();
     }
 
+    public void enableActions() {
+        guiGame.enableActions();
+    }
+
     public void checkforMyTurn(String clientIp) {
-        for (int i=0;i<this.getClientList().size();i++){
-            if(this.getClientList().get(i).getIP().equals(clientIp)){
-                if(i+1 < this.getClientList().size() && this.getClientList().get(i+1).getIP().equals(this.getIP())){
+        for (int i = 0; i < this.getClientList().size(); i++) {
+            if (this.getClientList().get(i).getIP().equals(clientIp)) {
+                if (i + 1 < this.getClientList().size() && this.getClientList().get(i + 1).getIP().equals(this.getIP())) {
                     guiGame.enableActions();
-                }
-                else if (i+1 >= this.getClientList().size() && this.getClientList().get(0).getIP().equals(this.getIP())){
+                } else if (i + 1 >= this.getClientList().size() && this.getClientList().get(0).getIP().equals(this.getIP())) {
                     guiGame.enableActions();
                 }
             }
         }
     }
 
-    public void endMyTurn(){
+    public void endMyTurn() {
         this.gameSender.clientEndTurn(this.getIP());
     }
 
-    public void updateTerritory(String ip, Territory territory, Integer nArmiesChange, Optional<String> conquerorIp) {
-        if(conquerorIp.isPresent()){
-            this.cltPar.updateEnemyTerritoryWithConqueror(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0),territory,nArmiesChange,conquerorIp.get());
-        }else {
-            this.cltPar.updateEnemyTerritory(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0),territory,nArmiesChange);
-        }
 
+    public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies) {
+        guiGame.someoneGetBonus(ip, cardsList, bonusArmies, extraBonusArmies);
     }
+
+    public void lobbyClosed() {
+        Launcher.lobbyClosed();
+    }
+
+    public void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory territory) {
+        guiGame.receiveAttackMsg(ipClientAttack, ipClientDefend, diceATKResult, territory);
+    }
+
+    public void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory territory) {
+        guiGame.receiveDefendMsg(ipClientAttack, ipClientDefend, diceDEFResult, territory);
+    }
+
+    public void someoneDrawStateCard(String ip) {
+        guiGame.someoneDrawStateCard(ip);
+    }
+
+    public void someoneWin(String ip, Goal goalCard, List<Territory> listTerritories) {
+        if (checkWin(ip, goalCard, listTerritories)) {
+            guiGame.someoneWin(ip, goalCard, listTerritories);
+        }
+    }
+
+    private boolean checkWin(String ip, Goal goalCard, List<Territory> listTerritories) {
+        //TODO CHECK IF THE PLAYER WIN
+        return true;
+    }
+
+    public void setEnemyTerritory(String ip, Territory t) {
+        this.cltPar.setEnemyTerritory(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), t);
+    }
+
+    public void sendAttackMsg(String ipClientAttack, String ipClientDefend, Territory territory, Integer nDices) {
+        dicesLaunch(ipClientAttack, ipClientDefend, nDices).onSuccess(res -> {
+            this.gameSender.clientAttackTerritory(ipClientAttack, ipClientDefend, res, territory).onSuccess(res2 -> {
+                //TODO HANDLE THE ATTACK DICE RESULT AND COMPUTE FINAL RESULT WHEN THE DEFENDER THROW THE DICES
+            });
+        });
+    }
+
+    public void sendDefendMsg(String ipClientAttack, String ipClientDefend, Territory territory, Integer nDices) {
+        dicesLaunch(ipClientAttack, ipClientDefend, nDices).onSuccess(res -> {
+            this.gameSender.clientDefendTerritory(ipClientAttack, ipClientDefend, res, territory).onSuccess(res2 -> {
+                //TODO HANDLE THE DEFENSE DICE RESULT AND COMPUTE FINAL RESULT
+            });
+        });
+    }
+
+    public Future<List<Integer>> dicesLaunch(String ipClientAttack, String ipClientDefend, Integer nDices) {
+        //TODO: LAUNCH DICES with BYZANTINE FAULT PREVENTION
+        return this.gameSender.byzantineDiceLaunch(this.getIP(), nDices);
+    }
+
+    public void startTurn() {
+        this.gameSender.clientStartTurn(this.getIP()).onSuccess(res -> {
+            this.enableActions();
+        });
+    }
+
+    public void endTurn() {
+        this.gameSender.clientEndTurn(this.getIP()).onSuccess(res -> {
+            this.disableActions();
+        });
+    }
+
+    public void broadcastTerritories() {
+        this.gameSender.broadcastMyTerritories(this.getIP(), this.cltPar.getMyTerritories());
+    }
+
+    public void getStateCard() {
+        //TODO how to draw the card?
+        this.gameSender.getStateCard(this.getIP());
+    }
+
+    public void changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
+        this.gameSender.changeArmiesInTerritory(this.getIP(), territorySender, Optional.ofNullable(territoryReceiver), nArmiesChange, Optional.empty()).onSuccess(res -> {
+            this.cltPar.updateMyTerritory(territorySender, territoryReceiver, nArmiesChange);
+        });
+    }
+
+    public void updateEnemyTerritory(String ip, Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
+        this.cltPar.updateEnemyTerritories(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), territorySender, territoryReceiver, nArmiesChange);
+    }
+
+    public void updateEnemyTerritoryWithConqueror(String ip, Territory territory, Integer nArmiesChange, String conquerorIp) {
+        this.cltPar.updateEnemyTerritoryWithConqueror(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), territory, nArmiesChange, conquerorIp);
+    }
+
 }

@@ -1,15 +1,13 @@
 package app.manager.contextManager;
 
+import app.common.Pair;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
 
 import java.io.IOException;
 import java.net.Inet4Address;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ContextManagerParameters {
@@ -19,9 +17,8 @@ public class ContextManagerParameters {
     private String ipManager;
     private int maxPlayer;
     private final List<JSONClient> clientList;
-    private List<Territory> myTerritories;
 
-    private Map<Map<JSONClient,Territory>,Integer> enemyTerritories;
+    private Map<Pair<JSONClient,Territory>,Integer> allTerritories;
 
     private Goal goalCard;
 
@@ -32,8 +29,7 @@ public class ContextManagerParameters {
         this.ipManager = "";
         this.maxPlayer = -1;
         this.clientList = new ArrayList<>();
-        this.myTerritories = new ArrayList<>();
-        this.enemyTerritories = new HashMap<>();
+        this.allTerritories = new HashMap<>();
     }
 
     public String getIp() {
@@ -98,11 +94,15 @@ public class ContextManagerParameters {
     }
 
     public void addTerritory(Territory t) {
-        this.myTerritories.add(t);
+        this.allTerritories.put(new Pair<>(new JSONClient(getIp(),getNickname()),t),0);
     }
 
     public List<Territory> getMyTerritories() {
-        return this.myTerritories;
+        return this.allTerritories.keySet()
+                .stream()
+                .filter(p -> p.getFirst().getIP().equals(getIp()))
+                .map(Pair::getSecond)
+                .collect(Collectors.toList());
     }
 
     public void setGoalCard(Goal goalCard) {
@@ -113,24 +113,29 @@ public class ContextManagerParameters {
         return this.goalCard;
     }
 
-    public void setEnemyTerritory(JSONClient client, Territory territories, Integer nArmies) {
-        this.enemyTerritories.put(Map.of(client,territories),nArmies);
+    public void setEnemyTerritory(JSONClient client, Territory territories) {
+        this.allTerritories.put(new Pair<>(client,territories),0);
     }
 
-    public void updateEnemyTerritory(JSONClient client,Territory territories, Integer nArmies) {
-        var newArmiesVal = this.enemyTerritories.get(Map.of(client,territories)) + nArmies;
-        this.enemyTerritories.put(Map.of(client,territories),newArmiesVal);
+    public void updateEnemyTerritories(JSONClient client, Territory territorySender, Territory territoryReceiver, Integer nArmies) {
+        var newArmiesVal = this.allTerritories.get(new Pair<>(client,territoryReceiver)) + nArmies;
+        this.allTerritories.put(new Pair<>(client,territoryReceiver),newArmiesVal);
+        newArmiesVal = this.allTerritories.get(new Pair<>(client,territorySender)) - nArmies;
+        this.allTerritories.put(new Pair<>(client,territorySender),newArmiesVal);
     }
 
-    public void updateEnemyTerritoryWithConqueror(JSONClient client,Territory territories, Integer nArmies,String conquerorIp){
+    public void updateEnemyTerritoryWithConqueror(JSONClient client, Territory territory, Integer nArmies, String conquerorIp){
         //REMOVE THE TERRITORY FROM THE PREVIOUS OWNER
-        this.enemyTerritories.remove(Map.of(client,territories));
+        this.allTerritories.remove(new Pair<>(client,territory));
         //ADD THE TERRITORY TO THE NEW OWNER
-        //CHECK IF IS MYSELF OTHERWISE ADD TO THE ENEMY LIST
-        if(this.ip.equals(conquerorIp)){
-            this.myTerritories.add(territories);
-        }else{
-            this.enemyTerritories.put(Map.of((this.getClientList().stream().filter(c -> c.getIP().equals(conquerorIp)).collect(Collectors.toList()).get(0)),territories),nArmies);
-        }
+        this.allTerritories.put(new Pair<>((this.getClientList().stream().filter(c -> c.getIP().equals(conquerorIp)).collect(Collectors.toList()).get(0)),territory),nArmies);
+
+    }
+
+    public void updateMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmies) {
+        var newArmiesVal = this.allTerritories.get(new Pair<>(new JSONClient(getIp(),getNickname()),territorySender)) - nArmies;
+        this.allTerritories.put(new Pair<>(new JSONClient(getIp(),getNickname()),territorySender),newArmiesVal);
+        newArmiesVal = this.allTerritories.get(new Pair<>(new JSONClient(getIp(),getNickname()),territoryReceiver)) + nArmies;
+        this.allTerritories.put(new Pair<>(new JSONClient(getIp(),getNickname()),territoryReceiver),newArmiesVal);
     }
 }
