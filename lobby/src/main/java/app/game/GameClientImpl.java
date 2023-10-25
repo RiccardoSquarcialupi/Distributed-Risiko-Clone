@@ -28,10 +28,10 @@ public class GameClientImpl implements GameClient {
         this.cltPar = cltPar;
         this.gameSender = new GameSender();
         gameReceiver = new GameReceiver(this);
-        guiGame = (GUIGame) Launcher.getCurrentGui();
     }
 
     public void loop() {
+        guiGame = (GUIGame) Launcher.getCurrentGui();
         while (gameReceiver.isRunning()) {
             //TODO: GET CARD FROM MANAGER AND GOAL CARD
             //TODO: DISPOSE ARMIES
