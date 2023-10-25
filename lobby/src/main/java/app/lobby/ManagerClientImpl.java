@@ -44,7 +44,7 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
         Collections.shuffle(goalCards);
 
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
-            // Move my CLIENT to be the last, so anyone will be informed before i close connection.
+            // Move my CLIENT to be the last, so anyone will be informed before I close connection.
             if(this.cltPar.getClientList().get(i).getIP().equals(cltPar.getIp()) &&
                 i != this.cltPar.getMaxPlayer()-1){
                 var tmp = this.cltPar.getClientList().get(i);

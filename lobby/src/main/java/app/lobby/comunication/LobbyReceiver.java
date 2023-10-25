@@ -83,7 +83,8 @@ public class LobbyReceiver extends AbstractVerticle {
                         routingContext.response().setStatusCode(200).end();
                         List<Territory> territory = new ArrayList<>();
                         var arr = bh.toJsonArray();
-                        arr.getJsonArray(0).getList().forEach(t -> territory.add(Territory.fromName(t.toString().charAt(0)+t.toString().substring(1).toLowerCase())));
+                        arr.getJsonArray(0).getList().forEach(t -> territory.add(Territory.fromName(t.toString())));
+                        System.out.println(lobbyClient.getNickname() + " territories: " + territory);
                         this.lobbyClient.gameStarted(territory, Goal.fromJsonObject(arr.getJsonObject(1)));
                     });
                 });

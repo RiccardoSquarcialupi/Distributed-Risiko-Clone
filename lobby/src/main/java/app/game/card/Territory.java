@@ -60,7 +60,7 @@ public enum Territory implements Card {
 
     public static Territory fromName(String name) {
         for (Territory t : Territory.values()) {
-            if (t.name.equals(name)) {
+            if (t.name().equals(name)) {
                 return t;
             }
         }
