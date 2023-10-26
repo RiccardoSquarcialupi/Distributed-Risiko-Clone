@@ -52,6 +52,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
 
+        this.disableActions();
+
         SwingUtilities.invokeLater(() -> {
             try {
                 Thread.sleep(2000);

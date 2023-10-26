@@ -179,6 +179,11 @@ public class GameClientImpl implements GameClient {
         this.cltPar.setEnemyTerritory(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), t);
     }
 
+    @Override
+    public boolean areTerritoriesReceived() {
+        return this.cltPar.getMaxPlayer() == this.cltPar.getNumberPlayerReceivedTerritories();
+    }
+
     public void sendAttackMsg(String ipClientAttack, String ipClientDefend, Territory territory, Integer nDices) {
         dicesLaunch(ipClientAttack, ipClientDefend, nDices).onSuccess(res -> {
             this.gameSender.clientAttackTerritory(ipClientAttack, ipClientDefend, res, territory).onSuccess(res2 -> {

@@ -29,4 +29,6 @@ public interface GameClient extends Client {
     void someoneWin(String ip, Goal goalCard, List<Territory> listTerritories);
 
     void setEnemyTerritory(String ip, Territory t);
+
+    boolean areTerritoriesReceived();
 }

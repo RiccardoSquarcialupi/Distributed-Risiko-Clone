@@ -1,6 +1,7 @@
 package app.game.comunication;
 
 import app.Launcher;
+import app.game.GUI.GUIGame;
 import app.game.GameClient;
 import app.game.GameClientImpl;
 import app.game.card.CardType;
@@ -150,6 +151,9 @@ public class GameReceiver extends AbstractVerticle {
                         var territory = ((List<Territory>) body.toJsonArray().getJsonArray(1).getList());
                         territory.forEach(t -> this.gameClient.setEnemyTerritory(ip, t));
                     });
+                    if(this.gameClient.areTerritoriesReceived()){
+                        ((GUIGame)Launcher.getCurrentGui()).enableActions();
+                    }
                     routingContext.response().setStatusCode(200).end();
                 });
         //RECEIVE STATE CARD FROM THE MANAGER AFTER CONQUER A TERRITORY

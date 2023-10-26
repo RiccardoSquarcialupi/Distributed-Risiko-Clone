@@ -105,6 +105,10 @@ public class ContextManagerParameters {
                 .collect(Collectors.toList());
     }
 
+    public int getNumberPlayerReceivedTerritories() {
+        return this.allTerritories.keySet().size();
+    }
+
     public void setGoalCard(Goal goalCard) {
         this.goalCard = goalCard;
     }
