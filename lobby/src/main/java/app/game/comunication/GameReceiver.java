@@ -42,7 +42,7 @@ public class GameReceiver extends AbstractVerticle {
                 .put("/client/game/turn/finish")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
-                        gameClient.checkforMyTurn(body.toJsonArray().getString(0));
+                        gameClient.checkForMyTurn(body.toJsonArray().getString(0));
                     });
 
                     routingContext.response().setStatusCode(200).end();

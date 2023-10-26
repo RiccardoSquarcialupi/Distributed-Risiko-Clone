@@ -129,14 +129,12 @@ public class GameClientImpl implements GameClient {
         guiGame.enableActions();
     }
 
-    public void checkforMyTurn(String clientIp) {
+    public void checkForMyTurn(String clientIp) {
         for (int i = 0; i < this.getClientList().size(); i++) {
-            if (this.getClientList().get(i).getIP().equals(clientIp)) {
-                if (i + 1 < this.getClientList().size() && this.getClientList().get(i + 1).getIP().equals(this.getIP())) {
-                    guiGame.enableActions();
-                } else if (i + 1 >= this.getClientList().size() && this.getClientList().get(0).getIP().equals(this.getIP())) {
-                    guiGame.enableActions();
-                }
+            if (this.getClientList().get(i).getIP().equals(clientIp)
+                && this.getClientList().get((i + 1) % this.getClientList().size()).getIP().equals(this.getIP())
+            ){
+                guiGame.enableActions();
             }
         }
     }
