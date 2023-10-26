@@ -16,11 +16,11 @@ public class GameReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
     private final Router router;
     private boolean isRunning = false;
-    private final GameClientImpl gameClient;
+    private final GameClient gameClient;
 
     public GameReceiver(GameClient gameClient) {
         this.httpServer = Launcher.getVertx().createHttpServer();
-        this.gameClient = (GameClientImpl) gameClient;
+        this.gameClient = gameClient;
         this.router = Router.router(vertx);
     }
 
@@ -149,7 +149,6 @@ public class GameReceiver extends AbstractVerticle {
                         var ip = body.toJsonArray().getString(0);
                         var territory = ((List<Territory>) body.toJsonArray().getJsonArray(1).getList());
                         territory.forEach(t -> this.gameClient.setEnemyTerritory(ip, t));
-
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
