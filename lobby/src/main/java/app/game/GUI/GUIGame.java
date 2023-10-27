@@ -27,20 +27,21 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public enum GAME_STATE {WAITING, PLACING, ATTACKING}
     protected final AtomicReference<GAME_STATE> state;
+    private final GUIGame guiGame;
 
     private void disableActions() {
         SwingUtilities.invokeLater(() -> {
-            this.setEnabled(false);
-            this.repaint();
-            this.revalidate();
+            guiGame.setEnabled(false);
+            guiGame.repaint();
+            guiGame.revalidate();
         });
     }
 
     private void enableActions() {
         SwingUtilities.invokeLater(() -> {
-            this.setEnabled(true);
-            this.repaint();
-            this.revalidate();
+            guiGame.setEnabled(true);
+            guiGame.repaint();
+            guiGame.revalidate();
         });
     }
 
@@ -57,6 +58,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
         this.state = new AtomicReference<>(GAME_STATE.WAITING);
+        this.guiGame = this;
 
         this.disableActions();
 

@@ -33,7 +33,10 @@ public class GameClientImpl implements GameClient {
         gameReceiver.start();
         this.myTurn = false;
 
-        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid -> broadcastTerritories());
+        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid -> {
+            this.guiGame = ((GUIGame) Launcher.getCurrentGui());
+            broadcastTerritories();
+        });
     }
 
     public void loop() {
@@ -181,7 +184,7 @@ public class GameClientImpl implements GameClient {
 
     @Override
     public boolean areTerritoriesReceived() {
-        return this.cltPar.getMaxPlayer() == this.cltPar.getNumberPlayerReceivedTerritories();
+        return this.cltPar.getMaxPlayer()-1 == this.cltPar.getNumberPlayerReceivedTerritories();
     }
 
     @Override

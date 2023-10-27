@@ -110,7 +110,7 @@ public class ContextManagerParameters {
     }
 
     public int getNumberPlayerReceivedTerritories() {
-        return this.allTerritories.keySet().size();
+        return this.allTerritories.keySet().stream().map(Pair::getFirst).collect(Collectors.toSet()).size();
     }
 
     public void setGoalCard(Goal goalCard) {
@@ -158,5 +158,6 @@ public class ContextManagerParameters {
     public void resetPlaceableArmies() {
         this.currentArmiesPlaced = 0;
         this.toPlaceArmies = this.getMyTerritories().size() * 2;
+        System.out.println("Armies to deploy: " + this.toPlaceArmies);
     }
 }
