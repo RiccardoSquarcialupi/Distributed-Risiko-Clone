@@ -14,6 +14,7 @@ import io.vertx.core.Future;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -28,6 +29,9 @@ public class GameClientImpl implements GameClient {
         this.cltPar = cltPar;
         this.gameSender = new GameSender();
         gameReceiver = new GameReceiver(this);
+        gameReceiver.start();
+
+        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid -> broadcastTerritories());
     }
 
     public void loop() {

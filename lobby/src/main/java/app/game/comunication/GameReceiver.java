@@ -12,6 +12,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
@@ -148,7 +149,9 @@ public class GameReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
                         var ip = body.toJsonArray().getString(0);
-                        var territory = ((List<Territory>) body.toJsonArray().getJsonArray(1).getList());
+                        System.out.println(body.toJsonArray());
+                        var territory = (List<Territory>)body.toJsonArray().getJsonArray(1).getList()
+                                .stream().map(s -> Territory.fromName(s.toString())).collect(Collectors.toList());
                         territory.forEach(t -> this.gameClient.setEnemyTerritory(ip, t));
                     });
                     if(this.gameClient.areTerritoriesReceived()){
@@ -163,7 +166,7 @@ public class GameReceiver extends AbstractVerticle {
                     routingContext.response().setStatusCode(200).end();
                 });
 
-        httpServer.requestHandler(router).listen(8080);
+        httpServer.requestHandler(router).listen(5001);
         isRunning = true;
     }
 

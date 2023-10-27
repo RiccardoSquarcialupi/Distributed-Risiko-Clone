@@ -55,7 +55,7 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/territories")
-                    .sendJson(jsonify(ipClient, JsonArray.of(territoryList)))
+                    .sendJson(jsonify(ipClient, territoryList))
                     .onSuccess(response -> {
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +

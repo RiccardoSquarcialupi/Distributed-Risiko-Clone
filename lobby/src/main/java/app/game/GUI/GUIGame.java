@@ -54,14 +54,14 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
         this.disableActions();
 
-        SwingUtilities.invokeLater(() -> {
+        /*SwingUtilities.invokeLater(() -> {
             try {
                 Thread.sleep(2000);
                 ((GameClientImpl) Launcher.getCurrentClient()).broadcastTerritories();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        });
+        });*/
     }
 
     private void setTopPanel() {
