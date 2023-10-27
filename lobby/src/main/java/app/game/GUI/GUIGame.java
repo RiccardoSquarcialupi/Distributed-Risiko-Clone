@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.*;
+import javax.swing.plaf.LayerUI;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -50,12 +51,16 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         return "RiSiKo!!!";
     }
 
+    private JLabel jlState;
+
     public GUIGame() {
         setLayout(new BorderLayout());
         setTopPanel();
+        this.jlState = new JLabel("WAITING");
+        add(jlState, BorderLayout.CENTER);
         JLabel map = new JLabel();
         map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
-        add(map, BorderLayout.CENTER);
+        add(map, BorderLayout.SOUTH);
         map.addMouseListener(onMapClick());
         this.state = new AtomicReference<>(GAME_STATE.WAITING);
         this.guiGame = this;
@@ -145,6 +150,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     private void placeArmy(String country){
+        var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
+        this.jlState.setText("Placing armies: " + (ps.getFirst()+1) + " :/: " + ps.getSecond());
         ((GameClient)Launcher.getCurrentClient()).placeArmy(country);
     }
 
@@ -200,11 +207,14 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public void placeArmies() {
         this.state.set(GAME_STATE.PLACING);
+        var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
+        this.jlState.setText("Placing armies: " + ps.getFirst() + " :/: " + ps.getSecond());
         this.enableActions();
     }
 
     public void attackPhase() {
         this.state.set(GAME_STATE.ATTACKING);
+        this.jlState.setText("Attack phase");
     }
 
     private class PairOfCoordinates {

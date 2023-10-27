@@ -160,4 +160,8 @@ public class ContextManagerParameters {
         this.toPlaceArmies = this.getMyTerritories().size() * 2;
         System.out.println("Armies to deploy: " + this.toPlaceArmies);
     }
+
+    public Pair<Integer, Integer> getPlacingState(){
+        return new Pair<>(this.currentArmiesPlaced, this.toPlaceArmies);
+    }
 }

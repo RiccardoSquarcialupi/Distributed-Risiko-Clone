@@ -2,6 +2,7 @@ package app.game;
 
 
 import app.Launcher;
+import app.common.Pair;
 import app.game.GUI.GUIGame;
 import app.game.card.CardType;
 import app.game.card.Goal;
@@ -33,8 +34,11 @@ public class GameClientImpl implements GameClient {
         gameReceiver.start();
         this.myTurn = false;
 
-        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid -> {
+        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid ->{
             this.guiGame = ((GUIGame) Launcher.getCurrentGui());
+        });
+
+        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(4), tid -> {
             broadcastTerritories();
         });
     }
@@ -204,6 +208,11 @@ public class GameClientImpl implements GameClient {
     public void placeArmies() {
         this.cltPar.resetPlaceableArmies();
         this.guiGame.placeArmies();
+    }
+
+    @Override
+    public Pair<Integer, Integer> getPlacingState(){
+        return this.cltPar.getPlacingState();
     }
 
     public void sendAttackMsg(String ipClientAttack, String ipClientDefend, Territory territory, Integer nDices) {

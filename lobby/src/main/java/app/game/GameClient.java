@@ -1,6 +1,7 @@
 package app.game;
 
 import app.common.Client;
+import app.common.Pair;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
@@ -36,4 +37,6 @@ public interface GameClient extends Client {
     void placeArmy(String country);
 
     void placeArmies();
+
+    Pair<Integer, Integer> getPlacingState();
 }
