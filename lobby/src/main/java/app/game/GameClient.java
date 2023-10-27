@@ -8,7 +8,6 @@ import app.game.card.Territory;
 import java.util.List;
 
 public interface GameClient extends Client {
-    void disableActions();
 
     void checkForMyTurn(String string);
 
@@ -31,4 +30,10 @@ public interface GameClient extends Client {
     void setEnemyTerritory(String ip, Territory t);
 
     boolean areTerritoriesReceived();
+
+    boolean isMyTurn();
+
+    void placeArmy(String country);
+
+    void placeArmies();
 }

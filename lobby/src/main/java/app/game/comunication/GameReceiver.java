@@ -7,6 +7,7 @@ import app.game.GameClientImpl;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
+import app.lobbySelector.JSONClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
@@ -34,7 +35,7 @@ public class GameReceiver extends AbstractVerticle {
                 .put("/client/game/turn/start")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
-                        gameClient.disableActions();
+
                     });
 
                     routingContext.response().setStatusCode(200).end();
@@ -149,13 +150,13 @@ public class GameReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
                         var ip = body.toJsonArray().getString(0);
-                        System.out.println(body.toJsonArray());
                         var territory = (List<Territory>)body.toJsonArray().getJsonArray(1).getList()
                                 .stream().map(s -> Territory.fromName(s.toString())).collect(Collectors.toList());
                         territory.forEach(t -> this.gameClient.setEnemyTerritory(ip, t));
                     });
                     if(this.gameClient.areTerritoriesReceived()){
-                        ((GUIGame)Launcher.getCurrentGui()).enableActions();
+                        System.out.println("start place armies");
+                        this.gameClient.placeArmies();
                     }
                     routingContext.response().setStatusCode(200).end();
                 });

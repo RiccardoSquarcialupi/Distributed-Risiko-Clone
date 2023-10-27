@@ -21,6 +21,8 @@ public class ContextManagerParameters {
     private Map<Pair<JSONClient,Territory>,Integer> allTerritories;
 
     private Goal goalCard;
+    private int currentArmiesPlaced;
+    private int toPlaceArmies;
 
     public ContextManagerParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();
@@ -30,6 +32,8 @@ public class ContextManagerParameters {
         this.maxPlayer = -1;
         this.clientList = new ArrayList<>();
         this.allTerritories = new HashMap<>();
+        this.currentArmiesPlaced = 0;
+        this.toPlaceArmies = 0;
     }
 
     public String getIp() {
@@ -141,5 +145,18 @@ public class ContextManagerParameters {
         this.allTerritories.put(new Pair<>(new JSONClient(getIp(),getNickname()),territorySender),newArmiesVal);
         newArmiesVal = this.allTerritories.get(new Pair<>(new JSONClient(getIp(),getNickname()),territoryReceiver)) + nArmies;
         this.allTerritories.put(new Pair<>(new JSONClient(getIp(),getNickname()),territoryReceiver),newArmiesVal);
+    }
+
+    public boolean addArmy(String country) {
+        if(this.currentArmiesPlaced < this.toPlaceArmies){
+            this.currentArmiesPlaced++;
+            // TODO: Add army to territory (problem: how to get territory from string country).
+        }
+        return this.currentArmiesPlaced == this.toPlaceArmies;
+    }
+
+    public void resetPlaceableArmies() {
+        this.currentArmiesPlaced = 0;
+        this.toPlaceArmies = this.getMyTerritories().size() * 2;
     }
 }

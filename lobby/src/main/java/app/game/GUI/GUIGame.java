@@ -1,6 +1,7 @@
 package app.game.GUI;
 
 import app.Launcher;
+import app.game.GameClient;
 import app.game.GameClientImpl;
 import app.game.card.CardType;
 import app.game.card.Goal;
@@ -19,11 +20,15 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
-    public void disableActions() {
+    public enum GAME_STATE {WAITING, PLACING, ATTACKING}
+    protected final AtomicReference<GAME_STATE> state;
+
+    private void disableActions() {
         SwingUtilities.invokeLater(() -> {
             this.setEnabled(false);
             this.repaint();
@@ -31,7 +36,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         });
     }
 
-    public void enableActions() {
+    private void enableActions() {
         SwingUtilities.invokeLater(() -> {
             this.setEnabled(true);
             this.repaint();
@@ -51,6 +56,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
         add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
+        this.state = new AtomicReference<>(GAME_STATE.WAITING);
 
         this.disableActions();
 
@@ -95,6 +101,17 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                     });
                     if (p.contains(e.getPoint())) {
                         System.out.println("Clicked on " + country);
+                        switch (state.get()) {
+                            case WAITING:
+                                break;
+                            case PLACING:
+                                placeArmy(country);
+                                break;
+                            case ATTACKING:
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 });
             }
@@ -123,6 +140,10 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
             }
         };
+    }
+
+    private void placeArmy(String country){
+        ((GameClient)Launcher.getCurrentClient()).placeArmy(country);
     }
 
     private Map<String, List<PairOfCoordinates>> parseJsonMap() {
@@ -173,6 +194,15 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void someoneWin(String ip, Goal goalCard, List<Territory> listTerritories) {
+    }
+
+    public void placeArmies() {
+        this.state.set(GAME_STATE.PLACING);
+        this.enableActions();
+    }
+
+    public void attackPhase() {
+        this.state.set(GAME_STATE.ATTACKING);
     }
 
     private class PairOfCoordinates {

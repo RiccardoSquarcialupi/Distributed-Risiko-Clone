@@ -24,12 +24,14 @@ public class GameClientImpl implements GameClient {
     public GameReceiver gameReceiver;
 
     private GUIGame guiGame;
+    private boolean myTurn;
 
     public GameClientImpl(ContextManagerParameters cltPar) {
         this.cltPar = cltPar;
         this.gameSender = new GameSender();
         gameReceiver = new GameReceiver(this);
         gameReceiver.start();
+        this.myTurn = false;
 
         Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid -> broadcastTerritories());
     }
@@ -125,25 +127,19 @@ public class GameClientImpl implements GameClient {
         }
     }
 
-    public void disableActions() {
-        guiGame.disableActions();
-    }
-
-    public void enableActions() {
-        guiGame.enableActions();
-    }
-
     public void checkForMyTurn(String clientIp) {
         for (int i = 0; i < this.getClientList().size(); i++) {
             if (this.getClientList().get(i).getIP().equals(clientIp)
                 && this.getClientList().get((i + 1) % this.getClientList().size()).getIP().equals(this.getIP())
             ){
-                guiGame.enableActions();
+                this.myTurn = true;
+                guiGame.placeArmies();
             }
         }
     }
 
     public void endMyTurn() {
+        this.myTurn = false;
         this.gameSender.clientEndTurn(this.getIP());
     }
 
@@ -188,6 +184,25 @@ public class GameClientImpl implements GameClient {
         return this.cltPar.getMaxPlayer() == this.cltPar.getNumberPlayerReceivedTerritories();
     }
 
+    @Override
+    public boolean isMyTurn() {
+        return this.myTurn;
+    }
+
+    @Override
+    public void placeArmy(String country) {
+        if(this.cltPar.addArmy(country)){
+            System.out.println("All territory placed");
+            this.guiGame.attackPhase();
+        }
+    }
+
+    @Override
+    public void placeArmies() {
+        this.cltPar.resetPlaceableArmies();
+        this.guiGame.placeArmies();
+    }
+
     public void sendAttackMsg(String ipClientAttack, String ipClientDefend, Territory territory, Integer nDices) {
         dicesLaunch(ipClientAttack, ipClientDefend, nDices).onSuccess(res -> {
             this.gameSender.clientAttackTerritory(ipClientAttack, ipClientDefend, res, territory).onSuccess(res2 -> {
@@ -207,18 +222,6 @@ public class GameClientImpl implements GameClient {
     public Future<List<Integer>> dicesLaunch(String ipClientAttack, String ipClientDefend, Integer nDices) {
         //TODO: LAUNCH DICES with BYZANTINE FAULT PREVENTION
         return this.gameSender.byzantineDiceLaunch(this.getIP(), nDices);
-    }
-
-    public void startTurn() {
-        this.gameSender.clientStartTurn(this.getIP()).onSuccess(res -> {
-            this.enableActions();
-        });
-    }
-
-    public void endTurn() {
-        this.gameSender.clientEndTurn(this.getIP()).onSuccess(res -> {
-            this.disableActions();
-        });
     }
 
     public void broadcastTerritories() {
