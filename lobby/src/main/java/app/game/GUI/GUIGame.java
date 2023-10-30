@@ -56,12 +56,11 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public GUIGame() {
         setLayout(new BorderLayout());
-        setTopPanel();
         this.jlState = new JLabel("WAITING");
-        add(jlState, BorderLayout.CENTER);
+        setTopPanel();
         JLabel map = new JLabel();
         map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
-        add(map, BorderLayout.SOUTH);
+        add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
         this.state = new AtomicReference<>(GAME_STATE.WAITING);
         this.guiGame = this;
@@ -85,7 +84,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(new JLabel("Goal: "+ ((GameClientImpl)Launcher.getCurrentClient()).getGoal()));
         topPanel.add(Box.createHorizontalGlue());
-        topPanel.add(new JLabel("Current Action: "));
+        topPanel.add(this.jlState);
         topPanel.add(Box.createHorizontalGlue());
         final String[] enemies = {""};
         ((GameClientImpl)Launcher.getCurrentClient()).getClientList().forEach((JSONClient client) -> {
