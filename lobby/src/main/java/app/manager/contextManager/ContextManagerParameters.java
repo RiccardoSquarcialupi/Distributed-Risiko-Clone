@@ -147,12 +147,18 @@ public class ContextManagerParameters {
         this.allTerritories.put(new Pair<>(new JSONClient(getIp(),getNickname()),territoryReceiver),newArmiesVal);
     }
 
-    public boolean addArmy(String country) {
+    public boolean addArmy(JSONClient clt, String country) {
         if(this.currentArmiesPlaced < this.toPlaceArmies){
+            var cl = new Pair<>(clt, Territory.fromString(country));
+            if(this.allTerritories.get(cl) == null) return false;
+            this.allTerritories.put(cl, this.allTerritories.get(cl) + 1);
             this.currentArmiesPlaced++;
-            // TODO: Add army to territory (problem: how to get territory from string country).
         }
         return this.currentArmiesPlaced == this.toPlaceArmies;
+    }
+
+    public Map<Pair<JSONClient,Territory>,Integer> getAllTerritories() {
+        return this.allTerritories;
     }
 
     public void resetPlaceableArmies() {

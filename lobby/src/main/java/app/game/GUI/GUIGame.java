@@ -101,15 +101,9 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         return new MouseListener() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                final AtomicReference<Pair<Integer, Integer>> mini = new AtomicReference<>(new Pair<>(Integer.MAX_VALUE, Integer.MAX_VALUE));
-                final AtomicReference<Pair<Integer, Integer>> maxi = new AtomicReference<>(new Pair<>(Integer.MIN_VALUE, Integer.MIN_VALUE));
                 parseJsonMap().forEach((country, coords) -> {
                     Polygon p = new Polygon();
                     coords.forEach((pair) -> {
-                        mini.set(new Pair<>(mini.get().getFirst() < pair.getX() ? mini.get().getFirst() : pair.getX(),
-                                mini.get().getSecond() < pair.getY() ? mini.get().getSecond() : pair.getY()));
-                        maxi.set(new Pair<>(maxi.get().getFirst() > pair.getX() ? maxi.get().getFirst() : pair.getX(),
-                                maxi.get().getSecond() > pair.getY() ? maxi.get().getSecond() : pair.getY()));
                         p.addPoint(pair.getX(), pair.getY());
                     });
                     if (p.contains(e.getPoint())) {
@@ -127,7 +121,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                         }
                     }
                 });
-                System.out.println("Mini: " + mini.get() + "\nMaxi: "+maxi.get() + "\nClick: " + e.getPoint());
             }
 
             @Override
@@ -222,6 +215,12 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void attackPhase() {
         this.state.set(GAME_STATE.ATTACKING);
         this.jlState.setText("Attack phase");
+    }
+
+    public void waitPhase() {
+        this.state.set(GAME_STATE.WAITING);
+        this.disableActions();
+        this.jlState.setText("WAITING");
     }
 
     private class PairOfCoordinates {

@@ -23,6 +23,7 @@ dependencies {
     implementation 'io.vertx:vertx-dependencies:4.4.4'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'org.apache.commons:commons-text:1.11.0'
 
 }
 

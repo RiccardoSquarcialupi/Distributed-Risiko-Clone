@@ -1,6 +1,7 @@
 package app.game.card;
 
 import java.util.List;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 
 public enum Territory implements Card {
     ALASKA("Alaska", Continent.NORTH_AMERICA, List.of("Kamchatka", "Alberta", "Northwest territory")),
@@ -65,6 +66,22 @@ public enum Territory implements Card {
             }
         }
         return null;
+    }
+
+    public static Territory fromString(String country) {
+        Territory minTerritory = null;
+        int minDistance = Integer.MAX_VALUE;
+
+        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+
+        for (Territory ter : Territory.values()) {
+            int distance = levenshteinDistance.apply(country.toLowerCase(), ter.name.toLowerCase());
+            if (distance < minDistance) {
+                minDistance = distance;
+                minTerritory = ter;
+            }
+        }
+        return minTerritory;
     }
 }
 

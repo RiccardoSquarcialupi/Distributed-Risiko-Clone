@@ -13,6 +13,7 @@ import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -198,10 +199,15 @@ public class GameClientImpl implements GameClient {
 
     @Override
     public void placeArmy(String country) {
-        if(this.cltPar.addArmy(country)){
+        if(this.cltPar.addArmy(new JSONClient(this.getIP(), this.getNickname()), country)){
             System.out.println("All territory placed");
-            this.guiGame.attackPhase();
+            if(this.myTurn){
+                this.guiGame.attackPhase();
+            } else {
+                this.guiGame.waitPhase();
+            }
         }
+        // TODO: Send to all army has been placed.
     }
 
     @Override
