@@ -13,10 +13,12 @@ import app.manager.gui.GUI;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.plaf.LayerUI;
 import java.awt.*;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -59,7 +61,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         this.jlState = new JLabel("WAITING");
         setTopPanel();
         JLabel map = new JLabel();
-        map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
+        map.setIcon(this.getUpdatedMapImage());
         add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
         this.state = new AtomicReference<>(GAME_STATE.WAITING);
@@ -239,5 +241,19 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         public int getY() {
             return this.y;
         }
+    }
+
+    private ImageIcon getUpdatedMapImage() {
+        BufferedImage img = null;
+        try {
+            img = ImageIO.read(new File(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        };
+        Graphics2D g2d = img.createGraphics();
+        g2d.setColor(Color.RED);
+        g2d.drawRect(0, 0, 100, 100);
+        g2d.dispose();
+        return new ImageIcon(img);
     }
 }
