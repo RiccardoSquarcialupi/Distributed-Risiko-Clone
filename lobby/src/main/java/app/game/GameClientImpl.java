@@ -13,8 +13,8 @@ import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 
-import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -189,7 +189,7 @@ public class GameClientImpl implements GameClient {
 
     @Override
     public boolean areTerritoriesReceived() {
-        return this.cltPar.getMaxPlayer()-1 == this.cltPar.getNumberPlayerReceivedTerritories();
+        return this.cltPar.getMaxPlayer() == this.cltPar.getNumberPlayerReceivedTerritories();
     }
 
     @Override
@@ -263,6 +263,10 @@ public class GameClientImpl implements GameClient {
 
     public void updateEnemyTerritoryWithConqueror(String ip, Territory territory, Integer nArmiesChange, String conquerorIp) {
         this.cltPar.updateEnemyTerritoryWithConqueror(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), territory, nArmiesChange, conquerorIp);
+    }
+
+    public Map<Pair<JSONClient, Territory>, Integer> getAllTerritories() {
+        return this.cltPar.getAllTerritories();
     }
 
 }

@@ -121,8 +121,8 @@ public class ContextManagerParameters {
         return this.goalCard;
     }
 
-    public void setEnemyTerritory(JSONClient client, Territory territories) {
-        this.allTerritories.put(new Pair<>(client,territories),0);
+    public void setEnemyTerritory(JSONClient client, Territory territory) {
+        this.allTerritories.put(new Pair<>(client,territory),0);
     }
 
     public void updateEnemyTerritories(JSONClient client, Territory territorySender, Territory territoryReceiver, Integer nArmies) {

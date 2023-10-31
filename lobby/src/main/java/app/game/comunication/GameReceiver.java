@@ -152,12 +152,14 @@ public class GameReceiver extends AbstractVerticle {
                         var ip = body.toJsonArray().getString(0);
                         var territory = (List<Territory>)body.toJsonArray().getJsonArray(1).getList()
                                 .stream().map(s -> Territory.fromName(s.toString())).collect(Collectors.toList());
+                        System.out.println("Received terri: " + territory);
                         territory.forEach(t -> this.gameClient.setEnemyTerritory(ip, t));
+
+                        if(this.gameClient.areTerritoriesReceived()){
+                            System.out.println("start place armies");
+                            this.gameClient.placeArmies();
+                        }
                     });
-                    if(this.gameClient.areTerritoriesReceived()){
-                        System.out.println("start place armies");
-                        this.gameClient.placeArmies();
-                    }
                     routingContext.response().setStatusCode(200).end();
                 });
         //RECEIVE STATE CARD FROM THE MANAGER AFTER CONQUER A TERRITORY

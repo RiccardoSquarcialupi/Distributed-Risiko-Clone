@@ -32,6 +32,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public enum GAME_STATE {WAITING, PLACING, ATTACKING}
     protected final AtomicReference<GAME_STATE> state;
     private final GUIGame guiGame;
+    private final List<Color> colors;
+    private final JLabel map;
 
     private void disableActions() {
         SwingUtilities.invokeLater(() -> {
@@ -58,10 +60,13 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public GUIGame() {
         setLayout(new BorderLayout());
+        this.colors = List.of(
+            Color.GREEN, Color.RED, Color.YELLOW, Color.CYAN, Color.PINK, Color.GRAY, Color.BLUE, Color.WHITE
+        );
         this.jlState = new JLabel("WAITING");
         setTopPanel();
-        JLabel map = new JLabel();
-        map.setIcon(this.getUpdatedMapImage());
+        map = new JLabel();
+        map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
         add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
         this.state = new AtomicReference<>(GAME_STATE.WAITING);
@@ -115,6 +120,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                                 break;
                             case PLACING:
                                 placeArmy(country);
+                                updateMapImage();
                                 break;
                             case ATTACKING:
                                 break;
@@ -211,6 +217,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         this.state.set(GAME_STATE.PLACING);
         var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
         this.jlState.setText("Placing armies: " + ps.getFirst() + " :/: " + ps.getSecond());
+        this.updateMapImage();
         this.enableActions();
     }
 
@@ -243,17 +250,39 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         }
     }
 
-    private ImageIcon getUpdatedMapImage() {
-        BufferedImage img = null;
+    private void updateMapImage() {
+        final AtomicReference<BufferedImage> img = new AtomicReference<>();
         try {
-            img = ImageIO.read(new File(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
+            img.set(ImageIO.read(new File(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString())));
         } catch (IOException e) {
             throw new RuntimeException(e);
         };
-        Graphics2D g2d = img.createGraphics();
-        g2d.setColor(Color.RED);
-        g2d.drawRect(0, 0, 100, 100);
+        Graphics2D g2d = img.get().createGraphics();
+
+        Map<JSONClient, Integer> clients = new HashMap<>();
+        parseJsonMap().forEach((country, coords) -> {
+            Polygon p = new Polygon();
+            coords.forEach((pair) ->
+                    p.addPoint(pair.getX(), pair.getY()-((map.getHeight()-img.get().getHeight())/2))
+            );
+            var client = ((GameClient)Launcher.getCurrentClient());
+            Territory ter = Territory.fromString(country);
+            JSONClient clt = client.getAllTerritories()
+                    .keySet().stream().filter(pa -> pa.getSecond().name().equals(ter.name()))
+                    .map(Pair::getFirst).collect(Collectors.toList()).get(0);
+            Integer armies = client.getAllTerritories().get(new Pair<>(clt, ter));
+            if(!clients.containsKey(clt)){
+                clients.put(clt, clients.size());
+            }
+            Color color = this.colors.get(clients.get(clt));
+
+            g2d.setColor(color);
+            //g2d.drawPolygon(p);
+            g2d.fillOval((int)p.getBounds().getCenterX()-15, (int)p.getBounds().getCenterY()-15, 30, 30);
+            g2d.setColor(Color.BLACK);
+            g2d.drawString(armies.toString(), (int)p.getBounds().getCenterX()-5, (int)p.getBounds().getCenterY()+5);
+        });
         g2d.dispose();
-        return new ImageIcon(img);
+        map.setIcon(new ImageIcon(img.get()));
     }
 }

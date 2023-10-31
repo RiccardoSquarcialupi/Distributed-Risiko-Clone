@@ -5,8 +5,10 @@ import app.common.Pair;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
+import app.lobbySelector.JSONClient;
 
 import java.util.List;
+import java.util.Map;
 
 public interface GameClient extends Client {
 
@@ -39,4 +41,6 @@ public interface GameClient extends Client {
     void placeArmies();
 
     Pair<Integer, Integer> getPlacingState();
+
+    Map<Pair<JSONClient, Territory>, Integer> getAllTerritories();
 }
