@@ -277,4 +277,23 @@ public class GameSender extends AbstractVerticle {
 
         return prm.future();
     }
+
+    public Future<Void> broadcastArmies(String country, Integer armies) {
+        Promise<Void> prm = Promise.promise();
+        var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
+        for (int i = 0; i < finalClientList.size(); i++) {
+            final int index = i;
+            this.client
+                    .put(5001, finalClientList.get(index).getIP(), "/client/game/armies/update")
+                    .sendJson(jsonify(country, armies))
+                    .onSuccess(response -> {
+                        System.out.println("Client " +
+                                finalClientList.get(index).getNickname() +
+                                " receive the info about armies update, " + response.statusCode());
+                    })
+                    .onFailure(err ->
+                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies update: " + err.getMessage()));
+        }
+        return prm.future();
+    }
 }

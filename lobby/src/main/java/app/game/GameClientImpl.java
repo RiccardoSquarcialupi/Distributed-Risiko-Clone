@@ -207,7 +207,8 @@ public class GameClientImpl implements GameClient {
                 this.guiGame.waitPhase();
             }
         }
-        // TODO: Send to all army has been placed.
+        gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
+                new Pair<>(new JSONClient(this.getIP(), this.getNickname()),Territory.fromString(country))));
     }
 
     @Override
@@ -267,6 +268,14 @@ public class GameClientImpl implements GameClient {
 
     public Map<Pair<JSONClient, Territory>, Integer> getAllTerritories() {
         return this.cltPar.getAllTerritories();
+    }
+
+    @Override
+    public void updateEnemyArmies(Territory country, Integer armies) {
+        var clt = this.cltPar.getAllTerritories().keySet().stream()
+                .filter(p -> p.getSecond().equals(country))
+                .collect(Collectors.toList()).get(0).getFirst();
+        this.cltPar.updateEnemyTerritoryWithConqueror(clt, country, armies, clt.getIP());
     }
 
 }

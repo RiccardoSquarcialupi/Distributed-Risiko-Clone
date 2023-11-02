@@ -169,6 +169,18 @@ public class GameReceiver extends AbstractVerticle {
                     routingContext.response().setStatusCode(200).end();
                 });
 
+        // RECEIVE ARMIES UPDATE FROM ENEMY.
+        router
+                .put("/client/game/armies/update")
+                .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        var country = Territory.fromString(body.toJsonArray().getString(0));
+                        var armies = body.toJsonArray().getInteger(1);
+                        this.gameClient.updateEnemyArmies(country, armies);
+                    });
+                    routingContext.response().setStatusCode(200).end();
+                });
+
         httpServer.requestHandler(router).listen(5001);
         isRunning = true;
     }
