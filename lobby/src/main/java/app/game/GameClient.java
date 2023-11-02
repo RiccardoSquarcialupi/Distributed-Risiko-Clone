@@ -36,7 +36,7 @@ public interface GameClient extends Client {
 
     boolean isMyTurn();
 
-    void placeArmy(String country);
+    void placeArmy(String country, Integer armies);
 
     void placeArmies();
 

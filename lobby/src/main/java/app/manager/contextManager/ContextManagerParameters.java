@@ -147,12 +147,13 @@ public class ContextManagerParameters {
         this.allTerritories.put(new Pair<>(new JSONClient(getIp(),getNickname()),territoryReceiver),newArmiesVal);
     }
 
-    public boolean addArmy(JSONClient clt, String country) {
+    public boolean addArmy(JSONClient clt, String country, Integer deltaArmies) {
         if(this.currentArmiesPlaced < this.toPlaceArmies){
             var cl = new Pair<>(clt, Territory.fromString(country));
-            if(this.allTerritories.get(cl) == null) return false;
-            this.allTerritories.put(cl, this.allTerritories.get(cl) + 1);
-            this.currentArmiesPlaced++;
+            if(this.allTerritories.get(cl) == null ||
+                    this.allTerritories.get(cl) + deltaArmies < 0) return false;
+            this.allTerritories.put(cl, this.allTerritories.get(cl) + deltaArmies);
+            this.currentArmiesPlaced += deltaArmies;
         }
         return this.currentArmiesPlaced == this.toPlaceArmies;
     }

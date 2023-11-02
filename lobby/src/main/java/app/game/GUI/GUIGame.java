@@ -119,7 +119,11 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                             case WAITING:
                                 break;
                             case PLACING:
-                                placeArmy(country);
+                                if(SwingUtilities.isLeftMouseButton(e)){
+                                    placeArmy(country, 1);
+                                } else if(SwingUtilities.isRightMouseButton(e)){
+                                    placeArmy(country, -1);
+                                }
                                 updateMapImage();
                                 break;
                             case ATTACKING:
@@ -157,10 +161,13 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         };
     }
 
-    private void placeArmy(String country){
+    private void placeArmy(String country, Integer deltaArmies){
+        ((GameClient)Launcher.getCurrentClient()).placeArmy(country, deltaArmies);
         var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
-        this.jlState.setText("Placing armies: " + (ps.getFirst()+1) + " :/: " + ps.getSecond());
-        ((GameClient)Launcher.getCurrentClient()).placeArmy(country);
+        if(this.state.get() == GAME_STATE.PLACING){
+            this.jlState.setText("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
+            System.out.println("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
+        }
     }
 
     private Map<String, List<PairOfCoordinates>> parseJsonMap() {
@@ -214,22 +221,28 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void placeArmies() {
-        this.state.set(GAME_STATE.PLACING);
-        var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
-        this.jlState.setText("Placing armies: " + ps.getFirst() + " :/: " + ps.getSecond());
-        this.updateMapImage();
-        this.enableActions();
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.PLACING);
+            var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
+            this.jlState.setText("Placing armies: " + ps.getFirst() + " :/: " + ps.getSecond());
+            this.updateMapImage();
+            this.enableActions();
+        });
     }
 
     public void attackPhase() {
-        this.state.set(GAME_STATE.ATTACKING);
-        this.jlState.setText("Attack phase");
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.ATTACKING);
+            this.jlState.setText("Attack phase");
+        });
     }
 
     public void waitPhase() {
-        this.state.set(GAME_STATE.WAITING);
-        this.disableActions();
-        this.jlState.setText("WAITING");
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.WAITING);
+            this.disableActions();
+            this.jlState.setText("WAITING");
+        });
     }
 
     private class PairOfCoordinates {
@@ -250,7 +263,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         }
     }
 
-    private void updateMapImage() {
+    public void updateMapImage() {
         final AtomicReference<BufferedImage> img = new AtomicReference<>();
         try {
             img.set(ImageIO.read(new File(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString())));

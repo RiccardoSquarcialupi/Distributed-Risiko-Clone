@@ -198,17 +198,25 @@ public class GameClientImpl implements GameClient {
     }
 
     @Override
-    public void placeArmy(String country) {
-        if(this.cltPar.addArmy(new JSONClient(this.getIP(), this.getNickname()), country)){
-            System.out.println("All territory placed");
-            if(this.myTurn){
-                this.guiGame.attackPhase();
-            } else {
-                this.guiGame.waitPhase();
-            }
-        }
+    public void placeArmy(String country, Integer deltaArmies) {
+        var over = this.cltPar.addArmy(new JSONClient(this.getIP(), this.getNickname()), country, deltaArmies);
+        this.guiGame.waitPhase();
         gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
-                new Pair<>(new JSONClient(this.getIP(), this.getNickname()),Territory.fromString(country))));
+                        new Pair<>(new JSONClient(this.getIP(), this.getNickname()),Territory.fromString(country))))
+                .onComplete(h -> {
+                    System.out.println("Received ok army placed");
+                    if (over) {
+                        System.out.println("All territory placed");
+                        if (this.myTurn) {
+                            this.guiGame.attackPhase();
+                        } else {
+                            this.guiGame.waitPhase();
+                        }
+                    } else {
+                        System.out.println("Switch back to place armies");
+                        this.guiGame.placeArmies();
+                    }
+                });
     }
 
     @Override
@@ -276,6 +284,7 @@ public class GameClientImpl implements GameClient {
                 .filter(p -> p.getSecond().equals(country))
                 .collect(Collectors.toList()).get(0).getFirst();
         this.cltPar.updateEnemyTerritoryWithConqueror(clt, country, armies, clt.getIP());
+        this.guiGame.updateMapImage();
     }
 
 }
