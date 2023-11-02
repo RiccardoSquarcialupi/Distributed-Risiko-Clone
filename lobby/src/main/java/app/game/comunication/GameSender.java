@@ -290,9 +290,12 @@ public class GameSender extends AbstractVerticle {
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +
                                 " receive the info about armies update, " + response.statusCode());
+                        prm.complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies update: " + err.getMessage()));
+                    .onFailure(err ->{
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies update: " + err.getMessage());
+                        prm.fail("Error");
+                    });
         }
         return prm.future();
     }

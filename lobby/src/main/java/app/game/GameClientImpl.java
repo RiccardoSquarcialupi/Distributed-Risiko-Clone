@@ -35,7 +35,7 @@ public class GameClientImpl implements GameClient {
         gameReceiver.start();
         this.myTurn = false;
 
-        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid ->{
+        Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid -> {
             this.guiGame = ((GUIGame) Launcher.getCurrentGui());
         });
 
@@ -138,8 +138,8 @@ public class GameClientImpl implements GameClient {
     public void checkForMyTurn(String clientIp) {
         for (int i = 0; i < this.getClientList().size(); i++) {
             if (this.getClientList().get(i).getIP().equals(clientIp)
-                && this.getClientList().get((i + 1) % this.getClientList().size()).getIP().equals(this.getIP())
-            ){
+                    && this.getClientList().get((i + 1) % this.getClientList().size()).getIP().equals(this.getIP())
+            ) {
                 this.myTurn = true;
                 guiGame.placeArmies();
             }
@@ -199,10 +199,11 @@ public class GameClientImpl implements GameClient {
 
     @Override
     public void placeArmy(String country, Integer deltaArmies) {
-        var over = this.cltPar.addArmy(new JSONClient(this.getIP(), this.getNickname()), country, deltaArmies);
+        var clt = this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(this.getIP())).collect(Collectors.toList()).get(0);
+        var over = this.cltPar.addArmy(clt, country, deltaArmies);
         this.guiGame.waitPhase();
         gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
-                        new Pair<>(new JSONClient(this.getIP(), this.getNickname()),Territory.fromString(country))))
+                        new Pair<>(clt, Territory.fromString(country))))
                 .onComplete(h -> {
                     System.out.println("Received ok army placed");
                     if (over) {
@@ -226,7 +227,7 @@ public class GameClientImpl implements GameClient {
     }
 
     @Override
-    public Pair<Integer, Integer> getPlacingState(){
+    public Pair<Integer, Integer> getPlacingState() {
         return this.cltPar.getPlacingState();
     }
 
@@ -283,7 +284,7 @@ public class GameClientImpl implements GameClient {
         var clt = this.cltPar.getAllTerritories().keySet().stream()
                 .filter(p -> p.getSecond().equals(country))
                 .collect(Collectors.toList()).get(0).getFirst();
-        this.cltPar.updateEnemyTerritoryWithConqueror(clt, country, armies, clt.getIP());
+        this.cltPar.updateEnemyTerritoryAfterBroadcast(clt, country, armies);
         this.guiGame.updateMapImage();
     }
 

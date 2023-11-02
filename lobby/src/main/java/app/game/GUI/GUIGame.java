@@ -12,6 +12,7 @@ import app.lobbySelector.JSONClient;
 import app.manager.gui.GUI;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.Vertx;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -74,14 +75,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
         this.disableActions();
 
-        /*SwingUtilities.invokeLater(() -> {
-            try {
-                Thread.sleep(2000);
-                ((GameClientImpl) Launcher.getCurrentClient()).broadcastTerritories();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });*/
     }
 
     private void setTopPanel() {
@@ -162,12 +155,14 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     private void placeArmy(String country, Integer deltaArmies){
-        ((GameClient)Launcher.getCurrentClient()).placeArmy(country, deltaArmies);
-        var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
-        if(this.state.get() == GAME_STATE.PLACING){
-            this.jlState.setText("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
-            System.out.println("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
-        }
+        Launcher.getVertx().setTimer(250, id -> {
+            ((GameClient)Launcher.getCurrentClient()).placeArmy(country, deltaArmies);
+            var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
+            if(this.state.get() == GAME_STATE.PLACING){
+                this.jlState.setText("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
+                System.out.println("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
+            }
+        });
     }
 
     private Map<String, List<PairOfCoordinates>> parseJsonMap() {
@@ -264,38 +259,41 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void updateMapImage() {
-        final AtomicReference<BufferedImage> img = new AtomicReference<>();
-        try {
-            img.set(ImageIO.read(new File(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString())));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        };
-        Graphics2D g2d = img.get().createGraphics();
+        SwingUtilities.invokeLater(() -> {
+            final AtomicReference<BufferedImage> img = new AtomicReference<>();
+            try {
+                img.set(ImageIO.read(new File(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString())));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            };
+            Graphics2D g2d = img.get().createGraphics();
 
-        Map<JSONClient, Integer> clients = new HashMap<>();
-        parseJsonMap().forEach((country, coords) -> {
-            Polygon p = new Polygon();
-            coords.forEach((pair) ->
-                    p.addPoint(pair.getX(), pair.getY()-((map.getHeight()-img.get().getHeight())/2))
-            );
-            var client = ((GameClient)Launcher.getCurrentClient());
-            Territory ter = Territory.fromString(country);
-            JSONClient clt = client.getAllTerritories()
-                    .keySet().stream().filter(pa -> pa.getSecond().name().equals(ter.name()))
-                    .map(Pair::getFirst).collect(Collectors.toList()).get(0);
-            Integer armies = client.getAllTerritories().get(new Pair<>(clt, ter));
-            if(!clients.containsKey(clt)){
-                clients.put(clt, clients.size());
-            }
-            Color color = this.colors.get(clients.get(clt));
+            Map<JSONClient, Integer> clients = new HashMap<>();
+            parseJsonMap().forEach((country, coords) -> {
+                Polygon p = new Polygon();
+                coords.forEach((pair) ->
+                        p.addPoint(pair.getX(), pair.getY()-((map.getHeight()-img.get().getHeight())/2))
+                );
+                var client = ((GameClient)Launcher.getCurrentClient());
+                Territory ter = Territory.fromString(country);
+                JSONClient clt = client.getAllTerritories()
+                        .keySet().stream().filter(pa -> pa.getSecond().name().equals(ter.name()))
+                        .map(Pair::getFirst).collect(Collectors.toList()).get(0);
+                Integer armies = client.getAllTerritories().get(new Pair<>(clt, ter));
+                if(!clients.containsKey(clt)){
+                    clients.put(clt, clients.size());
+                }
+                Color color = this.colors.get(clients.get(clt));
 
-            g2d.setColor(color);
-            //g2d.drawPolygon(p);
-            g2d.fillOval((int)p.getBounds().getCenterX()-15, (int)p.getBounds().getCenterY()-15, 30, 30);
-            g2d.setColor(Color.BLACK);
-            g2d.drawString(armies.toString(), (int)p.getBounds().getCenterX()-5, (int)p.getBounds().getCenterY()+5);
+                g2d.setColor(color);
+                g2d.drawPolygon(p);
+                g2d.fillOval((int)p.getBounds().getCenterX()-15, (int)p.getBounds().getCenterY()-15, 30, 30);
+                g2d.setColor(Color.BLACK);
+                g2d.drawString(armies.toString(), (int)p.getBounds().getCenterX()-5, (int)p.getBounds().getCenterY()+5);
+            });
+            g2d.dispose();
+            map.setIcon(new ImageIcon(img.get()));
         });
-        g2d.dispose();
-        map.setIcon(new ImageIcon(img.get()));
+
     }
 }
