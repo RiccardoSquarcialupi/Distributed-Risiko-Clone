@@ -108,16 +108,26 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                     });
                     if (p.contains(e.getPoint())) {
                         System.out.println("Clicked on " + country);
+                        System.out.println("State: " + state.get());
                         switch (state.get()) {
                             case WAITING:
                                 break;
                             case PLACING:
-                                if(SwingUtilities.isLeftMouseButton(e)){
-                                    placeArmy(country, 1);
-                                } else if(SwingUtilities.isRightMouseButton(e)){
-                                    placeArmy(country, -1);
-                                }
-                                updateMapImage();
+                                ((GameClientImpl)Launcher.getCurrentClient()).getAllTerritories().forEach((pair, armies) -> {
+                                    if(pair.getFirst().getNickname().equals(((GameClientImpl)Launcher.getCurrentClient()).getNickname())){
+                                        System.out.println("Pair: " + pair);
+                                        System.out.println("Country name converted in enum: " + Territory.fromString(country));
+                                        if(pair.getSecond().equals(Territory.fromString(country))){
+                                            if(SwingUtilities.isLeftMouseButton(e)){
+                                                placeArmy(country, 1);
+                                                updateMapImage();
+                                            } else if(SwingUtilities.isRightMouseButton(e)){
+                                                placeArmy(country, -1);
+                                                updateMapImage();
+                                            }
+                                        }
+                                    }
+                                });
                                 break;
                             case ATTACKING:
                                 break;
@@ -188,8 +198,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         boardMap.forEach((country, coords) -> {
             var l = new ArrayList<PairOfCoordinates>();
             for (int i = 0; i < coords.size() - 1; i = i + 2) {
-                //WINDOW is 1600x1000 +180 is magic number for fixing the map because is centered in the JFRAME
-                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1)+180);
+                //WINDOW is 1600x1000 +175 is magic number for fixing the map because is centered in the JFRAME
+                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1)+185);
                 l.add(p1);
             }
             finalMap.put(country, l);
