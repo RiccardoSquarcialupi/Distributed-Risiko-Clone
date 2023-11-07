@@ -13,9 +13,7 @@ import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -27,6 +25,16 @@ public class GameClientImpl implements GameClient {
 
     private GUIGame guiGame;
     private boolean myTurn;
+    private final Map<JSONClient,List<JSONClient>> randomOrderList = new HashMap<>();
+    private List<JSONClient> randomOrder = new ArrayList<>();
+
+    public List<JSONClient> getRandomOrder() {
+        return randomOrder;
+    }
+
+    private boolean orderFound = false;
+
+
 
     public GameClientImpl(ContextManagerParameters cltPar) {
         this.cltPar = cltPar;
@@ -136,9 +144,9 @@ public class GameClientImpl implements GameClient {
     }
 
     public void checkForMyTurn(String clientIp) {
-        for (int i = 0; i < this.getClientList().size(); i++) {
-            if (this.getClientList().get(i).getIP().equals(clientIp)
-                    && this.getClientList().get((i + 1) % this.getClientList().size()).getIP().equals(this.getIP())
+        for (int i = 0; i < this.randomOrder.size(); i++) {
+            if (this.randomOrder.get(i).getIP().equals(clientIp)
+                    && this.randomOrder.get((i + 1) % this.randomOrder.size()).getIP().equals(this.getIP())
             ) {
                 this.myTurn = true;
                 guiGame.placeArmies();
@@ -208,15 +216,19 @@ public class GameClientImpl implements GameClient {
                     System.out.println("Received ok army placed");
                     if (over) {
                         System.out.println("All territory placed");
-                        if (this.myTurn) {
-                            this.guiGame.attackPhase();
-                        } else {
-                            this.guiGame.waitPhase();
-                        }
+                        this.guiGame.orderPhase();
+
+//                        if (this.myTurn) {
+//                            this.guiGame.attackPhase();
+//                        } else {
+//                            this.guiGame.waitPhase();
+//                        }
                     } else {
                         System.out.println("Switch back to place armies");
                         this.guiGame.placeArmies();
                     }
+                }).onFailure(h -> {
+                System.out.println("ERROR ON BROADCAST ARMIES");
                 });
     }
 
@@ -286,6 +298,49 @@ public class GameClientImpl implements GameClient {
                 .collect(Collectors.toList()).get(0).getFirst();
         this.cltPar.updateEnemyTerritoryAfterBroadcast(clt, country, armies);
         this.guiGame.updateMapImage();
+    }
+
+    @Override
+    public void receiveRandomOrder(String ip, List<JSONClient> order) {
+        if(!orderFound){
+            randomOrderList.put(this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), order);
+            System.out.println("SIZE OF RANDOM ORDER "+randomOrderList.size() + " SIZE OF CLIENT LIST " + this.cltPar.getClientList().size());
+            if (randomOrderList.size() == this.cltPar.getClientList().size()) {
+                //CHECK IF EVERY LIST IN THE MAP IS THE SAME OTHERWISE PICK ONE RANDOMLY, CLEAR THE RANDOM ORDER LIST AND REPEAT
+                List<JSONClient> first = randomOrderList.get(new ArrayList<>(this.randomOrderList.keySet()).get(0));
+                boolean allEquals = true;
+                for (var entry : randomOrderList.entrySet()) {
+                    if (!entry.getValue().equals(first)) {
+                        allEquals = false;
+                        break;
+                    }
+                }
+                if (!allEquals) {
+                    System.out.println("RANDOM ORDER NOT EQUALS cleaning and repeating");
+                    Random rn = new Random();
+                    int i = rn.nextInt(getClientList().size());
+                    List<JSONClient> randomPick = randomOrderList.get(new ArrayList<>(this.randomOrderList.keySet()).get(i));
+                    randomOrderList.clear();
+                    sendRandomOrderForTurning(randomPick);
+                } else {
+                    //THIS IS THE ORDER
+                    System.out.println("ORDER FOUND!!!");
+                    this.orderFound = true;
+                    System.out.println("Order:" + Arrays.toString(first.toArray()));
+                    this.randomOrder = first;
+                    //REPLYING THE ORDER FOUND TO THE OTHERS
+                    sendRandomOrderForTurning(first);
+                    this.guiGame.orderFound();
+                }
+            }
+        }
+
+
+    }
+
+    public void sendRandomOrderForTurning(List<JSONClient> shuffledList){
+        randomOrderList.put(this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(this.getIP())).collect(Collectors.toList()).get(0), shuffledList);
+        this.gameSender.sendRandomOrderForTurning(this.getIP(), shuffledList);
     }
 
 }

@@ -5,7 +5,9 @@ import app.game.GameClientImpl;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
+import app.lobbySelector.JSONClient;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -41,9 +43,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my start turn, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my start turn: " + err.getMessage()));
+                    .onFailure(err -> {
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my start turn: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -62,9 +67,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my territories, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my territories: " + err.getMessage()));
+                    .onFailure(err ->{
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my territories: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -86,9 +94,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my turn is finished, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my turn is finished: " + err.getMessage()));
+                    .onFailure(err ->{
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my turn is finished: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -110,9 +121,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my state card, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my state card: " + err.getMessage()));
+                    .onFailure(err ->{
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my state card: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -136,9 +150,8 @@ public class GameSender extends AbstractVerticle {
                                     finalClientList.get(index).getNickname() +
                                     " receive the info about my armies in territory, " + response.statusCode());
                             lpv.get(index).complete();
-                        })
-                        .onFailure(err ->
-                                System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies in territory: " + err.getMessage()));
+                        });
+
             }
         } else {
             for (int i = 0; i < finalClientList.size(); i++) {
@@ -152,13 +165,13 @@ public class GameSender extends AbstractVerticle {
                                     " receive the info about my armies in territory, " + response.statusCode());
                             lpv.get(index).complete();
                         })
-                        .onFailure(err ->
-                                System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies in territory: " + err.getMessage()));
-
-
+                        .onFailure(err ->{
+                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies in territory: " + err.getMessage());
+                            lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                        });
             }
-
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -181,9 +194,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my state card bonus, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my state card bonus: " + err.getMessage()));
+                    .onFailure(err ->{
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my state card bonus: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -205,9 +221,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my attack, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my attack: " + err.getMessage()));
+                    .onFailure(err ->{
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my attack: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -229,9 +248,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my defense, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my defense: " + err.getMessage()));
+                    .onFailure(err -> {
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my defense: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -253,9 +275,12 @@ public class GameSender extends AbstractVerticle {
                                 " receive the info about my win, " + response.statusCode());
                         lpv.get(index).complete();
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my win: " + err.getMessage()));
+                    .onFailure(err -> {
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my win: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
         return prm.future();
     }
 
@@ -281,6 +306,7 @@ public class GameSender extends AbstractVerticle {
     public Future<Void> broadcastArmies(String country, Integer armies) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
+        List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
         for (int i = 0; i < finalClientList.size(); i++) {
             final int index = i;
             this.client
@@ -290,13 +316,40 @@ public class GameSender extends AbstractVerticle {
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +
                                 " receive the info about armies update, " + response.statusCode());
-                        prm.complete();
+                        lpv.get(index).complete();
                     })
-                    .onFailure(err ->{
+                    .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies update: " + err.getMessage());
-                        prm.fail("Error");
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        return prm.future();
+    }
+
+    public Future<Void> sendRandomOrderForTurning(String ip, List<JSONClient> clientList) {
+        Promise<Void> prm = Promise.promise();
+        var jsonObjectClientList = clientList.stream().map(JSONClient::toJson).collect(Collectors.toList());
+        var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
+        List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
+        for (int i = 0; i < finalClientList.size(); i++) {
+            final int index = i;
+            this.client
+                    .put(5001, finalClientList.get(index).getIP(), "/client/game/order")
+                    .sendJson(jsonify(ip, jsonObjectClientList))
+                    .onSuccess(response -> {
+                        System.out.println("Client " +
+                                finalClientList.get(index).getNickname() +
+                                " receive the random order, " + response.statusCode());
+                        lpv.get(index).complete();
+                    })
+                    .onFailure(err -> {
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the random order " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
+        }
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+
         return prm.future();
     }
 }

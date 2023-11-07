@@ -1,17 +1,17 @@
 package app.game.comunication;
 
 import app.Launcher;
-import app.game.GUI.GUIGame;
 import app.game.GameClient;
-import app.game.GameClientImpl;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -180,6 +180,23 @@ public class GameReceiver extends AbstractVerticle {
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
+
+        router.put("/client/game/order")
+                        .handler(routingContext -> {
+                            routingContext.request().bodyHandler(body -> {
+                                var ip = body.toJsonArray().getString(0);
+                                var order = body.toJsonArray().getJsonArray(1);
+                                System.out.println("Received order: " + order);
+                                //TRYING TO CONVERT ORDER IN A LIST<JSONCLIENT>
+                                List<JSONClient> jsonClients = new ArrayList<>();
+                                for (int i = 0; i < order.size(); i++) {
+                                    jsonClients.add(JSONClient.fromJson((JsonObject) order.getValue(i)));
+                                }
+                                System.out.println("Received order converted in List<JSONClient>: " + jsonClients);
+                                this.gameClient.receiveRandomOrder(ip, jsonClients);
+                            });
+                            routingContext.response().setStatusCode(200).end();
+                        });
 
         httpServer.requestHandler(router).listen(5001);
         isRunning = true;

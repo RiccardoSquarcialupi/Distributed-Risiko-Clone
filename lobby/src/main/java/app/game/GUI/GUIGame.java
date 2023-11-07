@@ -7,16 +7,13 @@ import app.game.GameClientImpl;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
-import app.lobby.LobbyClientImpl;
 import app.lobbySelector.JSONClient;
 import app.manager.gui.GUI;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vertx.core.Vertx;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.plaf.LayerUI;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -30,11 +27,20 @@ import java.util.stream.Collectors;
 
 public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
-    public enum GAME_STATE {WAITING, PLACING, ATTACKING}
+
+
+
+    public enum GAME_STATE {WAITING, ORDERING, PLACING, ATTACKING}
+    private boolean orderHasBeenSet= false;
+
     protected final AtomicReference<GAME_STATE> state;
     private final GUIGame guiGame;
+    private List<String> enemies;
     private final List<Color> colors;
     private final JLabel map;
+    private final List<Pair<String,Integer>> clientColorsList = new ArrayList<>();
+    private JLabel player;
+    private JLabel enemiesLabel;
 
     private void disableActions() {
         SwingUtilities.invokeLater(() -> {
@@ -61,8 +67,9 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public GUIGame() {
         setLayout(new BorderLayout());
+        enemies = new ArrayList<>();
         this.colors = List.of(
-            Color.GREEN, Color.RED, Color.YELLOW, Color.CYAN, Color.PINK, Color.GRAY, Color.BLUE, Color.WHITE
+                Color.GREEN, Color.RED, Color.YELLOW, Color.CYAN, Color.PINK, Color.GRAY, Color.BLUE, Color.WHITE
         );
         this.jlState = new JLabel("WAITING");
         setTopPanel();
@@ -72,27 +79,42 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         map.addMouseListener(onMapClick());
         this.state = new AtomicReference<>(GAME_STATE.WAITING);
         this.guiGame = this;
-
+        setRightPanel();
         this.disableActions();
 
+    }
+
+    private void setRightPanel() {
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        JButton endTurn = new JButton("End Turn");
+        endTurn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rightPanel.add(endTurn);
+        rightPanel.add(Box.createVerticalGlue());
+        endTurn.addActionListener(e -> {
+            ((GameClientImpl) Launcher.getCurrentClient()).endMyTurn();
+            this.disableActions();
+        });
+        add(endTurn, BorderLayout.EAST);
     }
 
     private void setTopPanel() {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
-        topPanel.add(new JLabel("Player: "+ ((GameClientImpl)Launcher.getCurrentClient()).getNickname()));
+        player = new JLabel("Player: " + ((GameClientImpl) Launcher.getCurrentClient()).getNickname());
+        topPanel.add(player);
         topPanel.add(Box.createHorizontalGlue());
-        topPanel.add(new JLabel("Goal: "+ ((GameClientImpl)Launcher.getCurrentClient()).getGoal()));
+        topPanel.add(new JLabel("Goal: " + ((GameClientImpl) Launcher.getCurrentClient()).getGoal()));
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(this.jlState);
         topPanel.add(Box.createHorizontalGlue());
-        final String[] enemies = {""};
-        ((GameClientImpl)Launcher.getCurrentClient()).getClientList().forEach((JSONClient client) -> {
-            if(!client.getNickname().equals(((GameClientImpl)Launcher.getCurrentClient()).getNickname())){
-                enemies[0] += client.getNickname() + " ";
+        ((GameClientImpl) Launcher.getCurrentClient()).getClientList().forEach((JSONClient client) -> {
+            if (!client.getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())) {
+                enemies.add(client.getNickname());
             }
         });
-        topPanel.add(new JLabel("Enemies: " + enemies[0]));
+        enemiesLabel = new JLabel("Enemies: " + enemies.toString());
+        topPanel.add(enemiesLabel);
         topPanel.add(Box.createHorizontalGlue());
         add(topPanel, BorderLayout.NORTH);
     }
@@ -110,26 +132,28 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                         System.out.println("Clicked on " + country);
                         System.out.println("State: " + state.get());
                         switch (state.get()) {
-                            case WAITING:
-                                break;
                             case PLACING:
-                                ((GameClientImpl)Launcher.getCurrentClient()).getAllTerritories().forEach((pair, armies) -> {
-                                    if(pair.getFirst().getNickname().equals(((GameClientImpl)Launcher.getCurrentClient()).getNickname())){
-                                        System.out.println("Pair: " + pair);
-                                        System.out.println("Country name converted in enum: " + Territory.fromString(country));
-                                        if(pair.getSecond().equals(Territory.fromString(country))){
-                                            if(SwingUtilities.isLeftMouseButton(e)){
+                                ((GameClientImpl) Launcher.getCurrentClient()).getAllTerritories().forEach((pair, armies) -> {
+                                    if (pair.getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())) {
+                                        if (pair.getSecond().equals(Territory.fromString(country))) {
+                                            System.out.println("Pair: " + pair);
+                                            System.out.println("Country name converted in enum: " + Territory.fromString(country));
+                                            if (SwingUtilities.isLeftMouseButton(e)) {
                                                 placeArmy(country, 1);
                                                 updateMapImage();
-                                            } else if(SwingUtilities.isRightMouseButton(e)){
+                                            } else if (SwingUtilities.isRightMouseButton(e)) {
                                                 placeArmy(country, -1);
                                                 updateMapImage();
                                             }
+
                                         }
                                     }
                                 });
                                 break;
                             case ATTACKING:
+                            case WAITING:
+                            case ORDERING:
+                                updateMapImage();
                                 break;
                             default:
                                 break;
@@ -164,11 +188,11 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         };
     }
 
-    private void placeArmy(String country, Integer deltaArmies){
+    private void placeArmy(String country, Integer deltaArmies) {
         Launcher.getVertx().setTimer(250, id -> {
-            ((GameClient)Launcher.getCurrentClient()).placeArmy(country, deltaArmies);
+            ((GameClient) Launcher.getCurrentClient()).placeArmy(country, deltaArmies);
             var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
-            if(this.state.get() == GAME_STATE.PLACING){
+            if (this.state.get() == GAME_STATE.PLACING) {
                 this.jlState.setText("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
                 System.out.println("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
             }
@@ -199,7 +223,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             var l = new ArrayList<PairOfCoordinates>();
             for (int i = 0; i < coords.size() - 1; i = i + 2) {
                 //WINDOW is 1600x1000 +175 is magic number for fixing the map because is centered in the JFRAME
-                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1)+185);
+                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1) + 185);
                 l.add(p1);
             }
             finalMap.put(country, l);
@@ -245,8 +269,21 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void waitPhase() {
         SwingUtilities.invokeLater(() -> {
             this.state.set(GAME_STATE.WAITING);
-            this.disableActions();
             this.jlState.setText("WAITING");
+            this.disableActions();
+        });
+    }
+
+    public void orderPhase() {
+        SwingUtilities.invokeLater(() -> {
+            if(!orderHasBeenSet){
+                this.state.set(GAME_STATE.ORDERING);
+                this.jlState.setText("ORDERING");
+                var listToShuffle = new ArrayList<>(((GameClientImpl)Launcher.getCurrentClient()).getClientList());
+                System.out.println("List to shuffle: "+listToShuffle);
+                Collections.shuffle(listToShuffle);
+                ((GameClientImpl)Launcher.getCurrentClient()).sendRandomOrderForTurning(listToShuffle);
+            }
         });
     }
 
@@ -270,40 +307,88 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public void updateMapImage() {
         SwingUtilities.invokeLater(() -> {
+            clientColorsList.clear();
             final AtomicReference<BufferedImage> img = new AtomicReference<>();
             try {
                 img.set(ImageIO.read(new File(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString())));
             } catch (IOException e) {
                 throw new RuntimeException(e);
-            };
+            }
+            ;
             Graphics2D g2d = img.get().createGraphics();
 
             Map<JSONClient, Integer> clients = new HashMap<>();
             parseJsonMap().forEach((country, coords) -> {
                 Polygon p = new Polygon();
                 coords.forEach((pair) ->
-                        p.addPoint(pair.getX(), pair.getY()-((map.getHeight()-img.get().getHeight())/2))
+                        p.addPoint(pair.getX(), pair.getY() - ((map.getHeight() - img.get().getHeight()) / 2))
                 );
-                var client = ((GameClient)Launcher.getCurrentClient());
+                var client = ((GameClient) Launcher.getCurrentClient());
                 Territory ter = Territory.fromString(country);
                 JSONClient clt = client.getAllTerritories()
                         .keySet().stream().filter(pa -> pa.getSecond().name().equals(ter.name()))
                         .map(Pair::getFirst).collect(Collectors.toList()).get(0);
                 Integer armies = client.getAllTerritories().get(new Pair<>(clt, ter));
-                if(!clients.containsKey(clt)){
+                if (!clients.containsKey(clt)) {
                     clients.put(clt, clients.size());
                 }
                 Color color = this.colors.get(clients.get(clt));
-
+                clientColorsList.add(new Pair<>(clt.getNickname(), clients.get(clt)));
                 g2d.setColor(color);
                 g2d.drawPolygon(p);
-                g2d.fillOval((int)p.getBounds().getCenterX()-15, (int)p.getBounds().getCenterY()-15, 30, 30);
+                g2d.fillOval((int) p.getBounds().getCenterX() - 15, (int) p.getBounds().getCenterY() - 15, 30, 30);
                 g2d.setColor(Color.BLACK);
-                g2d.drawString(armies.toString(), (int)p.getBounds().getCenterX()-5, (int)p.getBounds().getCenterY()+5);
+                g2d.drawString(armies.toString(), (int) p.getBounds().getCenterX() - 5, (int) p.getBounds().getCenterY() + 5);
             });
+            Integer indexOfColor = clientColorsList.stream().filter(p -> p.getFirst().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())).collect(Collectors.toList()).get(0).getSecond();
+            player.setText("Player: " + ((GameClientImpl) Launcher.getCurrentClient()).getNickname()+" has color: "+ getColorFromIndex(indexOfColor));
+            StringBuilder printEnemies = new StringBuilder();
+            for (String enemy : enemies) {
+                printEnemies.append(enemy.concat(" has color: ").concat(getColorFromIndex(clientColorsList.stream().filter(p -> p.getFirst().equals(enemy)).collect(Collectors.toList()).get(0).getSecond())).concat(" \n"));
+            }
+            enemiesLabel.setText("Enemies: " + printEnemies);
             g2d.dispose();
             map.setIcon(new ImageIcon(img.get()));
         });
+
+    }
+
+    private String getColorFromIndex(Integer indexOfColor) {
+        switch (indexOfColor) {
+            case 0:
+                return "GREEN";
+            case 1:
+                return "RED";
+            case 2:
+                return "YELLOW";
+            case 3:
+                return "CYAN";
+            case 4:
+                return "PINK";
+            case 5:
+                return "GRAY";
+            case 6:
+                return "BLUE";
+            case 7:
+                return "WHITE";
+            default:
+                return "BLACK";
+        }
+    }
+
+    public void orderFound() {
+        this.orderHasBeenSet = true;
+        //Check if I'm the first player to play
+        var firstNick = ((GameClientImpl)Launcher.getCurrentClient()).getRandomOrder().get(0).getNickname();
+        System.out.println("First player to play: "+firstNick);
+        var nick = ((GameClientImpl)Launcher.getCurrentClient()).getNickname();
+        System.out.println("My nick: "+nick);
+        if(firstNick.equals(nick)){
+            System.out.println("ITS MY TURN, I'm the first player to play");
+            //this.placeArmies();
+        }else{
+            this.waitPhase();
+        }
 
     }
 }
