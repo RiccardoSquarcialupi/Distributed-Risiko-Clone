@@ -338,6 +338,14 @@ public class GameClientImpl implements GameClient {
 
     }
 
+    @Override
+    public void throwDices(int nDices){
+        Launcher.getVertx().setTimer(1, (l) -> {
+        System.out.println("Sending " + nDices + " throws");
+        this.gameSender.byzantineDiceLaunch(this.getIP(), nDices).onSuccess(System.out::println);
+        });
+    }
+
     public void sendRandomOrderForTurning(List<JSONClient> shuffledList){
         randomOrderList.put(this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(this.getIP())).collect(Collectors.toList()).get(0), shuffledList);
         this.gameSender.sendRandomOrderForTurning(this.getIP(), shuffledList);

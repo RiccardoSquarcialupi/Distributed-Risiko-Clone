@@ -47,4 +47,6 @@ public interface GameClient extends Client {
     void updateEnemyArmies(Territory country, Integer armies);
 
     void receiveRandomOrder(String ip, List<JSONClient> order);
+
+    void throwDices(int nDices);
 }

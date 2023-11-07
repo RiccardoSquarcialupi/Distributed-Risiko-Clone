@@ -6,13 +6,14 @@ import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
+import com.google.common.hash.Hashing;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GameReceiver extends AbstractVerticle {
@@ -150,12 +151,12 @@ public class GameReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
                         var ip = body.toJsonArray().getString(0);
-                        var territory = (List<Territory>)body.toJsonArray().getJsonArray(1).getList()
+                        var territory = (List<Territory>) body.toJsonArray().getJsonArray(1).getList()
                                 .stream().map(s -> Territory.fromName(s.toString())).collect(Collectors.toList());
                         System.out.println("Received terri: " + territory);
                         territory.forEach(t -> this.gameClient.setEnemyTerritory(ip, t));
 
-                        if(this.gameClient.areTerritoriesReceived()){
+                        if (this.gameClient.areTerritoriesReceived()) {
                             System.out.println("start place armies");
                             this.gameClient.placeArmies();
                         }
@@ -197,6 +198,40 @@ public class GameReceiver extends AbstractVerticle {
                             });
                             routingContext.response().setStatusCode(200).end();
                         });
+
+        Map<String, String> clientDiceHash = new HashMap<>();
+        // RECEIVE DICE THROW INIT.
+        router
+                .post("/client/game/dice/throw")
+                .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        var ipClient = body.toJsonArray().getString(0);
+                        var hDice = body.toJsonArray().getString(1);
+                        clientDiceHash.put(ipClient, hDice);
+                        var resp = new JsonArray();
+                        resp.add((new Random()).nextInt(6) + 1);
+                        routingContext.response().setStatusCode(200).end(resp.toBuffer());
+                    });
+
+                });
+
+        // RECEIVE DICE CONFIRM.
+        router
+                .put("/client/game/dice/confirm")
+                .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        var ipClient = body.toJsonArray().getString(0);
+                        var rDice = body.toJsonArray().getInteger(1);
+                        var kDice = Base64.getDecoder().decode(body.toJsonArray().getString(2));
+                        String chDice = Hashing.hmacSha256(kDice).hashInt(rDice).toString();
+                        if (chDice.equals(clientDiceHash.get(ipClient))) {
+                            routingContext.response().setStatusCode(200).end();
+                        } else {
+                            routingContext.response().setStatusCode(403).end();
+                        }
+                    });
+
+                });
 
         httpServer.requestHandler(router).listen(5001);
         isRunning = true;
