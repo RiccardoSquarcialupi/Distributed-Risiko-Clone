@@ -109,6 +109,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                     if (p.contains(e.getPoint())) {
                         System.out.println("Clicked on " + country);
                         System.out.println("State: " + state.get());
+                        ((GameClientImpl)Launcher.getCurrentClient()).throwDices(5);
                         switch (state.get()) {
                             case WAITING:
                                 break;

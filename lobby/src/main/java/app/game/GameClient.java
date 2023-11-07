@@ -45,4 +45,6 @@ public interface GameClient extends Client {
     Map<Pair<JSONClient, Territory>, Integer> getAllTerritories();
 
     void updateEnemyArmies(Territory country, Integer armies);
+
+    void throwDices(int nDices);
 }

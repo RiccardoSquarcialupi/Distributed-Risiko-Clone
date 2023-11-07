@@ -288,4 +288,12 @@ public class GameClientImpl implements GameClient {
         this.guiGame.updateMapImage();
     }
 
+    @Override
+    public void throwDices(int nDices){
+        Launcher.getVertx().setTimer(1, (l) -> {
+            System.out.println("Sending " + nDices + " throws");
+            this.gameSender.byzantineDiceLaunch(this.getIP(), nDices).onSuccess(System.out::println);
+        });
+    }
+
 }

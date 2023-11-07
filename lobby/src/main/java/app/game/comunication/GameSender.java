@@ -14,6 +14,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.client.WebClient;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -305,8 +306,8 @@ public class GameSender extends AbstractVerticle {
             for (int i = 0; i < finalClientList.size(); i++) {
                 final int index = i;
                 this.client
-                        .post(5001, finalClientList.get(index).getIP(), "/client/game/dice/confirm")
-                        .sendJson(jsonify(ipClient, rDice, kDice))
+                        .put(5001, finalClientList.get(index).getIP(), "/client/game/dice/confirm")
+                        .sendJson(jsonify(ipClient, rDice, new String(kDice, StandardCharsets.UTF_8)))
                         .onSuccess(response -> {
                             System.out.println("Client " +
                                     finalClientList.get(index).getNickname() +
