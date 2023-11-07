@@ -16,10 +16,7 @@ import io.vertx.ext.web.Router;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -199,7 +196,7 @@ public class GameReceiver extends AbstractVerticle {
                         var hDice = body.toJsonArray().getString(1);
                         clientDiceHash.put(ipClient, hDice);
                         var resp = new JsonArray();
-                        resp.add((new Random()).nextInt(7));
+                        resp.add((new Random()).nextInt(6) + 1);
                         routingContext.response().setStatusCode(200).end(resp.toBuffer());
                     });
 
@@ -212,7 +209,7 @@ public class GameReceiver extends AbstractVerticle {
                     routingContext.request().bodyHandler(body -> {
                         var ipClient = body.toJsonArray().getString(0);
                         var rDice = body.toJsonArray().getInteger(1);
-                        var kDice = body.toJsonArray().getString(2).getBytes(StandardCharsets.UTF_8);
+                        var kDice = Base64.getDecoder().decode(body.toJsonArray().getString(2));
                         String chDice = Hashing.hmacSha256(kDice).hashInt(rDice).toString();
                         if(chDice.equals(clientDiceHash.get(ipClient))){
                             routingContext.response().setStatusCode(200).end();

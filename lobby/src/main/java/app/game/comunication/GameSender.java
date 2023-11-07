@@ -15,10 +15,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.client.WebClient;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -281,7 +278,7 @@ public class GameSender extends AbstractVerticle {
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         var lpv = finalClientList.stream()
                 .map(c -> Promise.promise()).collect(Collectors.toList());
-        var rDice = (new Random()).nextInt(7);
+        var rDice = (new Random()).nextInt(6) + 1;
         var kDice = Utils.intToByteArray((new Random()).nextInt());
         var hDice = Hashing.hmacSha256(kDice).hashInt(rDice).toString();
         var sDice = new AtomicInteger(rDice);
@@ -291,10 +288,7 @@ public class GameSender extends AbstractVerticle {
                     .post(5001, finalClientList.get(index).getIP(), "/client/game/dice/throw")
                     .sendJson(jsonify(ipClient, hDice))
                     .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the dice throw, " + response.statusCode());
-                        sDice.addAndGet(response.body().getInt(0));
+                        sDice.addAndGet(response.body().toJsonArray().getInteger(0));
                         lpv.get(index).complete();
                     })
                     .onFailure(err ->
@@ -307,11 +301,11 @@ public class GameSender extends AbstractVerticle {
                 final int index = i;
                 this.client
                         .put(5001, finalClientList.get(index).getIP(), "/client/game/dice/confirm")
-                        .sendJson(jsonify(ipClient, rDice, new String(kDice, StandardCharsets.UTF_8)))
+                        .sendJson(jsonify(
+                                ipClient,
+                                rDice,
+                                Base64.getEncoder().encodeToString(kDice)))
                         .onSuccess(response -> {
-                            System.out.println("Client " +
-                                    finalClientList.get(index).getNickname() +
-                                    " receive the dice confirm, " + response.statusCode());
                             lp.get(index).complete();
                         })
                         .onFailure(err ->
@@ -319,7 +313,7 @@ public class GameSender extends AbstractVerticle {
             }
         });
         Future.all(lp.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> {
-            List<Integer> diceResults = new ArrayList<>(List.of(sDice.get() % 7));
+            List<Integer> diceResults = new ArrayList<>(List.of((sDice.get() % 6) + 1));
             if(nDices > 1){
                 this.byzantineDiceLaunch(ipClient, nDices-1).onSuccess(ss->{
                    diceResults.addAll(ss);
