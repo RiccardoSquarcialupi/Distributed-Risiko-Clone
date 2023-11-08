@@ -38,6 +38,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     private JLabel player;
     private JLabel enemiesLabel;
     private final JLabel jlState;
+    private final JTextArea log = new JTextArea();
 
     public GUIGame() {
         setLayout(new BorderLayout());
@@ -46,32 +47,17 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                 Color.GREEN, Color.RED, Color.YELLOW, Color.CYAN, Color.PINK, Color.GRAY, Color.BLUE, Color.WHITE
         );
         this.jlState = new JLabel("WAITING");
-        setTopPanel();
         map = new JLabel();
         map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
         add(map, BorderLayout.CENTER);
         map.addMouseListener(onMapClick());
         this.state = new AtomicReference<>(GAME_STATE.WAITING);
         this.guiGame = this;
+        setTopPanel();
+        setBottomPanel();
         setRightPanel();
         this.disableActions();
 
-    }
-
-    private void disableActions() {
-        SwingUtilities.invokeLater(() -> {
-            guiGame.setEnabled(false);
-            guiGame.repaint();
-            guiGame.revalidate();
-        });
-    }
-
-    private void enableActions() {
-        SwingUtilities.invokeLater(() -> {
-            guiGame.setEnabled(true);
-            guiGame.repaint();
-            guiGame.revalidate();
-        });
     }
 
     @Override
@@ -82,15 +68,31 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     private void setRightPanel() {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+
         JButton endTurn = new JButton("End Turn");
-        endTurn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton attackPhase = new JButton("Attack Phase");
+        JButton moveTroopsPhase = new JButton("Move Troops Phase");
+
+        rightPanel.add(Box.createVerticalGlue());
         rightPanel.add(endTurn);
         rightPanel.add(Box.createVerticalGlue());
+        rightPanel.add(attackPhase);
+        rightPanel.add(Box.createVerticalGlue());
+        rightPanel.add(moveTroopsPhase);
+        rightPanel.add(Box.createVerticalGlue());
+
         endTurn.addActionListener(e -> {
             ((GameClientImpl) Launcher.getCurrentClient()).endMyTurn();
-            this.disableActions();
+            this.waitingPhase();
         });
-        add(endTurn, BorderLayout.EAST);
+        attackPhase.addActionListener(e -> {
+            this.attackPhase();
+        });
+        moveTroopsPhase.addActionListener(e -> {
+            this.movingPhase();
+        });
+
+        add(rightPanel, BorderLayout.EAST);
     }
 
     private void setTopPanel() {
@@ -114,6 +116,22 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         add(topPanel, BorderLayout.NORTH);
     }
 
+    private void setBottomPanel() {
+        //JPanel bottomPanel = new JPanel();
+        //bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+        log.setEditable(false);
+        log.setVisible(true);
+        log.append("LOG:");
+        //bottomPanel.add(log);
+        add(log, BorderLayout.SOUTH);
+    }
+
+    public void addLogToTextArea(String log){
+        SwingUtilities.invokeLater(() -> {
+            this.log.append(log);
+        });
+    }
+
     private MouseListener onMapClick() {
         return new MouseListener() {
             @Override
@@ -132,8 +150,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                                 ((GameClientImpl) Launcher.getCurrentClient()).getAllTerritories().forEach((pair, armies) -> {
                                     if (pair.getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())) {
                                         if (pair.getSecond().equals(Territory.fromString(country))) {
-                                            System.out.println("Pair: " + pair);
-                                            System.out.println("Country name converted in enum: " + Territory.fromString(country));
                                             if (SwingUtilities.isLeftMouseButton(e)) {
                                                 placeArmy(country, 1);
                                                 updateMapImage();
@@ -255,34 +271,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         });
     }
 
-    public void attackPhase() {
-        SwingUtilities.invokeLater(() -> {
-            this.state.set(GAME_STATE.ATTACKING);
-            this.jlState.setText("Attack phase");
-        });
-    }
-
-    public void waitPhase() {
-        SwingUtilities.invokeLater(() -> {
-            this.state.set(GAME_STATE.WAITING);
-            this.jlState.setText("WAITING");
-            this.disableActions();
-        });
-    }
-
-    public void orderPhase() {
-        SwingUtilities.invokeLater(() -> {
-            if (!orderHasBeenSet) {
-                this.state.set(GAME_STATE.ORDERING);
-                this.jlState.setText("ORDERING");
-                var listToShuffle = new ArrayList<>(((GameClientImpl) Launcher.getCurrentClient()).getClientList());
-                System.out.println("List to shuffle: " + listToShuffle);
-                Collections.shuffle(listToShuffle);
-                ((GameClientImpl) Launcher.getCurrentClient()).sendRandomOrderForTurning(listToShuffle);
-            }
-        });
-    }
-
     public void updateMapImage() {
         SwingUtilities.invokeLater(() -> {
             clientColorsList.clear();
@@ -312,7 +300,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                 Color color = this.colors.get(clients.get(clt));
                 clientColorsList.add(new Pair<>(clt.getNickname(), clients.get(clt)));
                 g2d.setColor(color);
-                g2d.drawPolygon(p);
+                //g2d.drawPolygon(p);
                 g2d.fillOval((int) p.getBounds().getCenterX() - 15, (int) p.getBounds().getCenterY() - 15, 30, 30);
                 g2d.setColor(Color.BLACK);
                 g2d.drawString(armies.toString(), (int) p.getBounds().getCenterX() - 5, (int) p.getBounds().getCenterY() + 5);
@@ -362,16 +350,89 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         System.out.println("My nick: " + nick);
         if (firstNick.equals(nick)) {
             System.out.println("ITS MY TURN, I'm the first player to play");
-            //this.placeArmies();
+            this.startTurn();
         } else {
-            this.waitPhase();
+            this.waitingPhase();
         }
 
     }
 
-    public enum GAME_STATE {WAITING, ORDERING, PLACING, ATTACKING}
+    public void startTurn() {
+        SwingUtilities.invokeLater(() -> {
+            //PLACE N-ARMIES BASED ON OWN TERRITORIES
+            double count = (double) ((GameClient) Launcher.getCurrentClient())
+                    .getAllTerritories()
+                    .keySet()
+                    .stream()
+                    .filter(p -> p.getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())).count();
+            count = count /  ((GameClientImpl)Launcher.getCurrentClient()).getClientList().size();
 
-    private class PairOfCoordinates {
+            ((GameClient) Launcher.getCurrentClient()).placeArmies(((int) Math.floor(count)));
+
+        });
+    }
+
+    public enum GAME_STATE {WAITING, ORDERING, PLACING, ATTACKING, MOVING, PLAYING}
+
+    public void attackPhase() {
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.ATTACKING);
+            this.jlState.setText("Attack phase");
+        });
+    }
+
+    public void movingPhase() {
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.MOVING);
+            this.jlState.setText("Moving phase");
+        });
+    }
+
+    public void playingPhase() {
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.PLAYING);
+            this.jlState.setText("Playing phase");
+        });
+    }
+
+    public void waitingPhase() {
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.WAITING);
+            this.jlState.setText("WAITING");
+            this.disableActions();
+        });
+    }
+
+    private void disableActions() {
+        SwingUtilities.invokeLater(() -> {
+            guiGame.setEnabled(false);
+            guiGame.repaint();
+            guiGame.revalidate();
+        });
+    }
+
+    private void enableActions() {
+        SwingUtilities.invokeLater(() -> {
+            guiGame.setEnabled(true);
+            guiGame.repaint();
+            guiGame.revalidate();
+        });
+    }
+
+    public void orderingPhase() {
+        SwingUtilities.invokeLater(() -> {
+            if (!orderHasBeenSet) {
+                this.state.set(GAME_STATE.ORDERING);
+                this.jlState.setText("ORDERING");
+                var listToShuffle = new ArrayList<>(((GameClientImpl) Launcher.getCurrentClient()).getClientList());
+                System.out.println("List to shuffle: " + listToShuffle);
+                Collections.shuffle(listToShuffle);
+                ((GameClientImpl) Launcher.getCurrentClient()).sendRandomOrderForTurning(listToShuffle);
+            }
+        });
+    }
+
+    private static class PairOfCoordinates {
         private final int x;
         private final int y;
 

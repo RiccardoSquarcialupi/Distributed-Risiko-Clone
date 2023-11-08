@@ -167,10 +167,15 @@ public class ContextManagerParameters {
         return this.allTerritories;
     }
 
-    public void resetPlaceableArmies() {
+    public void setPlaceableArmiesAtStart() {
         this.currentArmiesPlaced = 0;
         this.toPlaceArmies = this.getMyTerritories().size() * 2;
         System.out.println("Armies to deploy: " + this.toPlaceArmies);
+    }
+
+    public void setPlaceableArmies(int armies) {
+        this.currentArmiesPlaced = 0;
+        this.toPlaceArmies = armies;
     }
 
     public Pair<Integer, Integer> getPlacingState() {

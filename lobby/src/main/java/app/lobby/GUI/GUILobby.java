@@ -102,7 +102,7 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
 
         SwingUtilities.invokeLater(() -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 ((LobbyClientImpl) Launcher.getCurrentClient()).broadcastClientIp();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

@@ -158,7 +158,7 @@ public class GameReceiver extends AbstractVerticle {
 
                         if (this.gameClient.areTerritoriesReceived()) {
                             System.out.println("start place armies");
-                            this.gameClient.placeArmies();
+                            this.gameClient.placeFirstArmies();
                         }
                     });
                     routingContext.response().setStatusCode(200).end();

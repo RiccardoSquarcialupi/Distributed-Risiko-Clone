@@ -12,7 +12,7 @@ import java.util.Map;
 
 public interface GameClient extends Client {
 
-    void checkForMyTurn(String string);
+    void checkForMyTurn(String clientIp);
 
     void updateEnemyTerritory(String ip, Territory fromName, Territory fromName1, Integer nArmiesChange);
 
@@ -38,7 +38,9 @@ public interface GameClient extends Client {
 
     void placeArmy(String country, Integer armies);
 
-    void placeArmies();
+    void placeArmies(int nArmies);
+
+    void placeFirstArmies();
 
     Pair<Integer, Integer> getPlacingState();
 

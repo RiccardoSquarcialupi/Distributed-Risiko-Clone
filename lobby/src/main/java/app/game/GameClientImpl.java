@@ -142,14 +142,14 @@ public class GameClientImpl implements GameClient {
                 break;
         }
     }
-
+    @Override
     public void checkForMyTurn(String clientIp) {
         for (int i = 0; i < this.randomOrder.size(); i++) {
             if (this.randomOrder.get(i).getIP().equals(clientIp)
                     && this.randomOrder.get((i + 1) % this.randomOrder.size()).getIP().equals(this.getIP())
             ) {
                 this.myTurn = true;
-                guiGame.placeArmies();
+                guiGame.startTurn();
             }
         }
     }
@@ -209,20 +209,20 @@ public class GameClientImpl implements GameClient {
     public void placeArmy(String country, Integer deltaArmies) {
         var clt = this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(this.getIP())).collect(Collectors.toList()).get(0);
         var over = this.cltPar.addArmy(clt, country, deltaArmies);
-        this.guiGame.waitPhase();
+        this.guiGame.waitingPhase();
         gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
                         new Pair<>(clt, Territory.fromString(country))))
                 .onComplete(h -> {
                     System.out.println("Received ok army placed");
                     if (over) {
                         System.out.println("All territory placed");
-                        this.guiGame.orderPhase();
-
-//                        if (this.myTurn) {
-//                            this.guiGame.attackPhase();
-//                        } else {
-//                            this.guiGame.waitPhase();
-//                        }
+                        if(!orderFound){
+                            this.guiGame.orderingPhase();
+                        }else if (this.myTurn) {
+                            this.guiGame.playingPhase();
+                        } else {
+                            this.guiGame.waitingPhase();
+                        }
                     } else {
                         System.out.println("Switch back to place armies");
                         this.guiGame.placeArmies();
@@ -233,8 +233,13 @@ public class GameClientImpl implements GameClient {
     }
 
     @Override
-    public void placeArmies() {
-        this.cltPar.resetPlaceableArmies();
+    public void placeFirstArmies() {
+        this.cltPar.setPlaceableArmiesAtStart();
+        this.guiGame.placeArmies();
+    }
+    @Override
+    public void placeArmies(int nArmies) {
+        this.cltPar.setPlaceableArmies(nArmies);
         this.guiGame.placeArmies();
     }
 
