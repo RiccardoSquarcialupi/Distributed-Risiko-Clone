@@ -2,6 +2,7 @@ package app.game.comunication;
 
 import app.Launcher;
 import app.game.GameClient;
+import app.game.GameClientImpl;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
@@ -14,6 +15,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class GameReceiver extends AbstractVerticle {
@@ -200,6 +202,7 @@ public class GameReceiver extends AbstractVerticle {
                         });
 
         Map<String, String> clientDiceHash = new HashMap<>();
+        AtomicInteger myDice = new AtomicInteger();
         // RECEIVE DICE THROW INIT.
         router
                 .post("/client/game/dice/throw")
@@ -209,10 +212,26 @@ public class GameReceiver extends AbstractVerticle {
                         var hDice = body.toJsonArray().getString(1);
                         clientDiceHash.put(ipClient, hDice);
                         var resp = new JsonArray();
-                        resp.add((new Random()).nextInt(6) + 1);
-                        routingContext.response().setStatusCode(200).end(resp.toBuffer());
+                        myDice.set((new Random()).nextInt(6) + 1);
+                        resp.add(myDice.get());
+                        ((GameClientImpl)Launcher.getCurrentClient()).sendDiceShare(myDice.get()).onSuccess(s ->{
+                            routingContext.response().setStatusCode(200).end(resp.toBuffer());
+                        });
                     });
 
+                });
+
+        Map<String, Integer> clientDiceShare = new HashMap<>();
+        // RECEIVE DICE SHARE.
+        router
+                .put("/client/game/dice/share")
+                .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body ->{
+                       var ipClient = body.toJsonArray().getString(0);
+                       var rDice = body.toJsonArray().getInteger(1);
+                       clientDiceShare.put(ipClient, rDice);
+                       routingContext.response().setStatusCode(200).end();
+                    });
                 });
 
         // RECEIVE DICE CONFIRM.
@@ -223,8 +242,11 @@ public class GameReceiver extends AbstractVerticle {
                         var ipClient = body.toJsonArray().getString(0);
                         var rDice = body.toJsonArray().getInteger(1);
                         var kDice = Base64.getDecoder().decode(body.toJsonArray().getString(2));
+                        var sDice = body.toJsonArray().getInteger(3);
+                        var csDice = clientDiceShare.values().stream().mapToInt(Integer::valueOf).sum()
+                                + myDice.get() + rDice;
                         String chDice = Hashing.hmacSha256(kDice).hashInt(rDice).toString();
-                        if (chDice.equals(clientDiceHash.get(ipClient))) {
+                        if (chDice.equals(clientDiceHash.get(ipClient)) && sDice == csDice) {
                             routingContext.response().setStatusCode(200).end();
                         } else {
                             routingContext.response().setStatusCode(403).end();

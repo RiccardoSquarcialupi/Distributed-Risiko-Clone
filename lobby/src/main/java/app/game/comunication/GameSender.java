@@ -326,8 +326,10 @@ public class GameSender extends AbstractVerticle {
                         .sendJson(jsonify(
                                 ipClient,
                                 rDice,
-                                Base64.getEncoder().encodeToString(kDice)))
+                                Base64.getEncoder().encodeToString(kDice),
+                                sDice.get()))
                         .onSuccess(response -> {
+                            System.out.println("Dice status code: " + response.statusCode());
                             lp.get(index).complete();
                         })
                         .onFailure(err ->
@@ -345,6 +347,29 @@ public class GameSender extends AbstractVerticle {
                 prm.complete(diceResults);
             }
         });
+        return prm.future();
+    }
+
+    public Future<Void> sendDiceShare(String ip, int rnd){
+        Promise<Void> prm = Promise.promise();
+        var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
+        var lpv = finalClientList.stream()
+                .map(c -> Promise.promise()).collect(Collectors.toList());
+        for (int i = 0; i < finalClientList.size(); i++) {
+            final int index = i;
+            this.client
+                    .put(5001, finalClientList.get(index).getIP(), "/client/game/dice/share")
+                    .sendJson(jsonify(ip, rnd))
+                    .onSuccess(response -> {
+                        lpv.get(index).complete();
+                    })
+                    .onFailure(err -> {
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
+        }
+        Future.all(lpv.stream().map(Promise::future).collect(Collectors.toList()))
+                .onSuccess(s -> prm.complete())
+                .onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
