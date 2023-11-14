@@ -87,12 +87,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             ((GameClientImpl) Launcher.getCurrentClient()).endMyTurn();
             this.waitingPhase();
         });
-        attackButton.addActionListener(e -> {
-            this.attackPhase();
-        });
-        moveTroopsButton.addActionListener(e -> {
-            this.movingPhase();
-        });
+        attackButton.addActionListener(e -> this.attackPhase());
+        moveTroopsButton.addActionListener(e -> this.movingPhase());
 
         this.add(rightPanel, BorderLayout.EAST);
     }
@@ -129,9 +125,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void addLogToTextArea(String log) {
-        SwingUtilities.invokeLater(() -> {
-            this.log.append(log);
-        });
+        SwingUtilities.invokeLater(() -> this.log.append(log));
     }
 
     private MouseListener onMapClick() {
@@ -140,9 +134,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 parseJsonMap().forEach((country, coords) -> {
                     Polygon p = new Polygon();
-                    coords.forEach((pair) -> {
-                        p.addPoint(pair.getX(), pair.getY());
-                    });
+                    coords.forEach((pair) -> p.addPoint(pair.getX(), pair.getY()));
                     if (p.contains(e.getPoint())) {
                         System.out.println("Clicked on " + country);
                         System.out.println("State: " + state.get());

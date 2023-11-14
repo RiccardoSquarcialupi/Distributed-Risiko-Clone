@@ -381,6 +381,10 @@ public class GameClientImpl implements GameClient {
         return this.cltPar.getAllTerritories().keySet().stream().filter(p -> p.getSecond().equals(territoryToAttack)).collect(Collectors.toList()).get(0).getFirst().getIP();
     }
 
+    public Future<Void> sendDiceShare(int rd){
+        return this.gameSender.sendDiceShare(this.getIP(), rd);
+    }
+
     public void sendRandomOrderForTurning(List<JSONClient> shuffledList) {
         randomOrderList.put(this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(this.getIP())).collect(Collectors.toList()).get(0), shuffledList);
         this.gameSender.sendRandomOrderForTurning(this.getIP(), shuffledList);
