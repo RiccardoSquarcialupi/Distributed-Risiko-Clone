@@ -8,23 +8,16 @@ import app.manager.gui.GUI;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.nio.file.Paths;
 
 public class GUILobby extends JPanel implements GUI, GUILobbyActions {
-    @Override
-    public String getTitle() {
-        return "RiSiKo!!! Waiting Lobby";
-    }
-
     JLabel titleLabel;
-    private JScrollPane jspClient;
-    private JTable clientTable;
-    private JButton startButton;
-    private JLabel jlClient;
-
+    private final JScrollPane jspClient;
+    private final JTable clientTable;
+    private final JButton startButton;
+    private final JLabel jlClient;
     public GUILobby() {
 
         setLayout(new BorderLayout());
@@ -85,7 +78,7 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
 
         // START GAME BUTTON (manager)
         startButton = new JButton("Start Game");
-        if(this instanceof GUILobbyManager) {
+        if (this instanceof GUILobbyManager) {
             startButton.setFont(new Font("Arial", Font.BOLD, 16));
             startButton.addActionListener(onStartClick());
             startButton.setEnabled(false);
@@ -109,7 +102,12 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
             }
         });
 
-        updateClientList(((LobbyClient)Launcher.getCurrentClient()).getClientList());
+        updateClientList(((LobbyClient) Launcher.getCurrentClient()).getClientList());
+    }
+
+    @Override
+    public String getTitle() {
+        return "RiSiKo!!! Waiting Lobby";
     }
 
     private String getAbsoluteCurrentPathOfGif() {
@@ -146,11 +144,11 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
         SwingUtilities.invokeLater(() -> {
             this.jlClient.setText(
                     "Number of players: " + clients.size() + "/" +
-                            ((LobbyClient)Launcher.getCurrentClient()).getLobbyMaxPlayers()
+                            ((LobbyClient) Launcher.getCurrentClient()).getLobbyMaxPlayers()
             );
-            var model = (DefaultTableModel)(this.clientTable.getModel());
+            var model = (DefaultTableModel) (this.clientTable.getModel());
             model.setRowCount(0);
-            for(var client : clients){
+            for (var client : clients) {
                 model.addRow(new Object[]{client.getIP(), client.getNickname()});
             }
             SwingUtilities.getWindowAncestor(this).setPreferredSize(new Dimension(470, 300));

@@ -1,18 +1,18 @@
 package app.manager.contextManager;
 
-import app.lobbySelector.LobbySelectorClientImpl;
 import app.common.Client;
 import app.game.GameClientImpl;
 import app.lobby.LobbyClientImpl;
 import app.lobby.ManagerClientImpl;
+import app.lobbySelector.LobbySelectorClientImpl;
 import app.login.LoginClient;
 import app.manager.Window;
 
 import java.io.IOException;
 
 public class ContextManagerImpl implements ContextManager {
-    private Client currentClient;
     private final ContextManagerParameters contextManagerParameters;
+    private Client currentClient;
 
     public ContextManagerImpl(Window firstClient) throws IOException {
         this.contextManagerParameters = new ContextManagerParameters();
@@ -29,7 +29,7 @@ public class ContextManagerImpl implements ContextManager {
         if (this.currentClient instanceof LobbyClientImpl) {
             ((LobbyClientImpl) this.currentClient).stop();
         }
-        switch (window){
+        switch (window) {
             case LOGIN:
                 this.currentClient = new LoginClient(this.contextManagerParameters);
                 break;

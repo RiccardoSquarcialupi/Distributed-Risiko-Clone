@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 public class GameReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
     private final Router router;
-    private boolean isRunning = false;
     private final GameClient gameClient;
+    private boolean isRunning = false;
 
     public GameReceiver(GameClient gameClient) {
         this.httpServer = Launcher.getVertx().createHttpServer();
@@ -105,8 +105,9 @@ public class GameReceiver extends AbstractVerticle {
                         var ipClientAttack = body.toJsonArray().getString(0);
                         var ipClientDefend = body.toJsonArray().getString(1);
                         var diceATKResult = ((List<Integer>) body.toJsonArray().getJsonArray(2).getList());
-                        var territory = Territory.fromName(body.toJsonArray().getString(3));
-                        this.gameClient.receiveAttackMsg(ipClientAttack, ipClientDefend, diceATKResult, territory);
+                        var territoryEnemy = Territory.fromName(body.toJsonArray().getString(3));
+                        var myTerritory = Territory.fromName(body.toJsonArray().getString(4));
+                        this.gameClient.receiveAttackMsg(ipClientAttack, ipClientDefend, diceATKResult, territoryEnemy, myTerritory);
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
@@ -118,8 +119,9 @@ public class GameReceiver extends AbstractVerticle {
                         var ipClientAttack = body.toJsonArray().getString(0);
                         var ipClientDefend = body.toJsonArray().getString(1);
                         var diceDEFResult = ((List<Integer>) body.toJsonArray().getJsonArray(2).getList());
-                        var territory = Territory.fromName(body.toJsonArray().getString(3));
-                        this.gameClient.receiveDefendMsg(ipClientAttack, ipClientDefend, diceDEFResult, territory);
+                        var myTerritory = Territory.fromName(body.toJsonArray().getString(3));
+                        var enemyTerritory = Territory.fromName(body.toJsonArray().getString(4));
+                        this.gameClient.receiveDefendMsg(ipClientAttack, ipClientDefend, diceDEFResult, myTerritory, enemyTerritory);
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
@@ -183,21 +185,21 @@ public class GameReceiver extends AbstractVerticle {
                 });
 
         router.put("/client/game/order")
-                        .handler(routingContext -> {
-                            routingContext.request().bodyHandler(body -> {
-                                var ip = body.toJsonArray().getString(0);
-                                var order = body.toJsonArray().getJsonArray(1);
-                                System.out.println("Received order: " + order);
-                                //TRYING TO CONVERT ORDER IN A LIST<JSONCLIENT>
-                                List<JSONClient> jsonClients = new ArrayList<>();
-                                for (int i = 0; i < order.size(); i++) {
-                                    jsonClients.add(JSONClient.fromJson((JsonObject) order.getValue(i)));
-                                }
-                                System.out.println("Received order converted in List<JSONClient>: " + jsonClients);
-                                this.gameClient.receiveRandomOrder(ip, jsonClients);
-                            });
-                            routingContext.response().setStatusCode(200).end();
-                        });
+                .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body -> {
+                        var ip = body.toJsonArray().getString(0);
+                        var order = body.toJsonArray().getJsonArray(1);
+                        System.out.println("Received order: " + order);
+                        //TRYING TO CONVERT ORDER IN A LIST<JSONCLIENT>
+                        List<JSONClient> jsonClients = new ArrayList<>();
+                        for (int i = 0; i < order.size(); i++) {
+                            jsonClients.add(JSONClient.fromJson((JsonObject) order.getValue(i)));
+                        }
+                        System.out.println("Received order converted in List<JSONClient>: " + jsonClients);
+                        this.gameClient.receiveRandomOrder(ip, jsonClients);
+                    });
+                    routingContext.response().setStatusCode(200).end();
+                });
 
         Map<String, String> clientDiceHash = new HashMap<>();
         // RECEIVE DICE THROW INIT.

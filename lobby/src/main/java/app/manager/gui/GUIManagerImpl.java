@@ -1,11 +1,11 @@
 package app.manager.gui;
 
 import app.game.GUI.GUIGame;
-import app.lobby.GUI.GUILobbyManager;
-import app.manager.Window;
-import app.lobbySelector.GUI.GUILobbySelector;
 import app.lobby.GUI.GUILobby;
+import app.lobby.GUI.GUILobbyManager;
+import app.lobbySelector.GUI.GUILobbySelector;
 import app.login.GUILogin;
+import app.manager.Window;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +19,7 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
     }
 
     private void setGUIFromEnum(Window window) {
-        switch (window){
+        switch (window) {
             case LOGIN:
                 this.currentGUI = new GUILogin();
                 break;
@@ -39,7 +39,7 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
                 this.currentGUI = () -> "This should not happen";
                 break;
         }
-        switch(window){
+        switch (window) {
             case LOGIN:
             case BASE:
             case LOBBY:

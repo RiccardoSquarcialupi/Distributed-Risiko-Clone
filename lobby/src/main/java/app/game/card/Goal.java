@@ -18,11 +18,13 @@ public enum Goal implements Card {
     DESTROY_PLAYER_6("Destroy player 6"),
     ;
 
+    private final String name;
+
+    Goal(String name) {
+        this.name = name;
+    }
+
     public static Goal fromJsonObject(JsonObject jsonObject) {
         return Goal.valueOf(jsonObject.getString("Goal"));
-    }
-    private final String name;
-    Goal(String name){
-        this.name = name;
     }
 }

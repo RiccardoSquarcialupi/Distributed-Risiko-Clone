@@ -12,14 +12,8 @@ import java.net.Socket;
 
 public class GUILogin extends JPanel implements GUI {
 
-    @Override
-    public String getTitle() {
-        return "RiSiKo!!! Login Page";
-    }
-
     private final JLabel nameLabel;
     private final JTextField nameField;
-
     public GUILogin() {
         setLayout(new BorderLayout());
         setBackground(new Color(0x2E3842));
@@ -59,6 +53,11 @@ public class GUILogin extends JPanel implements GUI {
         centerPanel.add(loginButton);
 
         add(centerPanel, BorderLayout.CENTER);
+    }
+
+    @Override
+    public String getTitle() {
+        return "RiSiKo!!! Login Page";
     }
 
     private ActionListener onLogin() {

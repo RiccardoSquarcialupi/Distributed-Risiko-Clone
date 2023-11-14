@@ -15,13 +15,12 @@ import java.util.stream.Collectors;
 
 public class ContextManagerParameters {
     private final String ip;
+    private final List<JSONClient> clientList;
     private String nickname;
     private int idLobby;
     private String ipManager;
     private int maxPlayer;
-    private final List<JSONClient> clientList;
-
-    private Map<Pair<JSONClient, Territory>, Integer> allTerritories;
+    private final Map<Pair<JSONClient, Territory>, Integer> allTerritories;
 
     private Goal goalCard;
     private int currentArmiesPlaced;
@@ -116,12 +115,12 @@ public class ContextManagerParameters {
         return this.allTerritories.keySet().stream().map(Pair::getFirst).collect(Collectors.toSet()).size();
     }
 
-    public void setGoalCard(Goal goalCard) {
-        this.goalCard = goalCard;
-    }
-
     public Goal getGoalCard() {
         return this.goalCard;
+    }
+
+    public void setGoalCard(Goal goalCard) {
+        this.goalCard = goalCard;
     }
 
     public void setEnemyTerritory(JSONClient client, Territory territory) {
@@ -156,7 +155,7 @@ public class ContextManagerParameters {
             var armies = this.getAllTerritories().get(clientPair);
             System.out.println("Armies in " + country + " : " + armies);
             if (armies == null ||
-                     armies + deltaArmies < 0) return false;
+                    armies + deltaArmies < 0) return false;
             this.allTerritories.put(clientPair, armies + deltaArmies);
             this.currentArmiesPlaced += deltaArmies;
         }

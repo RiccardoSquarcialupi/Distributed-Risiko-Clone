@@ -10,12 +10,14 @@ import app.manager.gui.GUIManagerImpl;
 import io.vertx.core.Vertx;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.Socket;
 
 public class Launcher {
 
-    public static String serverIP = "";
     public static final int serverPort = 5000;
+    public static String serverIP = "";
     private static ContextManager contextManager;
     private static GUIManager guiManager;
     private static Vertx vertx = null;
@@ -40,14 +42,14 @@ public class Launcher {
         String subnet = ip.substring(0, ip.lastIndexOf("."));
         System.out.println("My subnet is " + subnet.concat(".0"));
         System.out.println("Searching for server...");
-        for (int i=1;i<255;i++){
-            String host=subnet + "." + i;
-            if (InetAddress.getByName(host).isReachable(500)){
+        for (int i = 1; i < 255; i++) {
+            String host = subnet + "." + i;
+            if (InetAddress.getByName(host).isReachable(500)) {
                 try {
                     Socket socket = new Socket(host, serverPort);
                     System.out.println("Server found at " + host);
                     socket.close();
-                    serverIP=host;
+                    serverIP = host;
                 } catch (IOException e) {
                     System.out.println("Server not found at " + host);
                     continue;
@@ -60,7 +62,7 @@ public class Launcher {
     }
 
     public static Vertx getVertx() {
-        if(vertx == null){
+        if (vertx == null) {
             vertx = Vertx.vertx();
         }
         return vertx;
@@ -96,7 +98,7 @@ public class Launcher {
     }
 
     public static void becomeManager() {
-        System.out.println(getCurrentClient().getIP()+" says: I'm the new manager");
+        System.out.println(getCurrentClient().getIP() + " says: I'm the new manager");
         contextManager.change(Window.MANAGER);
         guiManager.change(Window.MANAGER);
     }

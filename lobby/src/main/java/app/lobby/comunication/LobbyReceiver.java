@@ -1,5 +1,6 @@
 package app.lobby.comunication;
 
+import app.Launcher;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobby.GUI.GUILobby;
@@ -9,16 +10,13 @@ import app.lobby.ManagerClient;
 import app.lobby.ManagerClientImpl;
 import app.lobbySelector.JSONClient;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import app.Launcher;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class LobbyReceiver extends AbstractVerticle {
     private final HttpServer httpServer;
@@ -37,16 +35,16 @@ public class LobbyReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh -> {
                         this.lobbyClient.addNewClient(JSONClient.fromJson(bh.toJsonObject()));
-                        ((GUILobby)Launcher.getCurrentGui()).updateClientList(this.lobbyClient.getClientList());
-                        if(this.lobbyClient.getClientList().size() == this.lobbyClient.getLobbyMaxPlayers()){
-                            ((GUILobby)Launcher.getCurrentGui()).enableStartButton();
+                        ((GUILobby) Launcher.getCurrentGui()).updateClientList(this.lobbyClient.getClientList());
+                        if (this.lobbyClient.getClientList().size() == this.lobbyClient.getLobbyMaxPlayers()) {
+                            ((GUILobby) Launcher.getCurrentGui()).enableStartButton();
                         }
                         int lobbyId = lobbyClient.getLobbyId();
                         JsonArray clientList = new JsonArray(lobbyClient.getClientList());
                         JsonObject body = new JsonObject()
-                                            .put("lobby_id",lobbyId)
-                                            .put("client_list", clientList)
-                                            .put("lobby_max_players", this.lobbyClient.getLobbyMaxPlayers());
+                                .put("lobby_id", lobbyId)
+                                .put("client_list", clientList)
+                                .put("lobby_max_players", this.lobbyClient.getLobbyMaxPlayers());
                         routingContext.response().putHeader("Content-Type", "application/json")
                                 .setStatusCode(200)
                                 .send(body.toBuffer());
@@ -58,10 +56,10 @@ public class LobbyReceiver extends AbstractVerticle {
                 .delete("/client/lobby/clients")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh -> {
-                        System.out.println("Client: "+bh.toJsonObject()+ "exit from lobby");
+                        System.out.println("Client: " + bh.toJsonObject() + "exit from lobby");
                         this.lobbyClient.deleteClient(JSONClient.fromJson(bh.toJsonObject()));
-                        ((GUILobby)Launcher.getCurrentGui()).updateClientList(this.lobbyClient.getClientList());
-                        ((GUILobby)Launcher.getCurrentGui()).disableStartButton();
+                        ((GUILobby) Launcher.getCurrentGui()).updateClientList(this.lobbyClient.getClientList());
+                        ((GUILobby) Launcher.getCurrentGui()).disableStartButton();
                         routingContext.response().setStatusCode(200).end();
                     });
                 });

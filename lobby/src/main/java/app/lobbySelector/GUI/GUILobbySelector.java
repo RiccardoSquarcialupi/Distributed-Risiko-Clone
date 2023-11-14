@@ -17,23 +17,15 @@ import java.util.stream.Collectors;
 
 
 public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorActions {
-    @Override
-    public String getTitle() {
-        return "RiSiKo!!! Lobby selector";
-    }
-
     private final CardLayout cardLayout;
     private final JPanel cards;
-    private boolean isJoinPage = true;
-
-    private JScrollPane jspLobbies;
-    private JTable jtb;
     private final Object[] tableHeader = {"ID", "Server IP", "Players Inside", "Max Players"};
     Object[][] obj = new Object[][]{};
-
+    private boolean isJoinPage = true;
+    private JScrollPane jspLobbies;
+    private JTable jtb;
     private JTextField jtfName;
     private JTextField jtfMaxPlayers;
-
     public GUILobbySelector() {
         setLayout(new BorderLayout());
         setBackground(new Color(0x2E3842));
@@ -76,6 +68,11 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
         // Initially show the join lobby page
         cardLayout.show(cards, "join");
         refreshTable();
+    }
+
+    @Override
+    public String getTitle() {
+        return "RiSiKo!!! Lobby selector";
     }
 
     private ActionListener onSwitch() {

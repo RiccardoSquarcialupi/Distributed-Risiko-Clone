@@ -1,20 +1,19 @@
 package app.lobby.GUI;
 
 import app.Launcher;
-import app.lobby.ManagerClient;
 import app.lobby.ManagerClientImpl;
 import io.vertx.core.Promise;
 
 import java.awt.event.ActionListener;
 
 public class GUILobbyManager extends GUILobby {
+    public GUILobbyManager() {
+        super();
+    }
+
     @Override
     public String getTitle() {
         return "RiSiKo!!! Lobby Manager";
-    }
-
-    public GUILobbyManager() {
-        super();
     }
 
     @Override
@@ -31,14 +30,14 @@ public class GUILobbyManager extends GUILobby {
                 for (var client : currClient.getClientList()) {
                     if (!client.getIP().equals(currClient.getIP())) {
                         currClient.managerClientChange(client.getIP()).onSuccess(s -> {
-                                    System.out.println("Manager change succeded!!!Now I exit lobby");
-                                    currClient.exitLobby().onSuccess(ss -> {
-                                                System.out.println("Exit lobby succeded!!");
-                                                prm.complete();
-                                    }).onFailure(f -> {
-                                        System.out.println("Exit lobby failed!!, but everything was ok! WHYY???");
-                                        });
-                                    });
+                            System.out.println("Manager change succeded!!!Now I exit lobby");
+                            currClient.exitLobby().onSuccess(ss -> {
+                                System.out.println("Exit lobby succeded!!");
+                                prm.complete();
+                            }).onFailure(f -> {
+                                System.out.println("Exit lobby failed!!, but everything was ok! WHYY???");
+                            });
+                        });
                         break;
                     }
 
@@ -49,7 +48,7 @@ public class GUILobbyManager extends GUILobby {
     }
 
     @Override
-    protected ActionListener onStartClick(){
+    protected ActionListener onStartClick() {
         return e -> {
             var currClient = ((ManagerClientImpl) Launcher.getCurrentClient());
             currClient.startGame();

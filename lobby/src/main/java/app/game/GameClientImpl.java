@@ -13,6 +13,7 @@ import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -20,27 +21,23 @@ import java.util.stream.Collectors;
 
 public class GameClientImpl implements GameClient {
     private final ContextManagerParameters cltPar;
+    private final Map<JSONClient, List<JSONClient>> randomOrderList = new HashMap<>();
     public GameSender gameSender;
     public GameReceiver gameReceiver;
-
     private GUIGame guiGame;
     private boolean myTurn;
-    private final Map<JSONClient,List<JSONClient>> randomOrderList = new HashMap<>();
     private List<JSONClient> randomOrder = new ArrayList<>();
-
-    public List<JSONClient> getRandomOrder() {
-        return randomOrder;
-    }
-
+    private List<Integer> lastAttackDicesThrow;
+    private List<Integer> lastDefenceDicesThrow;
     private boolean orderFound = false;
-
-
 
     public GameClientImpl(ContextManagerParameters cltPar) {
         this.cltPar = cltPar;
         this.gameSender = new GameSender();
         gameReceiver = new GameReceiver(this);
         gameReceiver.start();
+        lastAttackDicesThrow = new ArrayList<>();
+        lastDefenceDicesThrow = new ArrayList<>();
         this.myTurn = false;
 
         Launcher.getVertx().setTimer(TimeUnit.SECONDS.toMillis(2), tid -> {
@@ -52,6 +49,10 @@ public class GameClientImpl implements GameClient {
         });
     }
 
+    public List<JSONClient> getRandomOrder() {
+        return randomOrder;
+    }
+
     public void loop() {
         guiGame = (GUIGame) Launcher.getCurrentGui();
         while (gameReceiver.isRunning()) {
@@ -60,7 +61,7 @@ public class GameClientImpl implements GameClient {
 
             //TODO: WAIT FOR MY TURN
             //TODO: SOMEONE WIN
-            //TODO: WHILE WAITING SOMEONE IS ATTACKING ME: DEFENSE PART
+            //TODO: WHILE WAITING SOMEONE IS ATTACKING_SELECT_FIRST_COUNTRY ME: DEFENSE PART
 
             //TODO: START TURN
 
@@ -142,6 +143,7 @@ public class GameClientImpl implements GameClient {
                 break;
         }
     }
+
     @Override
     public void checkForMyTurn(String clientIp) {
         for (int i = 0; i < this.randomOrder.size(); i++) {
@@ -166,14 +168,6 @@ public class GameClientImpl implements GameClient {
 
     public void lobbyClosed() {
         Launcher.lobbyClosed();
-    }
-
-    public void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory territory) {
-        guiGame.receiveAttackMsg(ipClientAttack, ipClientDefend, diceATKResult, territory);
-    }
-
-    public void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory territory) {
-        guiGame.receiveDefendMsg(ipClientAttack, ipClientDefend, diceDEFResult, territory);
     }
 
     public void someoneDrawStateCard(String ip) {
@@ -209,16 +203,16 @@ public class GameClientImpl implements GameClient {
     public void placeArmy(String country, Integer deltaArmies) {
         var clt = this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(this.getIP())).collect(Collectors.toList()).get(0);
         var over = this.cltPar.addArmy(clt, country, deltaArmies);
-        this.guiGame.waitingPhase();
         gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
                         new Pair<>(clt, Territory.fromString(country))))
                 .onComplete(h -> {
+                    this.guiGame.updateMapImage();
                     System.out.println("Received ok army placed");
                     if (over) {
                         System.out.println("All territory placed");
-                        if(!orderFound){
+                        if (!orderFound) {
                             this.guiGame.orderingPhase();
-                        }else if (this.myTurn) {
+                        } else if (this.myTurn) {
                             this.guiGame.playingPhase();
                         } else {
                             this.guiGame.waitingPhase();
@@ -228,7 +222,7 @@ public class GameClientImpl implements GameClient {
                         this.guiGame.placeArmies();
                     }
                 }).onFailure(h -> {
-                System.out.println("ERROR ON BROADCAST ARMIES");
+                    System.out.println("ERROR ON BROADCAST ARMIES");
                 });
     }
 
@@ -237,6 +231,7 @@ public class GameClientImpl implements GameClient {
         this.cltPar.setPlaceableArmiesAtStart();
         this.guiGame.placeArmies();
     }
+
     @Override
     public void placeArmies(int nArmies) {
         this.cltPar.setPlaceableArmies(nArmies);
@@ -246,27 +241,6 @@ public class GameClientImpl implements GameClient {
     @Override
     public Pair<Integer, Integer> getPlacingState() {
         return this.cltPar.getPlacingState();
-    }
-
-    public void sendAttackMsg(String ipClientAttack, String ipClientDefend, Territory territory, Integer nDices) {
-        dicesLaunch(ipClientAttack, ipClientDefend, nDices).onSuccess(res -> {
-            this.gameSender.clientAttackTerritory(ipClientAttack, ipClientDefend, res, territory).onSuccess(res2 -> {
-                //TODO HANDLE THE ATTACK DICE RESULT AND COMPUTE FINAL RESULT WHEN THE DEFENDER THROW THE DICES
-            });
-        });
-    }
-
-    public void sendDefendMsg(String ipClientAttack, String ipClientDefend, Territory territory, Integer nDices) {
-        dicesLaunch(ipClientAttack, ipClientDefend, nDices).onSuccess(res -> {
-            this.gameSender.clientDefendTerritory(ipClientAttack, ipClientDefend, res, territory).onSuccess(res2 -> {
-                //TODO HANDLE THE DEFENSE DICE RESULT AND COMPUTE FINAL RESULT
-            });
-        });
-    }
-
-    public Future<List<Integer>> dicesLaunch(String ipClientAttack, String ipClientDefend, Integer nDices) {
-        //TODO: LAUNCH DICES with BYZANTINE FAULT PREVENTION
-        return this.gameSender.byzantineDiceLaunch(this.getIP(), nDices);
     }
 
     public void broadcastTerritories() {
@@ -307,9 +281,9 @@ public class GameClientImpl implements GameClient {
 
     @Override
     public void receiveRandomOrder(String ip, List<JSONClient> order) {
-        if(!orderFound){
+        if (!orderFound) {
             randomOrderList.put(this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), order);
-            System.out.println("SIZE OF RANDOM ORDER "+randomOrderList.size() + " SIZE OF CLIENT LIST " + this.cltPar.getClientList().size());
+            System.out.println("SIZE OF RANDOM ORDER " + randomOrderList.size() + " SIZE OF CLIENT LIST " + this.cltPar.getClientList().size());
             if (randomOrderList.size() == this.cltPar.getClientList().size()) {
                 //CHECK IF EVERY LIST IN THE MAP IS THE SAME OTHERWISE PICK ONE RANDOMLY, CLEAR THE RANDOM ORDER LIST AND REPEAT
                 List<JSONClient> first = randomOrderList.get(new ArrayList<>(this.randomOrderList.keySet()).get(0));
@@ -335,23 +309,79 @@ public class GameClientImpl implements GameClient {
                     this.randomOrder = first;
                     //REPLYING THE ORDER FOUND TO THE OTHERS
                     sendRandomOrderForTurning(first);
-                    this.guiGame.orderFound();
+                    if (this.guiGame.orderFoundAndTurnCheck()) {
+                        System.out.println("ITS MY TURN, I'm the first player to play");
+                        this.myTurn = true;
+                        this.guiGame.startTurn();
+                    } else {
+                        this.guiGame.waitingPhase();
+                    }
                 }
             }
         }
+    }
 
+    @Override
+    public Future<List<Integer>> throwDices(int nDices) {
+        guiGame.addLogToTextArea(("Sending " + nDices + " throws"));
+        return this.gameSender.byzantineDiceLaunch(this.getIP(), nDices);
+    }
+
+    @Override
+    public void sendAttackMsg(Territory territoryFromToAttack, Territory territoryToAttack, int nDicesToUse) {
+        throwDices(nDicesToUse).onSuccess(h -> {
+            lastAttackDicesThrow = h;
+            guiGame.addLogToTextArea("Sending attack with dices result"+lastAttackDicesThrow);
+            this.gameSender.clientAttackTerritory(this.getIP(), getIpOfDefender(territoryToAttack), lastAttackDicesThrow, territoryFromToAttack, territoryToAttack).onSuccess(h1 -> guiGame.waitingPhase());
+        });
+    }
+
+    @Override
+    public void sendDefendMsg(Territory enemyTerritory, Territory myTerritory, int nDicesToUse) {
+        throwDices(nDicesToUse).onSuccess(h -> {
+            lastDefenceDicesThrow = h;
+            guiGame.addLogToTextArea("Sending defence with dices result"+lastDefenceDicesThrow);
+            this.gameSender.clientDefendTerritory(this.getIP(), getIpOfDefender(myTerritory), lastDefenceDicesThrow, enemyTerritory, myTerritory).onSuccess(h1 -> {
+                computeCombatResult(lastAttackDicesThrow, lastDefenceDicesThrow, enemyTerritory, myTerritory);
+                SwingUtilities.invokeLater(() -> this.guiGame.waitingPhase());
+            });
+        });
 
     }
 
     @Override
-    public void throwDices(int nDices){
-        Launcher.getVertx().setTimer(1, (l) -> {
-        System.out.println("Sending " + nDices + " throws");
-        this.gameSender.byzantineDiceLaunch(this.getIP(), nDices).onSuccess(System.out::println);
-        });
+    public void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory enemyTerritory, Territory myTerritory) {
+        if (ipClientDefend.equals(this.getIP())) {
+            lastAttackDicesThrow = diceATKResult;
+            this.guiGame.receiveAttackMsg(ipClientAttack, ipClientDefend, diceATKResult, enemyTerritory, myTerritory);
+        }
     }
 
-    public void sendRandomOrderForTurning(List<JSONClient> shuffledList){
+    @Override
+    public void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory myTerritory, Territory enemyTerritory) {
+        if (ipClientAttack.equals(this.getIP())) {
+            lastDefenceDicesThrow = diceDEFResult;
+            this.guiGame.receiveDefendMsg(ipClientAttack, ipClientDefend, diceDEFResult, myTerritory, enemyTerritory);
+            computeCombatResult(lastAttackDicesThrow, lastDefenceDicesThrow, myTerritory, enemyTerritory);
+        }
+    }
+
+    private void computeCombatResult(List<Integer> lastAttackDicesThrow, List<Integer> lastDefenceDicesThrow, Territory myTerritory, Territory enemyTerritory) {
+        //TODO COMPUTE THE RESULT OF THE ATTACK in the cltPar getAllTerritories map
+        //order of the dices is important
+        lastAttackDicesThrow = lastDefenceDicesThrow.stream().sorted().collect(Collectors.toList());
+        lastDefenceDicesThrow = lastDefenceDicesThrow.stream().sorted().collect(Collectors.toList());
+
+        int nArmiesLostByAttacker = 0;
+        int nArmiesLostByDefender = 0;
+        //TODO UPDATE THE GUI
+    }
+
+    private String getIpOfDefender(Territory territoryToAttack) {
+        return this.cltPar.getAllTerritories().keySet().stream().filter(p -> p.getSecond().equals(territoryToAttack)).collect(Collectors.toList()).get(0).getFirst().getIP();
+    }
+
+    public void sendRandomOrderForTurning(List<JSONClient> shuffledList) {
         randomOrderList.put(this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(this.getIP())).collect(Collectors.toList()).get(0), shuffledList);
         this.gameSender.sendRandomOrderForTurning(this.getIP(), shuffledList);
     }

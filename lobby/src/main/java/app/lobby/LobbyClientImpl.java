@@ -3,7 +3,6 @@ package app.lobby;
 import app.Launcher;
 import app.game.card.Goal;
 import app.game.card.Territory;
-import app.lobby.GUI.GUILobby;
 import app.lobby.comunication.LobbyReceiver;
 import app.lobby.comunication.LobbySender;
 import app.lobbySelector.JSONClient;
@@ -14,9 +13,9 @@ import io.vertx.core.Future;
 import java.util.List;
 
 public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyClient {
+    private final ContextManagerParameters cltPar;
     public LobbyReceiver lobbyReceiver;
     public LobbySender sender;
-    private final ContextManagerParameters cltPar;
 
     public LobbyClientImpl(ContextManagerParameters cltPar) {
         super(cltPar);
@@ -41,8 +40,8 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
     }
 
     @Override
-    public Future<Void> exitLobby(){
-        return this.sender.exitLobby(new JSONClient(cltPar.getIp(), cltPar.getNickname()),cltPar.getIdLobby(),cltPar.getClientList());
+    public Future<Void> exitLobby() {
+        return this.sender.exitLobby(new JSONClient(cltPar.getIp(), cltPar.getNickname()), cltPar.getIdLobby(), cltPar.getClientList());
     }
 
     @Override
@@ -65,7 +64,7 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
 
     public void updateManager(String newManagerIp) {
         this.cltPar.setIpManager(newManagerIp);
-        if(cltPar.getIp().equals(newManagerIp)){
+        if (cltPar.getIp().equals(newManagerIp)) {
             //LobbyClient become ManagerClient, update GUI and Client type
             Launcher.becomeManager();
         }

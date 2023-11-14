@@ -1,7 +1,8 @@
 package app.game.card;
 
-import java.util.List;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+
+import java.util.List;
 
 public enum Territory implements Card {
     ALASKA("Alaska", Continent.NORTH_AMERICA, List.of("Kamchatka", "Alberta", "Northwest territory")),
@@ -82,6 +83,18 @@ public enum Territory implements Card {
             }
         }
         return minTerritory;
+    }
+
+    public List<String> getNeighbours() {
+        return neighbours;
+    }
+
+    public Continent getContinent() {
+        return continent;
+    }
+
+    public CardType getType() {
+        return type;
     }
 }
 

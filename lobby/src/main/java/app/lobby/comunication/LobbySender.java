@@ -3,7 +3,6 @@ package app.lobby.comunication;
 import app.Launcher;
 import app.lobby.LobbyClientImpl;
 import app.lobbySelector.JSONClient;
-import app.lobbySelector.LobbySelectorClient;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -23,7 +22,7 @@ public class LobbySender extends AbstractVerticle {
     }
 
     public void broadcast() {
-        var list = ((LobbyClientImpl)Launcher.getCurrentClient()).getClientList()
+        var list = ((LobbyClientImpl) Launcher.getCurrentClient()).getClientList()
                 .stream()
                 .filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP()))
                 .filter(c -> !c.getIP().equals(((LobbyClientImpl) Launcher.getCurrentClient()).getIpManager())).collect(Collectors.toList());
@@ -31,11 +30,11 @@ public class LobbySender extends AbstractVerticle {
         list.forEach(c -> {
             this.client
                     .post(5001, c.getIP(), "/client/lobby/clients")
-                    .sendJsonObject(JSONClient.fromBase((LobbyClientImpl)Launcher.getCurrentClient()).toJson())
+                    .sendJsonObject(JSONClient.fromBase((LobbyClientImpl) Launcher.getCurrentClient()).toJson())
                     .onSuccess(response -> {
                         System.out.println("Client " +
                                 c.getNickname() +
-                                " receive the info about me: "+Launcher.getCurrentClient().getIP()+ " , "+ response.statusCode());
+                                " receive the info about me: " + Launcher.getCurrentClient().getIP() + " , " + response.statusCode());
                     })
                     .onFailure(err ->
                             System.out.println("Client " + c.getNickname() + " doesn't receive the info about me: " + err.getMessage()));

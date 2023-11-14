@@ -6,6 +6,7 @@ import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
+import io.vertx.core.Future;
 
 import java.util.List;
 import java.util.Map;
@@ -21,10 +22,6 @@ public interface GameClient extends Client {
     void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies);
 
     void lobbyClosed();
-
-    void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory territory);
-
-    void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory territory);
 
     void someoneDrawStateCard(String ip);
 
@@ -50,5 +47,13 @@ public interface GameClient extends Client {
 
     void receiveRandomOrder(String ip, List<JSONClient> order);
 
-    void throwDices(int nDices);
+    Future<List<Integer>> throwDices(int nDices);
+
+    void sendAttackMsg(Territory territoryFromToAttack, Territory territoryToAttack, int nDicesToUse);
+
+    void sendDefendMsg(Territory enemyTerritory, Territory myTerritory, int nDicesToUse);
+
+    void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory enemyTerritory, Territory myTerritory);
+
+    void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory myTerritory, Territory enemyTerritory);
 }

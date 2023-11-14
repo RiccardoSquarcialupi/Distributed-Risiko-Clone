@@ -9,10 +9,29 @@ package app.common;
 public class Pair<T1, T2> {
 
     /**
+     * The number of bits per bytes
+     */
+    private static final int BITS_PER_BYTES = 8;
+    /**
+     * The number of bytes in the hash
+     */
+    private static final int NUMBER_BITS = Integer.BYTES * BITS_PER_BYTES;
+    /**
+     * The number of bytes in the hash
+     */
+    private static final int HALF_NUMBER_BITS = NUMBER_BITS / 2;
+    /**
+     * 0's for the first half of the int, 1's for the second half of the int
+     */
+    private static final int EMPTY_FULL = (1 << (HALF_NUMBER_BITS + 1)) - 1;
+    /**
+     * 1's for the first half of the int, 0's for the second half of the int
+     */
+    private static final int FULL_EMPTY = EMPTY_FULL << HALF_NUMBER_BITS;
+    /**
      * The first object
      */
     private final T1 obj1;
-
     /**
      * The second object
      */
@@ -51,31 +70,6 @@ public class Pair<T1, T2> {
         Pair<?, ?> otherObj = (Pair<?, ?>) other;
         return otherObj.obj1.equals(obj1) && otherObj.obj2.equals(obj2);
     }
-
-    /**
-     * The number of bits per bytes
-     */
-    private static final int BITS_PER_BYTES = 8;
-
-    /**
-     * The number of bytes in the hash
-     */
-    private static final int NUMBER_BITS = Integer.BYTES * BITS_PER_BYTES;
-
-    /**
-     * The number of bytes in the hash
-     */
-    private static final int HALF_NUMBER_BITS = NUMBER_BITS / 2;
-
-    /**
-     * 0's for the first half of the int, 1's for the second half of the int
-     */
-    private static final int EMPTY_FULL = (1 << (HALF_NUMBER_BITS + 1)) - 1;
-
-    /**
-     * 1's for the first half of the int, 0's for the second half of the int
-     */
-    private static final int FULL_EMPTY = EMPTY_FULL << HALF_NUMBER_BITS;
 
     @Override
     public int hashCode() {

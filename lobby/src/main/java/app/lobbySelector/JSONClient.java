@@ -17,15 +17,15 @@ public class JSONClient {
         return new JSONClient(bodyAsJson.getString("ip"), bodyAsJson.getString("nickname"));
     }
 
+    public static JSONClient fromBase(LobbySelectorClient bc) {
+        return new JSONClient(bc.getIP(), bc.getNickname());
+    }
+
     public JsonObject toJson() {
         JsonObject jo = new JsonObject();
         jo.put("ip", this.ip);
         jo.put("nickname", this.nickname);
         return jo;
-    }
-
-    public static JSONClient fromBase(LobbySelectorClient bc) {
-        return new JSONClient(bc.getIP(), bc.getNickname());
     }
 
     @Override
