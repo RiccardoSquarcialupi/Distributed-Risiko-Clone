@@ -134,11 +134,11 @@ public class ContextManagerParameters {
         this.allTerritories.put(new Pair<>(client, territorySender), newArmiesVal);
     }
 
-    public void updateEnemyTerritoryWithConqueror(JSONClient client, Territory territory, Integer nArmies, String conquerorIp) {
+    public void updateEnemyTerritoryWithConqueror(JSONClient winner, JSONClient loser, Territory territory, Integer nArmies) {
         //REMOVE THE TERRITORY FROM THE PREVIOUS OWNER
-        this.allTerritories.remove(new Pair<>(client, territory));
+        this.allTerritories.remove(new Pair<>(loser, territory));
         //ADD THE TERRITORY TO THE NEW OWNER
-        this.allTerritories.put(new Pair<>((this.getClientList().stream().filter(c -> c.getIP().equals(conquerorIp)).collect(Collectors.toList()).get(0)), territory), nArmies);
+        this.allTerritories.put(new Pair<>(winner, territory), nArmies);
 
     }
 

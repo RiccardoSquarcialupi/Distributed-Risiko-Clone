@@ -17,7 +17,7 @@ public interface GameClient extends Client {
 
     void updateEnemyTerritory(String ip, Territory fromName, Territory fromName1, Integer nArmiesChange);
 
-    void updateEnemyTerritoryWithConqueror(String ip, Territory fromName, Integer nArmiesChange, String conquerorIp);
+    void updateEnemyTerritoryWithConqueror(String winnerIp, Territory fromName, Integer nArmiesChange, String loserIp);
 
     void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies);
 
@@ -33,7 +33,7 @@ public interface GameClient extends Client {
 
     boolean isMyTurn();
 
-    void placeArmy(String country, Integer armies);
+    void placeArmy(String clientIp, String country, Integer armies);
 
     void placeArmies(int nArmies);
 

@@ -149,6 +149,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                                 countryClickedWhileAttackingSecondCountry(e, country);
                                 break;
                             case WAITING:
+                            case MOVING_SELECT_FIRST_COUNTRY:
+                            case MOVING_SELECT_SECOND_COUNTRY:
                             case ORDERING:
                                 break;
                             default:
@@ -277,8 +279,9 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     private void placeArmy(String country, Integer deltaArmies) {
         Launcher.getVertx().setTimer(250, id -> {
-            ((GameClient) Launcher.getCurrentClient()).placeArmy(country, deltaArmies);
-            var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
+            var currentClient = ((GameClientImpl) Launcher.getCurrentClient());
+            currentClient.placeArmy(currentClient.getIP(), country, deltaArmies);
+            var ps = currentClient.getPlacingState();
             if (this.state.get() == GAME_STATE.PLACING) {
                 this.jlState.setText("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
                 System.out.println("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
@@ -345,8 +348,10 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory myTerritory, Territory enemyTerritory) {
-        String playerDefender = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> c.getIP().equals(ipClientDefend)).collect(Collectors.toList()).get(0).getNickname();
-        JOptionPane.showMessageDialog(this, "Player " + playerDefender + " defend " + enemyTerritory.name() + " from the attack of " + enemyTerritory.name() + " with dices result: " + diceDEFResult, "Defence result!!!", JOptionPane.INFORMATION_MESSAGE);
+        SwingUtilities.invokeLater(() -> {
+            String playerDefender = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> c.getIP().equals(ipClientDefend)).collect(Collectors.toList()).get(0).getNickname();
+            JOptionPane.showMessageDialog(this, "Player " + playerDefender + " defend " + enemyTerritory.name() + " from the attack of " + enemyTerritory.name() + " with dices result: " + diceDEFResult, "Defence result!!!", JOptionPane.INFORMATION_MESSAGE);
+        });
     }
 
     public void someoneDrawStateCard(String ip) {
