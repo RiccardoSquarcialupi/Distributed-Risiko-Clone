@@ -375,7 +375,7 @@ public class GameClientImpl implements GameClient {
         //compute armies lost
         List<Pair<Integer, Integer>> result = new ArrayList<>();
         while(attackDices.size() != defenceDices.size()){
-            if (attackDices.size() < defenceDices.size()) {
+            if (attackDices.size() > defenceDices.size()) {
                 attackDices.remove(0);
             } else {
                 defenceDices.remove(0);
