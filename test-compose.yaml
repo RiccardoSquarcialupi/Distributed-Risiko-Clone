@@ -1,0 +1,16 @@
+services:
+  
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    ports:
+      - "8000:5000"
+
+  client1:
+    build:
+      context: .
+      dockerfile: client.Dockerfile
+    ports:
+      - "8001:5001"
+    command: "./gradlew test"
