@@ -1,8 +1,11 @@
 package app.lobby;
 
+import app.Launcher;
+import app.lobby.GUI.GUILobbyManager;
 import app.lobbySelector.JSONClient;
 import app.lobbySelector.LobbySelectorClient;
 import app.lobbySelector.LobbySelectorClientImpl;
+import app.manager.Window;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -19,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class ClientTest {
-
-    static LobbySelectorClient client1;
+    static LobbyClient lobbyClient;
     static ContextManagerParameters cltPar;
+    static LobbySelectorClientImpl lobbySelectorClient;
 
     @BeforeAll
     static void setupParameters() throws IOException {
@@ -34,23 +37,23 @@ public class ClientTest {
 
     @Test
     void testBaseClient() throws UnknownHostException {
-        client1 = new LobbySelectorClientImpl(cltPar);
-        assertEquals("Ricky", client1.getNickname());
-        assertEquals(Inet4Address.getLocalHost().getHostAddress(), client1.getIP());
+        lobbySelectorClient = new LobbySelectorClientImpl(cltPar);
+        assertEquals("Ricky", lobbySelectorClient.getNickname());
+        assertEquals(Inet4Address.getLocalHost().getHostAddress(), lobbySelectorClient.getIP());
     }
 
     @Test
     void testLobbyClient() {
-        client1 = new LobbyClientImpl(cltPar);
-        assertEquals(LobbyClientImpl.class, client1.getClass());
-        ((LobbyClient) client1).stop();
+        lobbySelectorClient = new LobbyClientImpl(cltPar);
+        assertEquals(LobbyClientImpl.class, lobbySelectorClient.getClass());
+        ((LobbyClient) lobbySelectorClient).stop();
     }
 
     @Test
     void testManagerClient() {
-        client1 = new ManagerClientImpl(cltPar);
-        assertEquals(ManagerClientImpl.class, client1.getClass());
-        ((ManagerClient) client1).stop();
+        lobbySelectorClient = new ManagerClientImpl(cltPar);
+        assertEquals(ManagerClientImpl.class, lobbySelectorClient.getClass());
+        ((ManagerClient) lobbySelectorClient).stop();
     }
 
     void waitForCompletion(Future<?> fut) {
@@ -61,28 +64,29 @@ public class ClientTest {
             }
         } // Deliberately busy waiting.
         if (fut.failed()) {
-            fail();
+            fail(fut.cause());
         }
     }
 
     @Test
-    void testClientServerPartAPI() {
-        client1 = new ManagerClientImpl(cltPar);
-        ((ManagerClient) client1).start();
+    void testClientServerPartAPI() throws IOException {
+        Launcher.debugInit(Window.MANAGER);
+        lobbyClient = (LobbyClient) Launcher.getCurrentClient();
+        ((ManagerClient)lobbyClient).start();
         Vertx vertx = Vertx.vertx();
 
         // Client join the lobby.
 
         var fut = WebClient.create(vertx)
-                .post(8080, client1.getIP(), "/client/lobby/clients")
-                .sendJsonObject(JSONClient.fromBase(client1).toJson());
+                .post(5001, lobbyClient.getIP(), "/client/lobby/clients")
+                .sendJsonObject(JSONClient.fromBase((LobbySelectorClient) lobbyClient).toJson());
         waitForCompletion(fut);
-        assertEquals(client1.getIP(), ((ManagerClientImpl) client1).getClientList().get(0).getIP());
+        assertEquals(lobbyClient.getIP(), ((ManagerClientImpl) lobbyClient).getClientList().get(0).getIP());
 
         // Client asks for clients.
 
         fut = WebClient.create(vertx)
-                .get(8080, client1.getIP(), "/manager/lobby/clients")
+                .get(5001, lobbyClient.getIP(), "/manager/lobby/clients")
                 .send();
         waitForCompletion(fut);
         assertEquals(1, fut.result().bodyAsJsonArray().size());
@@ -90,19 +94,20 @@ public class ClientTest {
         // Client leave lobby.
 
         fut = WebClient.create(vertx)
-                .delete(8080, client1.getIP(), "/client/lobby/clients")
-                .sendJsonObject(JSONClient.fromBase(client1).toJson());
+                .delete(5001, lobbyClient.getIP(), "/client/lobby/clients")
+                .sendJsonObject(JSONClient.fromBase((LobbySelectorClient) lobbyClient).toJson());
         waitForCompletion(fut);
-        assertEquals(0, ((ManagerClientImpl) client1).getClientList().size());
+        assertEquals(0, ((ManagerClientImpl) lobbyClient).getClientList().size());
 
         // Stop client.
-        ((ManagerClient) client1).stop();
+        ((ManagerClient) lobbyClient).stop();
     }
 
     @Test
-    void testManagerChange() {
-        client1 = new ManagerClientImpl(cltPar);
-        ((ManagerClient) client1).start();
+    void testManagerChange() throws IOException {
+        Launcher.debugInit(Window.MANAGER);
+        lobbyClient = (LobbyClient) Launcher.getCurrentClient();
+        ((ManagerClient) lobbyClient).start();
         Vertx vertx = Vertx.vertx();
 
         // Manager change.
@@ -110,11 +115,11 @@ public class ClientTest {
         JsonObject newMan = new JsonObject();
         newMan.put("manager_ip", "255.1.255.1");
         var fut = WebClient.create(vertx)
-                .put(8080, client1.getIP(), "/client/lobby/manager")
+                .put(5001, lobbyClient.getIP(), "/client/lobby/manager")
                 .sendJsonObject(newMan);
         waitForCompletion(fut);
-        assertEquals(newMan.getString("manager_ip"), ((ManagerClient) client1).getIpManager());
+        assertEquals(newMan.getString("manager_ip"), ((ManagerClient) lobbyClient).getIpManager());
 
-        ((ManagerClient) client1).stop();
+        ((ManagerClient) lobbyClient).stop();
     }
 }

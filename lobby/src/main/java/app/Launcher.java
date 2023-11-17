@@ -29,6 +29,12 @@ public class Launcher {
         guiManager.open();
     }
 
+    public static void debugInit(Window w) throws IOException {
+        searchForServer();
+        contextManager = new ContextManagerImpl(w);
+        guiManager = new GUIManagerImpl(w);
+    }
+
     private static void searchForServer() throws IOException {
         try {
             Thread.sleep(6000);
@@ -42,7 +48,7 @@ public class Launcher {
         String subnet = ip.substring(0, ip.lastIndexOf("."));
         System.out.println("My subnet is " + subnet.concat(".0"));
         System.out.println("Searching for server...");
-        for (int i = 1; i < 255; i++) {
+        for (int i = 1; i < 10; i++) {
             String host = subnet + "." + i;
             if (InetAddress.getByName(host).isReachable(500)) {
                 try {
