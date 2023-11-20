@@ -10,7 +10,7 @@ services:
   client1:
     build:
       context: .
-      dockerfile: client.Dockerfile
+      dockerfile: clientTest.Dockerfile
     ports:
       - "8001:5001"
     command: "./gradlew test"
