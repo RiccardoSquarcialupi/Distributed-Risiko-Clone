@@ -72,7 +72,6 @@ public class ClientTest {
     void testClientServerPartAPI() throws IOException {
         Launcher.debugInit(Window.MANAGER);
         lobbyClient = (LobbyClient) Launcher.getCurrentClient();
-        ((ManagerClient)lobbyClient).start();
         Vertx vertx = Vertx.vertx();
 
         // Client join the lobby.
@@ -107,7 +106,6 @@ public class ClientTest {
     void testManagerChange() throws IOException {
         Launcher.debugInit(Window.MANAGER);
         lobbyClient = (LobbyClient) Launcher.getCurrentClient();
-        ((ManagerClient) lobbyClient).start();
         Vertx vertx = Vertx.vertx();
 
         // Manager change.

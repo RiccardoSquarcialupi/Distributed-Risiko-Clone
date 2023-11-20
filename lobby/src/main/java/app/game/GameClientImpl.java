@@ -252,15 +252,18 @@ public class GameClientImpl implements GameClient {
     public void changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
         this.gameSender.changeArmiesInTerritory(this.getIP(), territorySender, Optional.ofNullable(territoryReceiver), nArmiesChange, Optional.empty()).onSuccess(res -> {
             this.cltPar.updateMyTerritory(territorySender, territoryReceiver, nArmiesChange);
+            this.guiGame.updateMapImage();
         });
     }
 
     public void updateEnemyTerritory(String ip, Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
         this.cltPar.updateEnemyTerritories(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), territorySender, territoryReceiver, nArmiesChange);
+        this.guiGame.updateMapImage();
     }
 
     public void updateEnemyTerritoryWithConqueror(String winnerIp, Territory territory, Integer nArmiesChange, String loserIp) {
         this.cltPar.updateEnemyTerritoryWithConqueror(this.getClientList().stream().filter(c -> c.getIP().equals(winnerIp)).collect(Collectors.toList()).get(0), this.getClientList().stream().filter(c -> c.getIP().equals(loserIp)).collect(Collectors.toList()).get(0), territory, nArmiesChange);
+        this.guiGame.updateMapImage();
     }
 
     public Map<Pair<JSONClient, Territory>, Integer> getAllTerritories() {
@@ -339,10 +342,8 @@ public class GameClientImpl implements GameClient {
         throwDices(nDicesToUse).onSuccess(h -> {
             lastDefenceDicesThrow = h.stream().sorted().collect(Collectors.toList());;
             guiGame.addLogToTextArea("Sending defence with dices result" + lastDefenceDicesThrow);
-            this.gameSender.clientDefendTerritory(getIpFromTerritory(enemyTerritory), this.getIP(), lastDefenceDicesThrow, enemyTerritory, myTerritory).onSuccess(h1 -> {
-                computeDefenderResult(myTerritory, enemyTerritory);
-                this.guiGame.waitingPhase();
-            });
+            computeDefenderResult(myTerritory, enemyTerritory);
+
         });
 
     }
@@ -381,6 +382,8 @@ public class GameClientImpl implements GameClient {
                 defenceDices.remove(0);
             }
         }
+        System.out.println("ATTACK DICES: " + attackDices);
+        System.out.println("DEFENCE DICES: " + defenceDices);
         for (int i = 0; i < defenceDices.size(); i++) {
             if (attackDices.get(i) != null) {
                 if (defenceDices.get(i) != null) {
@@ -406,11 +409,12 @@ public class GameClientImpl implements GameClient {
         placeArmy(this.getIP(), myTerritory.name(), -result.get(0));
         if (enemyArmies - result.get(1) <= 0) {
             //conquer
-            this.gameSender.changeArmiesInTerritory(getIpFromTerritory(myTerritory), myTerritory, Optional.empty(), 0, Optional.ofNullable(getIpFromTerritory(enemyTerritory))).onSuccess(h -> {
-                this.guiGame.updateMapImage();
-                this.guiGame.movingPhase();
+            this.gameSender.changeArmiesInTerritory(getIpFromTerritory(myTerritory), enemyTerritory, Optional.empty(), 0, Optional.ofNullable(getIpFromTerritory(enemyTerritory))).onSuccess(h -> {
+                this.updateEnemyTerritoryWithConqueror(this.getIP(), enemyTerritory, 0, getIpFromTerritory(myTerritory));
+                this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
             });
         }else{
+            this.guiGame.updateMapImage();
             this.guiGame.playingPhase();
         }
     }
@@ -421,7 +425,14 @@ public class GameClientImpl implements GameClient {
         if (myArmies - result.get(1) > 0) {
             //not conquered
             placeArmy(this.getIP(), myTerritory.name(), -result.get(1));
+        }else{
+            //conquered, set nArmies to ZERO
+            placeArmy(this.getIP(), myTerritory.name(), -myArmies);
         }
+        this.gameSender.clientDefendTerritory(getIpFromTerritory(enemyTerritory), this.getIP(), lastDefenceDicesThrow, enemyTerritory, myTerritory).onSuccess(h1 -> {
+            System.out.println("DEFENCE RESULT SENT WITH SUCCESS: " + lastDefenceDicesThrow);
+        });
+
     }
 
     private String getIpFromTerritory(Territory territory) {

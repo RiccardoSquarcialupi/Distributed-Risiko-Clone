@@ -143,10 +143,11 @@ public class ContextManagerParameters {
     }
 
     public void updateMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmies) {
-        var newArmiesVal = this.allTerritories.get(new Pair<>(new JSONClient(getIp(), getNickname()), territorySender)) - nArmies;
-        this.allTerritories.put(new Pair<>(new JSONClient(getIp(), getNickname()), territorySender), newArmiesVal);
-        newArmiesVal = this.allTerritories.get(new Pair<>(new JSONClient(getIp(), getNickname()), territoryReceiver)) + nArmies;
-        this.allTerritories.put(new Pair<>(new JSONClient(getIp(), getNickname()), territoryReceiver), newArmiesVal);
+        var jsonClient = this.clientList.stream().filter(c -> c.getIP().equals(getIp())).collect(Collectors.toList()).get(0);
+        var newArmiesVal = this.allTerritories.get(new Pair<>(jsonClient, territorySender)) - nArmies;
+        this.allTerritories.put(new Pair<>(jsonClient, territorySender), newArmiesVal);
+        newArmiesVal = this.allTerritories.get(new Pair<>(jsonClient, territoryReceiver)) + nArmies;
+        this.allTerritories.put(new Pair<>(jsonClient, territoryReceiver), newArmiesVal);
     }
 
     public boolean addArmy(JSONClient clt, String country, Integer deltaArmies) {

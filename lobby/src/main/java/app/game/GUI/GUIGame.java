@@ -545,7 +545,16 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         });
     }
 
-    public enum GAME_STATE {WAITING, ORDERING, PLACING, ATTACKING_SELECT_FIRST_COUNTRY, ATTACKING_SELECT_SECOND_COUNTRY, MOVING_SELECT_FIRST_COUNTRY, MOVING_SELECT_SECOND_COUNTRY, PLAYING}
+    public void movingPhaseAfterConquer(Territory myTerritory, Territory newTerritory) {
+        SwingUtilities.invokeLater(() -> {
+            this.state.set(GAME_STATE.MOVING_AFTER_CONQUER);
+            this.jlState.setText("Select the number of armies to move in the conquered territory");
+            Object nArmiesToMove = (JOptionPane.showInputDialog(guiGame, "How many armies do you want to move? (0-3)", "Armies Selection", JOptionPane.QUESTION_MESSAGE, null, getNDicesFromTerritory(myTerritory, "DEFEND"), 0));
+            ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(myTerritory, newTerritory, (Integer) nArmiesToMove);
+        });
+    }
+
+    public enum GAME_STATE {WAITING, ORDERING, PLACING, ATTACKING_SELECT_FIRST_COUNTRY, ATTACKING_SELECT_SECOND_COUNTRY, MOVING_SELECT_FIRST_COUNTRY, MOVING_SELECT_SECOND_COUNTRY, MOVING_AFTER_CONQUER, PLAYING}
 
     private static class PairOfCoordinates {
         private final int x;
