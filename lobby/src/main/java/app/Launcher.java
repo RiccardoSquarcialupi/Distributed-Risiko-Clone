@@ -63,8 +63,6 @@ public class Launcher {
                 break;
             }
         }
-
-
     }
 
     public static Vertx getVertx() {

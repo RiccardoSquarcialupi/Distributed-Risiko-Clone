@@ -2,6 +2,7 @@ package app.lobbySelector;
 
 import app.Launcher;
 import app.lobby.LobbyClientImpl;
+import app.lobby.ManagerClientImpl;
 import app.manager.Window;
 import io.vertx.core.Future;
 import io.vertx.ext.web.client.WebClient;
@@ -21,29 +22,32 @@ public class ClientServerInteractionsTest {
         // Client request lobbies.
         var crl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).getFilteredLobbies(-1);
         waitForCompletion(crl);
-        assertEquals(crl.result().bodyAsJsonArray().size(), 0);
+        assertEquals(0, crl.result().bodyAsJsonArray().size());
 
         // Client create a lobby.
         var ccl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).createNewLobby("NewLobby", 4);
         waitForCompletion(ccl);
-        assertEquals(Launcher.getCurrentClient().getClass(), LobbyClientImpl.class);
+        assertEquals(ManagerClientImpl.class, Launcher.getCurrentClient().getClass());
 
         // Server knows the new lobby.
         var skl = WebClient.create(Launcher.getVertx()).get(
                 5000, Launcher.serverIP, "/server/lobbies/"
         ).send();
         waitForCompletion(skl);
-        assertEquals(skl.result().bodyAsJsonArray().size(), 1);
+        assertEquals(1, skl.result().bodyAsJsonArray().size());
 
         // Client exit the lobby.
         var cel = ((LobbyClientImpl)Launcher.getCurrentClient()).exitLobby();
         waitForCompletion(cel);
-        assertEquals(Launcher.getCurrentClient().getClass(), LobbySelectorClientImpl.class);
+        var slc = ((ManagerClientImpl)Launcher.getCurrentClient()).closeLobby();
+        waitForCompletion(slc);
+        Launcher.lobbyClosed();
+        assertEquals(LobbySelectorClientImpl.class, Launcher.getCurrentClient().getClass());
 
         // Server knows lobby close.
         var skc = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).getFilteredLobbies(-1);
         waitForCompletion(skc);
-        assertEquals(skc.result().bodyAsJsonArray().size(), 0);
+        assertEquals(0, skc.result().bodyAsJsonArray().size());
     }
 
     void waitForCompletion(Future<?> fut) {
