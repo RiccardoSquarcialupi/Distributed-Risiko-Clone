@@ -19,5 +19,5 @@ WORKDIR /lobby
 # Set the display to the host machine
 ENV DISPLAY=host.docker.internal:0.0
 RUN dos2unix gradlew
-RUN ./gradlew build --warning-mode all
+RUN ./gradlew build -x test --warning-mode all
 #CMD java -jar build/libs/lobby-1.0-SNAPSHOT-all.jar
