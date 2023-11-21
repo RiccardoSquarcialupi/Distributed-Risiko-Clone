@@ -27,8 +27,9 @@ public interface LobbySelectorClient extends Client {
      *
      * @param name       name of the lobby.
      * @param maxPlayers maximum players of the lobby.
+     * @return
      */
-    void createNewLobby(String name, int maxPlayers);
+    Future<Void> createNewLobby(String name, int maxPlayers);
 
     @Override
     String getNickname();

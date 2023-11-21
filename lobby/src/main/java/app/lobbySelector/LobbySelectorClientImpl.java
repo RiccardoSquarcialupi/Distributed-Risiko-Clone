@@ -4,6 +4,7 @@ import app.Launcher;
 import app.login.LoginClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -66,7 +67,8 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
     }
 
     @Override
-    public void createNewLobby(String name, int maxPlayers) {
+    public Future<Void> createNewLobby(String name, int maxPlayers) {
+        Promise<Void> prm = Promise.promise();
         this.client
                 .post(FLASK_SERVER_PORT, Launcher.serverIP, "/server/lobbies")
                 .putHeader("Content-Type", "application/json")
@@ -77,8 +79,10 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                     this.cltPar.addClient(JSONClient.fromBase(this));
                     this.cltPar.setIdLobby(Integer.parseInt(response.bodyAsString().trim()));
                     Launcher.lobbyCreatedSuccessfully();
+                    prm.complete();
                 })
                 .onFailure(System.out::println);
+        return prm.future();
     }
 
 

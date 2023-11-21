@@ -104,7 +104,7 @@ public class ClientTest {
 
     @Test
     void testManagerChange() throws IOException {
-        Launcher.debugInit(Window.MANAGER);
+        Launcher.debugInit(Window.LOBBY);
         lobbyClient = (LobbyClient) Launcher.getCurrentClient();
         Vertx vertx = Vertx.vertx();
 
@@ -116,8 +116,8 @@ public class ClientTest {
                 .put(5001, lobbyClient.getIP(), "/client/lobby/manager")
                 .sendJsonObject(newMan);
         waitForCompletion(fut);
-        assertEquals(newMan.getString("manager_ip"), ((ManagerClient) lobbyClient).getIpManager());
+        assertEquals(newMan.getString("manager_ip"), lobbyClient.getIpManager());
 
-        ((ManagerClient) lobbyClient).stop();
+        lobbyClient.stop();
     }
 }
