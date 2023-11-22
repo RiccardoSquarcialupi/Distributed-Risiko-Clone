@@ -11,8 +11,9 @@ public interface LobbySelectorClient extends Client {
      * Join the lobby identified by his manager IP.
      *
      * @param managerClientIp the manager IP.
+     * @return
      */
-    void joinLobby(String managerClientIp);
+    Future<Void> joinLobby(String managerClientIp);
 
     /**
      * Returns a Future with a buffer HTTP response to get lobbies.

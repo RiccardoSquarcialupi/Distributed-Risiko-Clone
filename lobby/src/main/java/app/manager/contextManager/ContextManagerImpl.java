@@ -58,4 +58,9 @@ public class ContextManagerImpl implements ContextManager {
     public Client getCurrentClient() {
         return this.currentClient;
     }
+
+    @Override
+    public ContextManagerParameters getContextParameters() {
+        return this.contextManagerParameters;
+    }
 }

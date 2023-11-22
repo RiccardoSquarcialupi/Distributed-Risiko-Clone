@@ -19,7 +19,7 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static app.Utils.waitForCompletion;
 
 public class ClientTest {
     static LobbyClient lobbyClient;
@@ -54,18 +54,6 @@ public class ClientTest {
         lobbySelectorClient = new ManagerClientImpl(cltPar);
         assertEquals(ManagerClientImpl.class, lobbySelectorClient.getClass());
         ((ManagerClient) lobbySelectorClient).stop();
-    }
-
-    void waitForCompletion(Future<?> fut) {
-        while (!fut.isComplete()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignored) {
-            }
-        } // Deliberately busy waiting.
-        if (fut.failed()) {
-            fail(fut.cause());
-        }
     }
 
     @Test

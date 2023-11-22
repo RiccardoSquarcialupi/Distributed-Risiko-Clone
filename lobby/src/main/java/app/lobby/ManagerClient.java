@@ -3,7 +3,7 @@ package app.lobby;
 import io.vertx.core.Future;
 
 public interface ManagerClient extends LobbyClient {
-    void startGame();
+    Future<Void> startGame();
 
     Future<Void> managerClientChange(String newManagerIP);
 

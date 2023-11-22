@@ -11,7 +11,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LobbySelectorClientImpl extends LoginClient implements LobbySelectorClient {
     private final static int FLASK_SERVER_PORT = 5000;
@@ -31,7 +33,8 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
     }
 
     @Override
-    public void joinLobby(String managerClientIp) {
+    public Future<Void> joinLobby(String managerClientIp) {
+        List<Promise<Void>> prm = List.of(Promise.promise(), Promise.promise());
         this.client
                 .post(serverPort, managerClientIp, "/client/lobby/clients")
                 .sendJsonObject(JSONClient.fromBase(this).toJson())
@@ -53,11 +56,18 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                     this.client
                             .put(FLASK_SERVER_PORT, Launcher.serverIP, "server/lobby/" + lobbyId)
                             .send()
-                            .onComplete(s -> System.out.println("FLASK Server receive the join joinLobby Notification"))
+                            .onComplete(s -> {
+                                System.out.println("FLASK Server receive the join joinLobby Notification");
+                                prm.get(0).complete();
+                            })
                             .onFailure(err -> System.out.println("Something went wrong when sending joinLobby Notification to the FLASK server" + err.getMessage()));
                     Launcher.lobbyJoinedSuccessfully();
+                    prm.get(1).complete();
                 })
                 .onFailure(System.out::println);
+        Promise<Void> ret = Promise.promise();
+        Future.all(prm.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> ret.complete());
+        return ret.future();
     }
 
     @Override

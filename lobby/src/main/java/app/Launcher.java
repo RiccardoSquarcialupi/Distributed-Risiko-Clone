@@ -30,8 +30,12 @@ public class Launcher {
     }
 
     public static void debugInit(Window w) throws IOException {
+        debugInit(w, "aa");
+    }
+    public static void debugInit(Window w, String name) throws IOException{
         searchForServer();
         contextManager = new ContextManagerImpl(w);
+        contextManager.getContextParameters().setNickname(name);
         guiManager = new GUIManagerImpl(w);
     }
 
