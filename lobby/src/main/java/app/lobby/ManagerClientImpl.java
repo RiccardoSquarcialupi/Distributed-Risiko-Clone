@@ -4,12 +4,14 @@ import app.game.card.Goal;
 import app.game.card.Territory;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient {
     private final List<Territory> cards;
@@ -37,11 +39,15 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
     }
 
     @Override
-    public void startGame() {
+    public Future<Void> startGame() {
         Collections.shuffle(cards);
         Collections.shuffle(goalCards);
 
+        List<Promise<Void>> lpr = new ArrayList<>(this.cltPar.getMaxPlayer());
+
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
+            final int index = i;
+            lpr.add(Promise.promise());
             // Move my CLIENT to be the last, so anyone will be informed before I close connection.
             if (this.cltPar.getClientList().get(i).getIP().equals(cltPar.getIp()) &&
                     i != this.cltPar.getMaxPlayer() - 1) {
@@ -52,9 +58,12 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
             this.sender.gameHasStarted(
                     JsonArray.of(cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)), JsonObject.of("Goal", goalCards.get(0))),
                     this.cltPar.getClientList().get(i).getIP()
-            );
+            ).onSuccess(s -> lpr.get(index).complete());
             cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)).clear();
             goalCards.remove(0);
         }
+        Promise<Void> prm = Promise.promise();
+        Future.all(lpr.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        return prm.future();
     }
 }

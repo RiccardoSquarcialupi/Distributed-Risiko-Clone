@@ -4,14 +4,13 @@ import app.Launcher;
 import app.lobby.LobbyClientImpl;
 import app.lobby.ManagerClientImpl;
 import app.manager.Window;
-import io.vertx.core.Future;
 import io.vertx.ext.web.client.WebClient;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static app.Utils.waitForCompletion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class ClientServerInteractionsTest {
 
@@ -48,17 +47,5 @@ public class ClientServerInteractionsTest {
         var skc = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).getFilteredLobbies(-1);
         waitForCompletion(skc);
         assertEquals(0, skc.result().bodyAsJsonArray().size());
-    }
-
-    void waitForCompletion(Future<?> fut) {
-        while (!fut.isComplete()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignored) {
-            }
-        } // Deliberately busy waiting.
-        if (fut.failed()) {
-            fail(fut.cause());
-        }
     }
 }

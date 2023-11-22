@@ -7,4 +7,6 @@ public interface ContextManager {
     void change(Window newClient);
 
     Client getCurrentClient();
+
+    ContextManagerParameters getContextParameters();
 }

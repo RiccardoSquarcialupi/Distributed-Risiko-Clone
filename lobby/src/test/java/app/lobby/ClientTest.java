@@ -19,7 +19,7 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static app.Utils.waitForCompletion;
 
 public class ClientTest {
     static LobbyClient lobbyClient;
@@ -56,18 +56,6 @@ public class ClientTest {
         ((ManagerClient) lobbySelectorClient).stop();
     }
 
-    void waitForCompletion(Future<?> fut) {
-        while (!fut.isComplete()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignored) {
-            }
-        } // Deliberately busy waiting.
-        if (fut.failed()) {
-            fail(fut.cause());
-        }
-    }
-
     @Test
     void testClientServerPartAPI() throws IOException {
         Launcher.debugInit(Window.MANAGER);
@@ -79,6 +67,7 @@ public class ClientTest {
         var fut = WebClient.create(vertx)
                 .post(5001, lobbyClient.getIP(), "/client/lobby/clients")
                 .sendJsonObject(JSONClient.fromBase((LobbySelectorClient) lobbyClient).toJson());
+        fut.onFailure(System.out::println);
         waitForCompletion(fut);
         assertEquals(lobbyClient.getIP(), ((ManagerClientImpl) lobbyClient).getClientList().get(0).getIP());
 
@@ -103,7 +92,7 @@ public class ClientTest {
     }
 
     @Test
-    void testManagerChange() throws IOException {
+    void testManagerChange() throws IOException, InterruptedException {
         Launcher.debugInit(Window.LOBBY);
         lobbyClient = (LobbyClient) Launcher.getCurrentClient();
         Vertx vertx = Vertx.vertx();
@@ -116,6 +105,7 @@ public class ClientTest {
                 .put(5001, lobbyClient.getIP(), "/client/lobby/manager")
                 .sendJsonObject(newMan);
         waitForCompletion(fut);
+        Thread.sleep(500);
         assertEquals(newMan.getString("manager_ip"), lobbyClient.getIpManager());
 
         lobbyClient.stop();
