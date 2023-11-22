@@ -17,7 +17,7 @@ import java.net.Socket;
 public class Launcher {
 
     public static final int serverPort = 5000;
-    public static String serverIP = "";
+    public static String serverIP = null;
     private static ContextManager contextManager;
     private static GUIManager guiManager;
     private static Vertx vertx = null;
@@ -33,10 +33,17 @@ public class Launcher {
         debugInit(w, "aa");
     }
     public static void debugInit(Window w, String name) throws IOException{
-        searchForServer();
-        contextManager = new ContextManagerImpl(w);
-        contextManager.getContextParameters().setNickname(name);
-        guiManager = new GUIManagerImpl(w);
+        if(serverIP != null){
+            contextManager.getContextParameters().resetLobby();
+            contextManager.change(w);
+            contextManager.getContextParameters().setNickname(name);
+            guiManager.change(w);
+        } else {
+            searchForServer();
+            contextManager = new ContextManagerImpl(w);
+            contextManager.getContextParameters().setNickname(name);
+            guiManager = new GUIManagerImpl(w);
+        }
     }
 
     private static void searchForServer() throws IOException {

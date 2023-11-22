@@ -47,7 +47,7 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
 
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
             final int index = i;
-            lpr.set(index, Promise.promise());
+            lpr.add(Promise.promise());
             // Move my CLIENT to be the last, so anyone will be informed before I close connection.
             if (this.cltPar.getClientList().get(i).getIP().equals(cltPar.getIp()) &&
                     i != this.cltPar.getMaxPlayer() - 1) {

@@ -46,7 +46,7 @@ public class GameTest {
 
             // Join the lobby.
             var jtl = ((LobbySelectorClientImpl)Launcher.getCurrentClient())
-                    .joinLobby(tjl.result().bodyAsJsonArray().getString(0).substring(47,59));
+                    .joinLobby(tjl.result().bodyAsJsonArray().getString(0).substring(47,57));
             // \"manager_client_ip\": \"172.20.0.3\",
             waitForCompletion(jtl);
             System.out.println("Lobby joined");
@@ -61,6 +61,10 @@ public class GameTest {
             }
         }catch (Exception ignored){}
 
+        Thread.sleep(1500);
+        Thread.sleep(1500);
+        Thread.sleep(1500);
+
         // Start the game.
         if(System.getenv().containsKey("GAME")){
             // Make game start.
@@ -73,6 +77,9 @@ public class GameTest {
                 Thread.sleep(4000);
             } catch (Exception ignored){}
         }
+
+        // Wait for territories.
+        Thread.sleep(5000);
     }
 
     @Test

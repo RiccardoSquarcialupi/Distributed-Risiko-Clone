@@ -67,6 +67,7 @@ public class ClientTest {
         var fut = WebClient.create(vertx)
                 .post(5001, lobbyClient.getIP(), "/client/lobby/clients")
                 .sendJsonObject(JSONClient.fromBase((LobbySelectorClient) lobbyClient).toJson());
+        fut.onFailure(System.out::println);
         waitForCompletion(fut);
         assertEquals(lobbyClient.getIP(), ((ManagerClientImpl) lobbyClient).getClientList().get(0).getIP());
 
@@ -91,7 +92,7 @@ public class ClientTest {
     }
 
     @Test
-    void testManagerChange() throws IOException {
+    void testManagerChange() throws IOException, InterruptedException {
         Launcher.debugInit(Window.LOBBY);
         lobbyClient = (LobbyClient) Launcher.getCurrentClient();
         Vertx vertx = Vertx.vertx();
@@ -104,6 +105,7 @@ public class ClientTest {
                 .put(5001, lobbyClient.getIP(), "/client/lobby/manager")
                 .sendJsonObject(newMan);
         waitForCompletion(fut);
+        Thread.sleep(500);
         assertEquals(newMan.getString("manager_ip"), lobbyClient.getIpManager());
 
         lobbyClient.stop();
