@@ -323,7 +323,6 @@ public class GameClientImpl implements GameClient {
 
     @Override
     public Future<List<Integer>> throwDices(int nDices) {
-        guiGame.addLogToTextArea(("Sending " + nDices + " throws"));
         return this.gameSender.byzantineDiceLaunch(this.getIP(), nDices);
     }
 
@@ -331,7 +330,7 @@ public class GameClientImpl implements GameClient {
     public void sendAttackMsg(Territory territoryFromToAttack, Territory territoryToAttack, int nDicesToUse) {
         throwDices(nDicesToUse).onSuccess(h -> {
             lastAttackDicesThrow = h.stream().sorted().collect(Collectors.toList());
-            guiGame.addLogToTextArea("Sending attack with dices result" + lastAttackDicesThrow);
+            guiGame.addLogToTextArea("Sending attack with dices result" + lastAttackDicesThrow + " - ");
             this.gameSender.clientAttackTerritory(this.getIP(), getIpFromTerritory(territoryToAttack), lastAttackDicesThrow, territoryFromToAttack, territoryToAttack).onSuccess(
                     h1 -> guiGame.waitingPhase());
         });
@@ -341,9 +340,8 @@ public class GameClientImpl implements GameClient {
     public void sendDefendMsg(Territory enemyTerritory, Territory myTerritory, int nDicesToUse) {
         throwDices(nDicesToUse).onSuccess(h -> {
             lastDefenceDicesThrow = h.stream().sorted().collect(Collectors.toList());;
-            guiGame.addLogToTextArea("Sending defence with dices result" + lastDefenceDicesThrow);
+            guiGame.addLogToTextArea("Sending defence with dices result" + lastDefenceDicesThrow + " - ");
             computeDefenderResult(myTerritory, enemyTerritory);
-
         });
 
     }
@@ -384,29 +382,42 @@ public class GameClientImpl implements GameClient {
         }
         System.out.println("ATTACK DICES: " + attackDices);
         System.out.println("DEFENCE DICES: " + defenceDices);
+        int nArmiesLostByAttacker = 0;
+        int nArmiesLostByDefender = 0;
         for (int i = 0; i < defenceDices.size(); i++) {
             if (attackDices.get(i) != null) {
                 if (defenceDices.get(i) != null) {
-                    result.add(new Pair<>(attackDices.get(i), defenceDices.get(i)));
+                    if(attackDices.get(i) > defenceDices.get(i)){
+                        nArmiesLostByDefender++;
+                    }else{
+                        nArmiesLostByAttacker++;
+                    }
                 }
             }
         }
-        Integer nArmiesLostByAttacker = 0;
-        Integer nArmiesLostByDefender = 0;
-        for (Pair<Integer, Integer> pair : result) {
-            if (pair.getFirst().compareTo(pair.getSecond()) > 0) {
-                nArmiesLostByDefender++;
-            } else {
-                nArmiesLostByAttacker++;
-            }
-        }
+        System.out.println("ARMIES LOST BY ATTACKER: " + nArmiesLostByAttacker);
+        System.out.println("ARMIES LOST BY DEFENDER: " + nArmiesLostByDefender);
         return Arrays.asList(nArmiesLostByAttacker, nArmiesLostByDefender);
     }
 
+
+    private void updateArmiesAfterBattle(String clientIp, String country, Integer deltaArmies) {
+        var clt = this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(clientIp)).collect(Collectors.toList()).get(0);
+        this.cltPar.updateArmiesAfterBattle(clt, country, deltaArmies);
+        gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
+                        new Pair<>(clt, Territory.fromString(country))))
+                .onComplete(h -> {
+                    this.guiGame.updateMapImage();
+                    System.out.println("Armies update after battle MSG - OK");
+                }).onFailure(h -> {
+                    System.out.println("Armies update after battle MSG - ERROR");
+                });
+    }
     private void computeAttackerResult(Territory myTerritory, Territory enemyTerritory) {
         List<Integer> result = commonComputeResult();
         var enemyArmies = getAllTerritories().entrySet().stream().filter(p -> p.getKey().getSecond().equals(enemyTerritory)).collect(Collectors.toList()).get(0).getValue();
-        placeArmy(this.getIP(), myTerritory.name(), -result.get(0));
+
+        updateArmiesAfterBattle(this.getIP(), myTerritory.name(), -result.get(0));
         if ((enemyArmies - result.get(1)) <= 0) {
             //conquer
             this.gameSender.changeArmiesInTerritory(getIpFromTerritory(myTerritory), enemyTerritory, Optional.empty(), 0, Optional.ofNullable(getIpFromTerritory(enemyTerritory))).onSuccess(h -> {
@@ -424,10 +435,12 @@ public class GameClientImpl implements GameClient {
         var myArmies = getAllTerritories().entrySet().stream().filter(p -> p.getKey().getSecond().equals(myTerritory)).collect(Collectors.toList()).get(0).getValue();
         if ((myArmies - result.get(1)) > 0) {
             //not conquered
-            placeArmy(this.getIP(), myTerritory.name(), -result.get(1));
+            System.out.println("DEFENDER NOT CONQUERED - ARMIES LOST: " + result.get(1));
+            updateArmiesAfterBattle(this.getIP(), myTerritory.name(), -result.get(1));
         }else{
             //conquered, set nArmies to ZERO
-            placeArmy(this.getIP(), myTerritory.name(), -myArmies);
+            System.out.println("DEFENDER CONQUERED - ARMIES LOST:" + result.get(1));
+            updateArmiesAfterBattle(this.getIP(), myTerritory.name(), -myArmies);
         }
         this.gameSender.clientDefendTerritory(getIpFromTerritory(enemyTerritory), this.getIP(), lastDefenceDicesThrow, enemyTerritory, myTerritory).onSuccess(h1 -> {
             System.out.println("DEFENCE RESULT SENT WITH SUCCESS: " + lastDefenceDicesThrow);

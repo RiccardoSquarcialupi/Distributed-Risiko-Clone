@@ -163,6 +163,12 @@ public class ContextManagerParameters {
         return this.currentArmiesPlaced == this.toPlaceArmies;
     }
 
+    public void updateArmiesAfterBattle(JSONClient clt, String country, Integer deltaArmies) {
+        var clientPair = this.allTerritories.keySet().stream().filter(p -> p.getSecond().equals(Territory.fromString(country))).collect(Collectors.toList()).get(0);
+        var armies = this.getAllTerritories().get(clientPair);
+        this.allTerritories.put(clientPair, armies + deltaArmies);
+    }
+
     public Map<Pair<JSONClient, Territory>, Integer> getAllTerritories() {
         return this.allTerritories;
     }

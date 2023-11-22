@@ -313,7 +313,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         boardMap.forEach((country, coords) -> {
             var l = new ArrayList<PairOfCoordinates>();
             for (int i = 0; i < coords.size() - 1; i = i + 2) {
-                //WINDOW is 1600x1000 +185 is magic number for fixing the map because is centered in the JFRAME
                 PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1) + 185);
                 l.add(p1);
             }
@@ -330,18 +329,10 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory enemyTerritory, Territory myTerritory) {
         SwingUtilities.invokeLater(() -> {
-            this.enableActions();
             String playerAttacker = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> c.getIP().equals(ipClientAttack)).collect(Collectors.toList()).get(0).getNickname();
             JOptionPane.showMessageDialog(this, "Player " + playerAttacker + " attack " + myTerritory.name() + " from " + enemyTerritory.name() + " with dices result: " + diceATKResult, "Incoming Attack!!!", JOptionPane.INFORMATION_MESSAGE);
-            //ROLL DICES TO DEFEND!!!
             Object nDicesToUse = (JOptionPane.showInputDialog(guiGame, "How many dices do you want to use? (0-3)", "Dices Selection", JOptionPane.QUESTION_MESSAGE, null, getNDicesFromTerritory(myTerritory, "DEFEND"), 0));
             System.out.println("nDices used for defending: " + nDicesToUse);
-//        if (nDicesToUse == 0) {
-//            JOptionPane.showMessageDialog(guiGame, "You must select at least one dice", "Error", JOptionPane.ERROR_MESSAGE);
-//        } else if (nDicesToUse > 0) {
-//            ((GameClient) Launcher.getCurrentClient()).sendDefendMsg(enemyTerritory, myTerritory, nDicesToUse);
-//            this.waitingPhase();
-//        }
             ((GameClient) Launcher.getCurrentClient()).sendDefendMsg(enemyTerritory, myTerritory, nDicesToUse == null ? 0 : (Integer) nDicesToUse);
         });
 
