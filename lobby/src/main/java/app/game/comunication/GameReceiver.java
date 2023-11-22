@@ -55,27 +55,29 @@ public class GameReceiver extends AbstractVerticle {
                 });
         //Get NOTIFY WHEN A CLIENT NUMBER OF ARMIES CHANGE IN TERRITORY
         router
-                .put("/client/game/{id}/armies")
+                .put("/client/game/territory/armies")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
                         var ip = body.toJsonArray().getString(0);
                         var territorySender = body.toJsonArray().getString(1);
                         var territoryReceiver = body.toJsonArray().getString(2);
-                        var nArmiesChange = body.toJsonArray().getInteger(2);
+                        var nArmiesChange = body.toJsonArray().getInteger(3);
+                        System.out.println("Received armies with sender " + territorySender + ", receiver " + territoryReceiver + ", nArmies " + nArmiesChange);
                         this.gameClient.updateEnemyTerritory(ip, Territory.fromName(territorySender), Territory.fromName(territoryReceiver), nArmiesChange);
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
         //Get NOTIFY WHEN A CLIENT NUMBER OF ARMIES CHANGE IN TERRITORY WITH A CONQUEROR
         router
-                .put("/client/game/{id}/armiesWithConqueror")
+                .put("/client/game/territory/armiesWithConqueror")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
                         var winnerIp = body.toJsonArray().getString(0);
                         var territory = body.toJsonArray().getString(1);
-                        var nArmiesChange = body.toJsonArray().getInteger(2);
+                        var nArmies = body.toJsonArray().getInteger(2);
                         var loserIp = body.toJsonArray().getString(3);
-                        this.gameClient.updateEnemyTerritoryWithConqueror(winnerIp, Territory.fromName(territory), nArmiesChange, loserIp);
+                        System.out.println("Received armies with conqueror with winner " + winnerIp + ", territory " + territory + ", nArmies " + nArmies + ", loser " + loserIp);
+                        this.gameClient.updateEnemyTerritoryWithConqueror(winnerIp, Territory.fromName(territory), nArmies, loserIp);
                     });
                     routingContext.response().setStatusCode(200).end();
                 });

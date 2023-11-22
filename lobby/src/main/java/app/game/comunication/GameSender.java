@@ -145,7 +145,7 @@ public class GameSender extends AbstractVerticle {
             for (int i = 0; i < finalClientList.size(); i++) {
                 final int index = i;
                 this.client
-                        .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/" + territory.ordinal() + "/armiesWithConqueror")
+                        .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/armiesWithConqueror")
                         .sendJson(jsonify(ipClient, territory.name(), armies, ipClientLoser.get()))
                         .onSuccess(response -> {
                             System.out.println("Client " +
@@ -159,7 +159,7 @@ public class GameSender extends AbstractVerticle {
             for (int i = 0; i < finalClientList.size(); i++) {
                 final int index = i;
                 this.client
-                        .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/" + territoryReceiver.get().ordinal() + "/armies")
+                        .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/armies")
                         .sendJson(jsonify(ipClient, territory.name(), territoryReceiver.get().name(), armies))
                         .onSuccess(response -> {
                             System.out.println("Client " +

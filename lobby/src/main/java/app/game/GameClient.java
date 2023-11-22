@@ -17,7 +17,7 @@ public interface GameClient extends Client {
 
     void updateEnemyTerritory(String ip, Territory fromName, Territory fromName1, Integer nArmiesChange);
 
-    void updateEnemyTerritoryWithConqueror(String winnerIp, Territory fromName, Integer nArmiesChange, String loserIp);
+    void updateEnemyTerritoryWithConqueror(String winnerIp, Territory fromName, Integer nArmies, String loserIp);
 
     void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies);
 

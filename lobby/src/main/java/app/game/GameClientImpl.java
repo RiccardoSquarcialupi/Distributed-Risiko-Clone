@@ -261,8 +261,8 @@ public class GameClientImpl implements GameClient {
         this.guiGame.updateMapImage();
     }
 
-    public void updateEnemyTerritoryWithConqueror(String winnerIp, Territory territory, Integer nArmiesChange, String loserIp) {
-        this.cltPar.updateEnemyTerritoryWithConqueror(this.getClientList().stream().filter(c -> c.getIP().equals(winnerIp)).collect(Collectors.toList()).get(0), this.getClientList().stream().filter(c -> c.getIP().equals(loserIp)).collect(Collectors.toList()).get(0), territory, nArmiesChange);
+    public void updateEnemyTerritoryWithConqueror(String winnerIp, Territory territory, Integer nArmies, String loserIp) {
+        this.cltPar.updateEnemyTerritoryWithConqueror(this.getClientList().stream().filter(c -> c.getIP().equals(winnerIp)).collect(Collectors.toList()).get(0), this.getClientList().stream().filter(c -> c.getIP().equals(loserIp)).collect(Collectors.toList()).get(0), territory, nArmies);
         this.guiGame.updateMapImage();
     }
 
@@ -394,7 +394,7 @@ public class GameClientImpl implements GameClient {
         Integer nArmiesLostByAttacker = 0;
         Integer nArmiesLostByDefender = 0;
         for (Pair<Integer, Integer> pair : result) {
-            if (pair.getFirst() > pair.getSecond()) {
+            if (pair.getFirst().compareTo(pair.getSecond()) > 0) {
                 nArmiesLostByDefender++;
             } else {
                 nArmiesLostByAttacker++;
@@ -407,22 +407,22 @@ public class GameClientImpl implements GameClient {
         List<Integer> result = commonComputeResult();
         var enemyArmies = getAllTerritories().entrySet().stream().filter(p -> p.getKey().getSecond().equals(enemyTerritory)).collect(Collectors.toList()).get(0).getValue();
         placeArmy(this.getIP(), myTerritory.name(), -result.get(0));
-        if (enemyArmies - result.get(1) <= 0) {
+        if ((enemyArmies - result.get(1)) <= 0) {
             //conquer
             this.gameSender.changeArmiesInTerritory(getIpFromTerritory(myTerritory), enemyTerritory, Optional.empty(), 0, Optional.ofNullable(getIpFromTerritory(enemyTerritory))).onSuccess(h -> {
-                this.updateEnemyTerritoryWithConqueror(this.getIP(), enemyTerritory, 0, getIpFromTerritory(myTerritory));
+                this.updateEnemyTerritoryWithConqueror(this.getIP(), enemyTerritory, 0, getIpFromTerritory(enemyTerritory));
                 this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
             });
         }else{
             this.guiGame.updateMapImage();
-            this.guiGame.playingPhase();
         }
+        this.guiGame.playingPhase();
     }
 
     private void computeDefenderResult(Territory myTerritory, Territory enemyTerritory) {
         List<Integer> result = commonComputeResult();
         var myArmies = getAllTerritories().entrySet().stream().filter(p -> p.getKey().getSecond().equals(myTerritory)).collect(Collectors.toList()).get(0).getValue();
-        if (myArmies - result.get(1) > 0) {
+        if ((myArmies - result.get(1)) > 0) {
             //not conquered
             placeArmy(this.getIP(), myTerritory.name(), -result.get(1));
         }else{
