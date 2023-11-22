@@ -13,4 +13,17 @@ services:
       dockerfile: clientTest.Dockerfile
     ports:
       - "8001:5001"
+    environment:
+      - GAME=1
+      - NICKNAME=aa
     command: "./gradlew test"
+
+  client2:
+    build:
+      context: .
+      dockerfile: clientTest.Dockerfile
+    ports:
+      - "8002:5001"
+    environment:
+      - NICKNAME=bb
+    command: "./gradlew test --tests app.game.GameTest"
