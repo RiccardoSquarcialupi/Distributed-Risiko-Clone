@@ -93,14 +93,7 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
 
         add(botPanel, BorderLayout.SOUTH);
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                Thread.sleep(1000);
-                ((LobbyClientImpl) Launcher.getCurrentClient()).broadcastClientIp();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        ((LobbyClientImpl) Launcher.getCurrentClient()).broadcastClientIp();
 
         updateClientList(((LobbyClient) Launcher.getCurrentClient()).getClientList());
     }
@@ -151,8 +144,10 @@ public class GUILobby extends JPanel implements GUI, GUILobbyActions {
             for (var client : clients) {
                 model.addRow(new Object[]{client.getIP(), client.getNickname()});
             }
-            SwingUtilities.getWindowAncestor(this).setPreferredSize(new Dimension(470, 300));
-            SwingUtilities.getWindowAncestor(this).pack();
+            try {
+                SwingUtilities.getWindowAncestor(this).setPreferredSize(new Dimension(470, 300));
+                SwingUtilities.getWindowAncestor(this).pack();
+            }catch (Exception ignored){/*Silently ignored for testing purpose*/}
         });
 
     }

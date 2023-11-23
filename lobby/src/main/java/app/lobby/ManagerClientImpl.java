@@ -63,7 +63,9 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
             goalCards.remove(0);
         }
         Promise<Void> prm = Promise.promise();
-        Future.all(lpr.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        Future.all(lpr.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s ->
+            this.sender.lobbyClosed(this.cltPar.getIdLobby()).onSuccess(ss -> prm.complete())
+        );
         return prm.future();
     }
 }
