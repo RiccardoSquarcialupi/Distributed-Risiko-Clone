@@ -16,7 +16,7 @@ services:
     environment:
       - GAME=1
       - NICKNAME=aa
-    command: "./gradlew test"
+    command: "./gradlew test --tests app.game.GameTest"
 
   client2:
     build:
@@ -27,3 +27,26 @@ services:
     environment:
       - NICKNAME=bb
     command: "./gradlew test --tests app.game.GameTest"
+
+  client3:
+    build:
+      context: .
+      dockerfile: clientTest.Dockerfile
+    ports:
+      - "8003:5001"
+    depends_on:
+      client1:
+        condition: service_completed_successfully
+    environment:
+      - NICKNAME=cc
+    command: "./gradlew test --tests app.lobby.ClientTest --tests app.lobbySelector.ClientServerInteractionsTest"
+
+#  client4:
+#    build:
+#      context: .
+#      dockerfile: clientTest.Dockerfile
+#    ports:
+#      - "8004:5001"
+#    environment:
+#      - NICKNAME=bb
+#    command: "./gradlew test --tests app.lobby.ClientTest --tests app.lobbySelector.ClientServerInteractionsTest"
