@@ -43,6 +43,7 @@ public class GameTest {
                 waitForCompletion(tjl);
             }while(tjl.result().bodyAsJsonArray().isEmpty());
             System.out.println("Lobby created, joining...");
+            Thread.sleep(1000);
 
             // Join the lobby.
             var jtl = ((LobbySelectorClientImpl)Launcher.getCurrentClient())
@@ -85,6 +86,22 @@ public class GameTest {
     @Test
     void testJoinedCorrectly(){
         assertEquals(GameClientImpl.class, Launcher.getCurrentClient().getClass());
+    }
+
+    @Test
+    void testDiceThrow() throws InterruptedException {
+        if(!System.getenv().containsKey("GAME")){
+            Thread.sleep(2000);
+        }
+
+        // Send dice throw.
+        var sdt = ((GameClientImpl)Launcher.getCurrentClient()).throwDices(2);
+        waitForCompletion(sdt);
+        assertEquals(2, sdt.result().size());
+
+        if(System.getenv().containsKey("GAME")){
+            Thread.sleep(7000);
+        }
     }
 
 }
