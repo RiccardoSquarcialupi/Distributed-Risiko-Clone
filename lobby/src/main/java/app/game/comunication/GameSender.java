@@ -297,6 +297,10 @@ public class GameSender extends AbstractVerticle {
 
     public Future<List<Integer>> byzantineDiceLaunch(String ipClient, Integer nDices) {
         Promise<List<Integer>> prm = Promise.promise();
+        if(nDices < 1){
+            prm.complete(List.of());
+            return prm.future();
+        }
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         var lpv = finalClientList.stream()
                 .map(c -> Promise.promise()).collect(Collectors.toList());
@@ -330,7 +334,11 @@ public class GameSender extends AbstractVerticle {
                                 sDice.get()))
                         .onSuccess(response -> {
                             System.out.println("Dice status code: " + response.statusCode());
-                            lp.get(index).complete();
+                            if(response.statusCode() == 200){
+                                lp.get(index).complete();
+                            }else{
+                                throw new RuntimeException("Dice throw is not eligible.");
+                            }
                         })
                         .onFailure(err ->
                                 System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the dice confirm: " + err.getMessage()));
