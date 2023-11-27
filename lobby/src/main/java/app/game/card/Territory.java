@@ -93,6 +93,10 @@ public enum Territory implements Card {
         return continent;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public CardType getType() {
         return type;
     }

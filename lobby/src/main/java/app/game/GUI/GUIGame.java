@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Queue;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -42,11 +44,14 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     private boolean orderHasBeenSet = false;
     private JLabel player;
     private JLabel enemiesLabel;
-    private JButton endTurnButton;
-    private JButton attackButton;
-    private JButton moveTroopsButton;
+    private Territory territoryFromToMove;
+    private Territory territoryToMove;
     private Territory territoryFromToAttack;
     private Territory territoryToAttack;
+    private JButton moveTroopsButton;
+    private  JButton endTurnButton;
+    private JButton attackButton;
+    private boolean tacticalMovedHasBeenDone = false;
 
     public GUIGame() {
         setLayout(new BorderLayout());
@@ -62,6 +67,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         this.setBottomPanel();
         this.setRightPanel();
         this.disableActions();
+        setBackground(new Color(0, 134, 0));
     }
 
     @Override
@@ -74,23 +80,26 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.add(Box.createVerticalGlue());
         endTurnButton = new JButton("End Turn");
+        endTurnButton.setEnabled(false);
         rightPanel.add(endTurnButton);
         rightPanel.add(Box.createVerticalGlue());
         attackButton = new JButton("Attack Phase");
+        attackButton.setEnabled(false);
         rightPanel.add(attackButton);
         rightPanel.add(Box.createVerticalGlue());
         moveTroopsButton = new JButton("Move Troops Phase");
+        moveTroopsButton.setEnabled(false);
         rightPanel.add(moveTroopsButton);
         rightPanel.add(Box.createVerticalGlue());
 
         endTurnButton.addActionListener(e -> {
             ((GameClientImpl) Launcher.getCurrentClient()).endMyTurn();
-            this.waitingPhase();
         });
         attackButton.addActionListener(e -> this.attackPhase());
         moveTroopsButton.addActionListener(e -> this.movingPhase());
 
         this.add(rightPanel, BorderLayout.EAST);
+        disableAllButtons();
     }
 
     private void setTopPanel() {
@@ -120,12 +129,13 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         log.setEditable(false);
         log.setVisible(true);
         log.append("LOG:");
+        log.setRows(6);
         bottomPanel.add(log);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
     public void addLogToTextArea(String log) {
-        SwingUtilities.invokeLater(() -> this.log.append(log));
+        SwingUtilities.invokeLater(() -> this.log.append(log + "\n"));
     }
 
     private MouseListener onMapClick() {
@@ -138,24 +148,27 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                     if (p.contains(e.getPoint())) {
                         System.out.println("Clicked on " + country);
                         System.out.println("State: " + state.get());
-                        switch (state.get()) {
-                            case PLACING:
-                                countryClickedWhilePlacing(e, country);
-                                break;
-                            case ATTACKING_SELECT_FIRST_COUNTRY:
-                                countryClickedWhileAttackingFirstCountry(e, country);
-                                break;
-                            case ATTACKING_SELECT_SECOND_COUNTRY:
-                                countryClickedWhileAttackingSecondCountry(e, country);
-                                break;
-                            case WAITING:
-                            case MOVING_SELECT_FIRST_COUNTRY:
-                            case MOVING_SELECT_SECOND_COUNTRY:
-                            case ORDERING:
-                                break;
-                            default:
-                                break;
-                        }
+                        SwingUtilities.invokeLater(() -> {
+                            switch (state.get()) {
+                                case PLACING:
+                                    countryClickedWhilePlacing(e, country);
+                                    break;
+                                case ATTACKING_SELECT_FIRST_COUNTRY:
+                                    firstCountryClickedWhileAttacking(e, country);
+                                    break;
+                                case ATTACKING_SELECT_SECOND_COUNTRY:
+                                    secondCountryClickedWhileAttacking(e, country);
+                                    break;
+                                case MOVING_SELECT_FIRST_COUNTRY:
+                                    firstCountryClickedWhileMoving(e, country);
+                                    break;
+                                case MOVING_SELECT_SECOND_COUNTRY:
+                                    secondCountryClickedWhileMoving(e, country);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        });
                     }
                 });
             }
@@ -186,7 +199,100 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         };
     }
 
-    private void countryClickedWhileAttackingSecondCountry(MouseEvent e, String country) {
+    private void secondCountryClickedWhileMoving(MouseEvent e, String country) {
+        territoryToMove = Territory.fromString(country);
+        var myTerritory = getMyTerritories();
+        if (isTerritoryLinked(myTerritory, territoryToMove)) {
+            tacticalMoveDeploy();
+
+        } else {
+            JOptionPane.showMessageDialog(guiGame, "You can't move your armies in this territory", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private boolean isTerritoryLinked(List<Pair<JSONClient, Territory>> myTerritory, Territory targetTerritory) {
+        Set<String> visitedTerritories = new HashSet<>();
+        Queue<Territory> queue = new LinkedList<>();
+        queue.add(targetTerritory);
+
+        while (!queue.isEmpty()) {
+            Territory currentTerritory = queue.poll();
+            visitedTerritories.add(currentTerritory.getName());
+
+            if (currentTerritory.getNeighbours().contains(territoryFromToMove.getName())) {
+                return true;
+            }
+
+            List<Territory> neighboringTerritories = myTerritory.stream()
+                    .filter(p -> currentTerritory.getNeighbours().contains(p.getSecond().getName()))
+                    .map(Pair::getSecond)
+                    .collect(Collectors.toList());
+
+            for (Territory neighbor : neighboringTerritories) {
+                if (!visitedTerritories.contains(neighbor.getName())) {
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private List<Pair<JSONClient, Territory>> getMyTerritories() {
+        return ((GameClientImpl) Launcher.getCurrentClient())
+                .getAllTerritories().entrySet().stream()
+                .filter(p -> p.getKey().getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname()))
+                .collect(Collectors.toList()).stream().map(Map.Entry::getKey).collect(Collectors.toList());
+    }
+
+
+    private void tacticalMoveDeploy() {
+        var tmpArmies = ((GameClientImpl) Launcher.getCurrentClient())
+                .getAllTerritories()
+                .entrySet().stream()
+                .filter(p -> p.getKey().getSecond().equals(territoryFromToMove))
+                .collect(Collectors.toList())
+                .get(0)
+                .getValue();
+
+        List<Integer> nArmiesToMove = new ArrayList<>();
+        for (int i = 0; i <= tmpArmies; i++) {
+            nArmiesToMove.add(i);
+        }
+        Integer[] nArmiesToMoveArray = Arrays.stream(nArmiesToMove.stream().mapToInt(Integer::intValue).toArray()).boxed().toArray(Integer[]::new);
+
+        Object nArmies = JOptionPane.showInputDialog(guiGame, "How many armies do you want to move?", "Tactical Armies Move", JOptionPane.QUESTION_MESSAGE, null, nArmiesToMoveArray, 0);
+
+        ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(territoryFromToMove, territoryToMove, (Integer) nArmies);
+    }
+
+    public void tacticalMoveSucceeded() {
+        tacticalMovedHasBeenDone = true;
+    }
+
+    private void firstCountryClickedWhileMoving(MouseEvent e, String country) {
+        if (checkFirstCountryClicked(e, country)) {
+            territoryFromToMove = Territory.fromString(country);
+            this.state.set(GAME_STATE.MOVING_SELECT_SECOND_COUNTRY);
+            this.jlState.setText("Tactical Moving phase: Click on one of the reachable territory to move your armies");
+        }
+    }
+
+    private boolean checkFirstCountryClicked(MouseEvent e, String country) {
+        AtomicBoolean tmp = new AtomicBoolean(false);
+        ((GameClientImpl) Launcher.getCurrentClient()).getAllTerritories().forEach((pair, armies) -> {
+            if (pair.getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())) {
+                if (pair.getSecond().equals(Territory.fromString(country))) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        tmp.set(true);
+                    }
+                }
+            }
+        });
+        return tmp.get();
+    }
+
+    private void secondCountryClickedWhileAttacking(MouseEvent e, String country) {
         if (territoryFromToAttack.getNeighbours().contains(country)) {
             var bool = ((GameClientImpl) Launcher.getCurrentClient()).getAllTerritories().entrySet().stream()
                     .filter(p -> p.getKey().getSecond().equals(Territory.fromString(country)))
@@ -249,18 +355,12 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
 
-    private void countryClickedWhileAttackingFirstCountry(MouseEvent e, String country) {
-        ((GameClientImpl) Launcher.getCurrentClient()).getAllTerritories().forEach((pair, armies) -> {
-            if (pair.getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())) {
-                if (pair.getSecond().equals(Territory.fromString(country))) {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        territoryFromToAttack = Territory.fromString(country);
-                        this.state.set(GAME_STATE.ATTACKING_SELECT_SECOND_COUNTRY);
-                        this.jlState.setText("Attack phase: Click on one of the near enemies territory to attack");
-                    }
-                }
-            }
-        });
+    private void firstCountryClickedWhileAttacking(MouseEvent e, String country) {
+        if (checkFirstCountryClicked(e, country)) {
+            territoryFromToAttack = Territory.fromString(country);
+            this.state.set(GAME_STATE.ATTACKING_SELECT_SECOND_COUNTRY);
+            this.jlState.setText("Attack phase: Click on one of the near enemies territory to attack");
+        }
     }
 
     private void countryClickedWhilePlacing(java.awt.event.MouseEvent e, String country) {
@@ -278,15 +378,13 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     private void placeArmy(String country, Integer deltaArmies) {
-        Launcher.getVertx().setTimer(250, id -> {
-            var currentClient = ((GameClientImpl) Launcher.getCurrentClient());
-            currentClient.placeArmy(currentClient.getIP(), country, deltaArmies);
-            var ps = currentClient.getPlacingState();
-            if (this.state.get() == GAME_STATE.PLACING) {
-                this.jlState.setText("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
-                System.out.println("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
-            }
-        });
+        var currentClient = ((GameClientImpl) Launcher.getCurrentClient());
+        currentClient.placeArmy(currentClient.getIP(), country, deltaArmies);
+        var ps = currentClient.getPlacingState();
+        if (this.state.get() == GAME_STATE.PLACING) {
+            this.jlState.setText("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
+            System.out.println("Placing armies: " + (ps.getFirst()) + " :/: " + ps.getSecond());
+        }
         updateMapImage();
     }
 
@@ -313,7 +411,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         boardMap.forEach((country, coords) -> {
             var l = new ArrayList<PairOfCoordinates>();
             for (int i = 0; i < coords.size() - 1; i = i + 2) {
-                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1) + 185);
+                PairOfCoordinates p1 = new PairOfCoordinates(coords.get(i), coords.get(i + 1) + 140);
                 l.add(p1);
             }
             finalMap.put(country, l);
@@ -324,12 +422,16 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies) {
-        JOptionPane.showMessageDialog(this, "Player " + ip + " get bonus of " + bonusArmies + " armies for " + cardsList.toString() + " cards and " + extraBonusArmies + " extra armies", "Bonus", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Player " + getPlayerFromIp(ip) + " get bonus of " + bonusArmies + " armies for " + cardsList.toString() + " cards and " + extraBonusArmies + " extra armies", "Bonus", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private String getPlayerFromIp(String ip) {
+        return ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0).getNickname();
     }
 
     public void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory enemyTerritory, Territory myTerritory) {
         SwingUtilities.invokeLater(() -> {
-            String playerAttacker = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> c.getIP().equals(ipClientAttack)).collect(Collectors.toList()).get(0).getNickname();
+            String playerAttacker = getPlayerFromIp(ipClientAttack);
             JOptionPane.showMessageDialog(this, "Player " + playerAttacker + " attack " + myTerritory.name() + " from " + enemyTerritory.name() + " with dices result: " + diceATKResult, "Incoming Attack!!!", JOptionPane.INFORMATION_MESSAGE);
             Object nDicesToUse = (JOptionPane.showInputDialog(guiGame, "How many dices do you want to use? (0-3)", "Dices Selection", JOptionPane.QUESTION_MESSAGE, null, getNDicesFromTerritory(myTerritory, "DEFEND"), 0));
             System.out.println("nDices used for defending: " + nDicesToUse);
@@ -340,7 +442,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory myTerritory, Territory enemyTerritory) {
         SwingUtilities.invokeLater(() -> {
-            String playerDefender = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> c.getIP().equals(ipClientDefend)).collect(Collectors.toList()).get(0).getNickname();
+            String playerDefender = getPlayerFromIp(ipClientDefend);
             JOptionPane.showMessageDialog(this, "Player " + playerDefender + " defend " + enemyTerritory.name() + " from the attack of " + enemyTerritory.name() + " with dices result: " + diceDEFResult, "Defence result!!!", JOptionPane.INFORMATION_MESSAGE);
         });
     }
@@ -357,7 +459,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             var ps = ((GameClient) Launcher.getCurrentClient()).getPlacingState();
             this.jlState.setText("Placing armies: " + ps.getFirst() + " :/: " + ps.getSecond());
             this.updateMapImage();
-            this.enableActions();
             this.disableAllButtons();
         });
     }
@@ -391,7 +492,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                 Color color = this.colors.get(clients.get(clt));
                 clientColorsList.add(new Pair<>(clt.getNickname(), clients.get(clt)));
                 g2d.setColor(color);
-                //g2d.drawPolygon(p);
+                g2d.drawPolygon(p);
                 g2d.fillOval((int) p.getBounds().getCenterX() - 15, (int) p.getBounds().getCenterY() - 15, 30, 30);
                 g2d.setColor(Color.BLACK);
                 g2d.drawString(armies.toString(), (int) p.getBounds().getCenterX() - 5, (int) p.getBounds().getCenterY() + 5);
@@ -444,6 +545,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public void startTurn() {
         SwingUtilities.invokeLater(() -> {
+            tacticalMovedHasBeenDone = false;
             //PLACE N-ARMIES BASED ON OWN TERRITORIES
             this.enableActions();
             double count = (double) ((GameClient) Launcher.getCurrentClient())
@@ -468,13 +570,19 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void movingPhase() {
         SwingUtilities.invokeLater(() -> {
             this.state.set(GAME_STATE.MOVING_SELECT_FIRST_COUNTRY);
-            this.jlState.setText("Moving phase");
+            this.jlState.setText("Tactical Moving phase: Click on one of your territory from where to start the tactical move");
         });
     }
 
     public void playingPhase() {
         SwingUtilities.invokeLater(() -> {
             this.enableActions();
+            System.out.println("Tactical moved has been done T|F ?  " + tacticalMovedHasBeenDone);
+            if (tacticalMovedHasBeenDone) {
+                moveTroopsButton.setEnabled(false);
+                repaint();
+                revalidate();
+            }
             this.state.set(GAME_STATE.PLAYING);
             this.jlState.setText("Playing phase");
         });
@@ -489,59 +597,62 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     private void disableActions() {
-        SwingUtilities.invokeLater(() -> {
             this.setEnabled(false);
             this.disableAllButtons();
             this.repaint();
             this.revalidate();
-        });
     }
 
     private void enableActions() {
-        SwingUtilities.invokeLater(() -> {
             this.setEnabled(true);
             this.enableAllButtons();
             this.repaint();
             this.revalidate();
-        });
     }
 
     public void disableAllButtons() {
-        SwingUtilities.invokeLater(() -> {
-            attackButton.setEnabled(false);
             moveTroopsButton.setEnabled(false);
+            attackButton.setEnabled(false);
             endTurnButton.setEnabled(false);
-        });
     }
 
     private void enableAllButtons() {
-        SwingUtilities.invokeLater(() -> {
-            attackButton.setEnabled(true);
             moveTroopsButton.setEnabled(true);
+            attackButton.setEnabled(true);
             endTurnButton.setEnabled(true);
-        });
     }
 
     public void orderingPhase() {
         SwingUtilities.invokeLater(() -> {
-            if (!orderHasBeenSet) {
-                disableAllButtons();
-                this.state.set(GAME_STATE.ORDERING);
-                this.jlState.setText("ORDERING");
-                var listToShuffle = new ArrayList<>(((GameClientImpl) Launcher.getCurrentClient()).getClientList());
-                System.out.println("List to shuffle: " + listToShuffle);
-                Collections.shuffle(listToShuffle);
-                ((GameClientImpl) Launcher.getCurrentClient()).sendRandomOrderForTurning(listToShuffle);
-            }
+            disableAllButtons();
+            this.state.set(GAME_STATE.ORDERING);
+            this.jlState.setText("ORDERING");
+            var listToShuffle = new ArrayList<>(((GameClientImpl) Launcher.getCurrentClient()).getClientList());
+            System.out.println("List to shuffle: " + listToShuffle);
+            Collections.shuffle(listToShuffle);
+            ((GameClientImpl) Launcher.getCurrentClient()).sendRandomOrderForTurning(listToShuffle);
         });
     }
 
     public void movingPhaseAfterConquer(Territory myTerritory, Territory newTerritory) {
         SwingUtilities.invokeLater(() -> {
+            disableAllButtons();
             this.state.set(GAME_STATE.MOVING_AFTER_CONQUER);
             this.jlState.setText("Select the number of armies to move in the conquered territory");
             Object nArmiesToMove = (JOptionPane.showInputDialog(guiGame, "How many armies do you want to move? (0-3)", "Armies Selection", JOptionPane.QUESTION_MESSAGE, null, getNDicesFromTerritory(myTerritory, "DEFEND"), 0));
             ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(myTerritory, newTerritory, (Integer) nArmiesToMove);
+        });
+    }
+
+    public void tacticalMoveNotification(String ip, Integer nArmiesChange, String territorySender, String territoryReceiver) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(guiGame, String.format("Player %s moved %d armies from %s to %s", getPlayerFromIp(ip), nArmiesChange, territorySender, territoryReceiver), "Tactical Move", JOptionPane.INFORMATION_MESSAGE);
+        });
+    }
+
+    public void displayAttackDiceResult(List<Integer> lastAttackDicesThrow) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(guiGame, "Dices result: " + lastAttackDicesThrow, "Attack result", JOptionPane.INFORMATION_MESSAGE);
         });
     }
 

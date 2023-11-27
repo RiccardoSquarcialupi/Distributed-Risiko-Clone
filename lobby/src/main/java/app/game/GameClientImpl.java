@@ -13,7 +13,6 @@ import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -157,8 +156,10 @@ public class GameClientImpl implements GameClient {
     }
 
     public void endMyTurn() {
-        this.myTurn = false;
-        this.gameSender.clientEndTurn(this.getIP());
+        this.gameSender.clientEndTurn(this.getIP()).onSuccess(h -> {
+            myTurn = false;
+            this.guiGame.waitingPhase();
+        });
     }
 
 
@@ -251,14 +252,17 @@ public class GameClientImpl implements GameClient {
 
     public void changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
         this.gameSender.changeArmiesInTerritory(this.getIP(), territorySender, Optional.ofNullable(territoryReceiver), nArmiesChange, Optional.empty()).onSuccess(res -> {
+            this.guiGame.tacticalMoveSucceeded();
             this.cltPar.updateMyTerritory(territorySender, territoryReceiver, nArmiesChange);
             this.guiGame.updateMapImage();
+            this.guiGame.playingPhase();
         });
     }
 
     public void updateEnemyTerritory(String ip, Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
         this.cltPar.updateEnemyTerritories(this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0), territorySender, territoryReceiver, nArmiesChange);
         this.guiGame.updateMapImage();
+        this.guiGame.tacticalMoveNotification(ip, nArmiesChange, territorySender.getName(), territoryReceiver.getName());
     }
 
     public void updateEnemyTerritoryWithConqueror(String winnerIp, Territory territory, Integer nArmies, String loserIp) {
@@ -330,7 +334,8 @@ public class GameClientImpl implements GameClient {
     public void sendAttackMsg(Territory territoryFromToAttack, Territory territoryToAttack, int nDicesToUse) {
         throwDices(nDicesToUse).onSuccess(h -> {
             lastAttackDicesThrow = h.stream().sorted().collect(Collectors.toList());
-            guiGame.addLogToTextArea("Sending attack with dices result" + lastAttackDicesThrow + " - ");
+            guiGame.addLogToTextArea("Sending attack with dices result" + lastAttackDicesThrow);
+            guiGame.displayAttackDiceResult(lastAttackDicesThrow);
             this.gameSender.clientAttackTerritory(this.getIP(), getIpFromTerritory(territoryToAttack), lastAttackDicesThrow, territoryFromToAttack, territoryToAttack).onSuccess(
                     h1 -> guiGame.waitingPhase());
         });

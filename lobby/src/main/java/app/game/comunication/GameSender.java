@@ -155,7 +155,7 @@ public class GameSender extends AbstractVerticle {
                         });
 
             }
-        } else {
+        } else if(territoryReceiver.isPresent()){
             for (int i = 0; i < finalClientList.size(); i++) {
                 final int index = i;
                 this.client

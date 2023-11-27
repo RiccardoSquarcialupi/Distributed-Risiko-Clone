@@ -62,7 +62,7 @@ public class GameReceiver extends AbstractVerticle {
                         var territorySender = body.toJsonArray().getString(1);
                         var territoryReceiver = body.toJsonArray().getString(2);
                         var nArmiesChange = body.toJsonArray().getInteger(3);
-                        System.out.println("Received armies with sender " + territorySender + ", receiver " + territoryReceiver + ", nArmies " + nArmiesChange);
+                        System.out.println("Armies moved from sender " + territorySender + " to receiver " + territoryReceiver + ", nArmies " + nArmiesChange);
                         this.gameClient.updateEnemyTerritory(ip, Territory.fromName(territorySender), Territory.fromName(territoryReceiver), nArmiesChange);
                     });
                     routingContext.response().setStatusCode(200).end();
