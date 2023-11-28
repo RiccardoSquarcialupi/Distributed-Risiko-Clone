@@ -5,6 +5,7 @@ import app.Launcher;
 import app.common.Pair;
 import app.game.GUI.GUIGame;
 import app.game.card.CardType;
+import app.game.card.Continent;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.game.comunication.GameReceiver;
@@ -52,41 +53,6 @@ public class GameClientImpl implements GameClient {
         return randomOrder;
     }
 
-    public void loop() {
-        guiGame = (GUIGame) Launcher.getCurrentGui();
-        while (gameReceiver.isRunning()) {
-            //TODO: GET CARD FROM MANAGER AND GOAL CARD
-            //TODO: DISPOSE ARMIES
-
-            //TODO: WAIT FOR MY TURN
-            //TODO: SOMEONE WIN
-            //TODO: WHILE WAITING SOMEONE IS ATTACKING_SELECT_FIRST_COUNTRY ME: DEFENSE PART
-
-            //TODO: START TURN
-
-            //TODO: CHECK FOR BONUS CARD
-            //TODO: USE BONUS
-            //TODO: NOT USE BONUS
-            //TODO: DISPOSE ARMIES
-
-            //TODO: CYCLE ATTACK PHASE
-            //TODO SEND RESULT OF THE ATTACK TO THE OTHERS PLAYERS
-            //TODO WAIT FOR THE DEFENSE RESPONSE
-            //TODO COMPUTE THE RESULT OF THE ATTACK
-            //TODO: CLOSE CYCLE
-
-            //TODO: CHECK IF I WIN
-
-            //TODO IF I HAVE CONQUERED A COUNTRY DRAW A CARD
-
-            //TODO: STRATEGIC MOVE PHASE
-            //TODO: END TURN
-
-            gameReceiver.stop();
-        }
-
-    }
-
     @Override
     public String getIP() {
         return this.cltPar.getIp();
@@ -121,7 +87,7 @@ public class GameClientImpl implements GameClient {
             case DESTROY_PLAYER_6:
                 return "Destroy player 6: " + this.getClientList().get(5).getNickname();
             default:
-                return this.cltPar.getGoalCard().name();
+                return this.cltPar.getGoalCard().getName();
         }
     }
 
@@ -162,12 +128,21 @@ public class GameClientImpl implements GameClient {
         });
     }
 
-
+    public void playerLeft(String ip) {
+        randomOrder= randomOrder.stream().filter(c -> !c.getIP().equals(ip)).collect(Collectors.toList());
+        guiGame.addLogToTextArea("Player " + this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0).getNickname() + " left the game");
+    }
     public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies) {
         guiGame.someoneGetBonus(ip, cardsList, bonusArmies, extraBonusArmies);
     }
 
-    public void lobbyClosed() {
+    public void closeConnection() {
+        this.gameReceiver.stop();
+        //SEND MSG TO THE OTHERS PLAYER TO REMOVE MYSELF FROM THE GAME
+        if(isMyTurn()){
+            endMyTurn();
+        }
+        this.gameSender.playerLeft(this.getIP());
         Launcher.lobbyClosed();
     }
 
@@ -175,15 +150,139 @@ public class GameClientImpl implements GameClient {
         guiGame.someoneDrawStateCard(ip);
     }
 
-    public void someoneWin(String ip, Goal goalCard, List<Territory> listTerritories) {
-        if (checkWin(ip, goalCard, listTerritories)) {
-            guiGame.someoneWin(ip, goalCard, listTerritories);
+    public boolean someoneWin(String ip, Goal goalCard, String playerDestroyed) {
+        if (checkWin(ip, goalCard, playerDestroyed)) {
+            guiGame.someoneWin(ip, goalCard);
+            return true;
         }
+        return false;
     }
 
-    private boolean checkWin(String ip, Goal goalCard, List<Territory> listTerritories) {
-        //TODO CHECK IF THE PLAYER WIN
-        return true;
+    private boolean checkWin(String ip, Goal goalCard, String playerDestroyed) {
+        var winnerTerritories = this.cltPar.getAllTerritories().entrySet().stream().filter(e -> e.getKey().getFirst().getIP().equals(ip)).collect(Collectors.toList());
+        var winnerTerritoriesList = winnerTerritories.stream().map(e -> e.getKey().getSecond()).collect(Collectors.toList());   //list of territories that the winner has
+        System.out.println("DEBUGGING WINNER CHECK CONDITION");
+        if (playerDestroyed.isEmpty()) {
+            System.out.println("PLAYER DESTROYED IS EMPTY, GOAL IS CONQUER CONTINENT OR HAVING N TERRITORIES");
+            switch (goalCard) {
+                case CONQUER_24_TERRITORIES:
+                    System.out.println("GOAL IS CONQUER 24 TERRITORIES");
+                    if (winnerTerritoriesList.size() == 24) {
+                        return true;
+                    }
+                    System.out.println("ERROR - THE WINNER DOESN'T HAVE ALL THE TERRITORIES THAT HE SEND");
+                    break;
+                case CONQUER_18_TERRITORIES_WITH_2_ARMIES_EACH:
+                    System.out.println("GOAL IS CONQUER 18 TERRITORIES WITH 2 ARMIES EACH");
+                    if (winnerTerritories.size() == 18) {
+                        return true;
+                    }
+                    System.out.println("ERROR - THE WINNER DOESN'T HAVE ALL THE TERRITORIES THAT HE SEND");
+                    break;
+                case CONQUER_ASIA_AND_AFRICA:
+                    System.out.println("GOAL IS CONQUER ASIA AND AFRICA");
+                    if (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.ASIA)).count() >= 12
+                            && winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.AFRICA)).count() >= 6)
+                        return true;
+                    break;
+                case CONQUER_ASIA_AND_SOUTH_AMERICA:
+                    System.out.println("GOAL IS CONQUER ASIA AND SOUTH AMERICA");
+                    if (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.ASIA)).count() >= 12
+                            && winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.SOUTH_AMERICA)).count() >= 4)
+                        return true;
+                    break;
+                case CONQUER_NORTH_AMERICA_AND_AFRICA:
+                    System.out.println("GOAL IS CONQUER NORTH AMERICA AND AFRICA");
+                    if (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.NORTH_AMERICA)).count() >= 9
+                            && winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.AFRICA)).count() >= 6)
+                        return true;
+                    break;
+                case CONQUER_EUROPE_AND_OCEANIA_AND_A_THIRD_CONTINENT:
+                    System.out.println("GOAL IS CONQUER EUROPE AND OCEANIA AND A THIRD CONTINENT");
+                    if (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.EUROPE)).count() >= 7
+                            && winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.OCEANIA)).count() >= 4
+                            && (
+                            (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.ASIA)).count() >= 12) ||
+                                    (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.AFRICA)).count() >= 6) ||
+                                    (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.NORTH_AMERICA)).count() >= 9) ||
+                                    (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.SOUTH_AMERICA)).count() >= 6)))
+                        return true;
+                    break;
+                case CONQUER_EUROPE_AND_SOUTH_AMERICA_AND_A_THIRD_CONTINENT:
+                    System.out.println("GOAL IS CONQUER EUROPE AND SOUTH AMERICA AND A THIRD CONTINENT");
+                    if (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.EUROPE)).count() >= 7
+                            && winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.SOUTH_AMERICA)).count() >= 4
+                            && (
+                            (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.ASIA)).count() >= 12) ||
+                                    (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.AFRICA)).count() >= 6) ||
+                                    (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.NORTH_AMERICA)).count() >= 9) ||
+                                    (winnerTerritories.stream().filter(e -> e.getKey().getSecond().getContinent().equals(Continent.OCEANIA)).count() >= 4)))
+                        return true;
+                    break;
+                default:
+                    return false;
+            }
+        } else {
+            System.out.println("PLAYER DESTROYED IS NOT EMPTY, GOAL IS DESTROY A PLAYER");
+            if (this.getClientList().stream().anyMatch(j -> j.getNickname().equals(playerDestroyed))) {
+                switch (goalCard) {
+                    case DESTROY_PLAYER_1:
+                        System.out.println("GOAL IS DESTROY PLAYER 1");
+                        if (playerDestroyed.equals(this.getClientList().get(0).getNickname())) {
+                            if (this.getAllTerritories().keySet().stream().noneMatch(e -> e.getFirst().getNickname().equals(playerDestroyed)))
+                                return true;
+                            break;
+                        }
+                        break;
+                    case DESTROY_PLAYER_2:
+                        System.out.println("GOAL IS DESTROY PLAYER 2");
+                        if (playerDestroyed.equals(this.getClientList().get(1).getNickname())) {
+                            if (this.getAllTerritories().keySet().stream().noneMatch(e -> e.getFirst().getNickname().equals(playerDestroyed)))
+                                return true;
+                            break;
+                        }
+                        break;
+                    case DESTROY_PLAYER_3:
+                        System.out.println("GOAL IS DESTROY PLAYER 3");
+                        if (playerDestroyed.equals(this.getClientList().get(2).getNickname())) {
+                            if (this.getAllTerritories().keySet().stream().noneMatch(e -> e.getFirst().getNickname().equals(playerDestroyed)))
+                                return true;
+                            break;
+                        }
+                        break;
+                    case DESTROY_PLAYER_4:
+                        System.out.println("GOAL IS DESTROY PLAYER 4");
+                        if (playerDestroyed.equals(this.getClientList().get(3).getNickname())) {
+                            if (this.getAllTerritories().keySet().stream().noneMatch(e -> e.getFirst().getNickname().equals(playerDestroyed)))
+                                return true;
+                            break;
+                        }
+                        break;
+                    case DESTROY_PLAYER_5:
+                        System.out.println("GOAL IS DESTROY PLAYER 5");
+                        if (playerDestroyed.equals(this.getClientList().get(4).getNickname())) {
+                            if (this.getAllTerritories().keySet().stream().noneMatch(e -> e.getFirst().getNickname().equals(playerDestroyed)))
+                                return true;
+                            break;
+                        }
+                        break;
+                    case DESTROY_PLAYER_6:
+                        System.out.println("GOAL IS DESTROY PLAYER 6");
+                        if (playerDestroyed.equals(this.getClientList().get(5).getNickname())) {
+                            if (this.getAllTerritories().keySet().stream().noneMatch(e -> e.getFirst().getNickname().equals(playerDestroyed)))
+                                return true;
+                            break;
+                        }
+                        break;
+                    default:
+                        return false;
+                }
+            } else {
+                return false;
+            }
+
+        }
+        return false;
     }
 
     public void setEnemyTerritory(String ip, Territory t) {
@@ -344,7 +443,8 @@ public class GameClientImpl implements GameClient {
     @Override
     public void sendDefendMsg(Territory enemyTerritory, Territory myTerritory, int nDicesToUse) {
         throwDices(nDicesToUse).onSuccess(h -> {
-            lastDefenceDicesThrow = h.stream().sorted().collect(Collectors.toList());;
+            lastDefenceDicesThrow = h.stream().sorted().collect(Collectors.toList());
+            ;
             guiGame.addLogToTextArea("Sending defence with dices result" + lastDefenceDicesThrow + " - ");
             computeDefenderResult(myTerritory, enemyTerritory);
         });
@@ -378,7 +478,7 @@ public class GameClientImpl implements GameClient {
         var defenceDices = lastDefenceDicesThrow.stream().sorted().collect(Collectors.toList());
         //compute armies lost
         List<Pair<Integer, Integer>> result = new ArrayList<>();
-        while(attackDices.size() != defenceDices.size()){
+        while (attackDices.size() != defenceDices.size()) {
             if (attackDices.size() > defenceDices.size()) {
                 attackDices.remove(0);
             } else {
@@ -392,9 +492,9 @@ public class GameClientImpl implements GameClient {
         for (int i = 0; i < defenceDices.size(); i++) {
             if (attackDices.get(i) != null) {
                 if (defenceDices.get(i) != null) {
-                    if(attackDices.get(i) > defenceDices.get(i)){
+                    if (attackDices.get(i) > defenceDices.get(i)) {
                         nArmiesLostByDefender++;
-                    }else{
+                    } else {
                         nArmiesLostByAttacker++;
                     }
                 }
@@ -418,6 +518,7 @@ public class GameClientImpl implements GameClient {
                     System.out.println("Armies update after battle MSG - ERROR");
                 });
     }
+
     private void computeAttackerResult(Territory myTerritory, Territory enemyTerritory) {
         List<Integer> result = commonComputeResult();
         var enemyArmies = getAllTerritories().entrySet().stream().filter(p -> p.getKey().getSecond().equals(enemyTerritory)).collect(Collectors.toList()).get(0).getValue();
@@ -429,7 +530,7 @@ public class GameClientImpl implements GameClient {
                 this.updateEnemyTerritoryWithConqueror(this.getIP(), enemyTerritory, 0, getIpFromTerritory(enemyTerritory));
                 this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
             });
-        }else{
+        } else {
             this.guiGame.updateMapImage();
         }
         this.guiGame.playingPhase();
@@ -442,7 +543,7 @@ public class GameClientImpl implements GameClient {
             //not conquered
             System.out.println("DEFENDER NOT CONQUERED - ARMIES LOST: " + result.get(1));
             updateArmiesAfterBattle(this.getIP(), myTerritory.name(), -result.get(1));
-        }else{
+        } else {
             //conquered, set nArmies to ZERO
             System.out.println("DEFENDER CONQUERED - ARMIES LOST:" + result.get(1));
             updateArmiesAfterBattle(this.getIP(), myTerritory.name(), -myArmies);
@@ -466,4 +567,118 @@ public class GameClientImpl implements GameClient {
         this.gameSender.sendRandomOrderForTurning(this.getIP(), shuffledList);
     }
 
+    public void checkForWin() {
+        var myGoal = this.cltPar.getGoalCard();
+        var myTerritory = this.getAllTerritories().keySet().stream().filter(p -> p.getFirst().getNickname().equals(this.getNickname())).collect(Collectors.toList());
+        switch (myGoal) {
+            case DESTROY_PLAYER_1:
+                if (this.getAllTerritories().keySet().stream().noneMatch(p -> p.getFirst().getNickname().equals(getClientList().get(0).getNickname()))) {
+                    this.gameSender.clientWin(this.getIP(), Goal.DESTROY_PLAYER_1, Optional.ofNullable(getClientList().get(0).getNickname())).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.DESTROY_PLAYER_1);
+                    });
+                }
+                break;
+            case DESTROY_PLAYER_2:
+                if (this.getAllTerritories().keySet().stream().noneMatch(p -> p.getFirst().getNickname().equals(getClientList().get(1).getNickname()))) {
+                    this.gameSender.clientWin(this.getIP(), Goal.DESTROY_PLAYER_2, Optional.ofNullable(getClientList().get(1).getNickname())).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.DESTROY_PLAYER_2);
+                    });
+                }
+                break;
+            case DESTROY_PLAYER_3:
+                if (this.getAllTerritories().keySet().stream().noneMatch(p -> p.getFirst().getNickname().equals(getClientList().get(2).getNickname()))) {
+                    this.gameSender.clientWin(this.getIP(), Goal.DESTROY_PLAYER_3, Optional.ofNullable(getClientList().get(2).getNickname())).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.DESTROY_PLAYER_3);
+                    });
+                }
+                break;
+            case DESTROY_PLAYER_4:
+                if (this.getAllTerritories().keySet().stream().noneMatch(p -> p.getFirst().getNickname().equals(getClientList().get(3).getNickname()))) {
+                    this.gameSender.clientWin(this.getIP(), Goal.DESTROY_PLAYER_4, Optional.ofNullable(getClientList().get(3).getNickname())).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.DESTROY_PLAYER_4);
+                    });
+                }
+                break;
+            case DESTROY_PLAYER_5:
+                if (this.getAllTerritories().keySet().stream().noneMatch(p -> p.getFirst().getNickname().equals(getClientList().get(4).getNickname()))) {
+                    this.gameSender.clientWin(this.getIP(), Goal.DESTROY_PLAYER_5, Optional.ofNullable(getClientList().get(4).getNickname())).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.DESTROY_PLAYER_5);
+                    });
+                }
+                break;
+            case DESTROY_PLAYER_6:
+                if (this.getAllTerritories().keySet().stream().noneMatch(p -> p.getFirst().getNickname().equals(getClientList().get(5).getNickname()))) {
+                    this.gameSender.clientWin(this.getIP(), Goal.DESTROY_PLAYER_6, Optional.ofNullable(getClientList().get(5).getNickname())).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.DESTROY_PLAYER_6);
+                    });
+                }
+                break;
+
+            case CONQUER_24_TERRITORIES:
+                if (myTerritory.stream().filter(p -> p.getFirst().getNickname().equals(this.getNickname())).count() >= 24) {
+                    this.gameSender.clientWin(this.getIP(), Goal.CONQUER_24_TERRITORIES, Optional.empty()).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.CONQUER_24_TERRITORIES);
+                    });
+                }
+                break;
+            case CONQUER_18_TERRITORIES_WITH_2_ARMIES_EACH:
+                if (this.getAllTerritories().entrySet().stream().filter(e -> e.getKey().getFirst().getNickname().equals(this.getNickname())).filter(e -> e.getValue() >= 2).count() >= 18) {
+                    this.gameSender.clientWin(this.getIP(), Goal.CONQUER_18_TERRITORIES_WITH_2_ARMIES_EACH, Optional.empty()).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.CONQUER_18_TERRITORIES_WITH_2_ARMIES_EACH);
+                    });
+                }
+                break;
+            case CONQUER_NORTH_AMERICA_AND_AFRICA:
+                if (myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.NORTH_AMERICA)).count() == 9 &&
+                        myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.AFRICA)).count() == 6) {
+                    this.gameSender.clientWin(this.getIP(), Goal.CONQUER_NORTH_AMERICA_AND_AFRICA, Optional.empty()).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.CONQUER_NORTH_AMERICA_AND_AFRICA);
+                    });
+                }
+                break;
+            case CONQUER_ASIA_AND_SOUTH_AMERICA:
+                if (myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.ASIA)).count() == 12 &&
+                        myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.SOUTH_AMERICA)).count() == 4) {
+                    this.gameSender.clientWin(this.getIP(), Goal.CONQUER_ASIA_AND_SOUTH_AMERICA, Optional.empty()).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.CONQUER_ASIA_AND_SOUTH_AMERICA);
+                    });
+                }
+                break;
+            case CONQUER_ASIA_AND_AFRICA:
+                if (myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.ASIA)).count() == 12 &&
+                        myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.AFRICA)).count() == 6) {
+                    this.gameSender.clientWin(this.getIP(), Goal.CONQUER_ASIA_AND_AFRICA, Optional.empty()).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.CONQUER_ASIA_AND_AFRICA);
+                    });
+                }
+                break;
+            case CONQUER_EUROPE_AND_SOUTH_AMERICA_AND_A_THIRD_CONTINENT:
+                if (myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.EUROPE)).count() == 7 &&
+                        myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.SOUTH_AMERICA)).count() == 4 && (
+                        myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.AFRICA)).count() == 6 ||
+                                myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.NORTH_AMERICA)).count() == 9 ||
+                                myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.ASIA)).count() == 12 ||
+                                myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.OCEANIA)).count() == 4
+                )) {
+                    this.gameSender.clientWin(this.getIP(), Goal.CONQUER_EUROPE_AND_SOUTH_AMERICA_AND_A_THIRD_CONTINENT, Optional.empty()).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.CONQUER_EUROPE_AND_SOUTH_AMERICA_AND_A_THIRD_CONTINENT);
+                    });
+                }
+                break;
+            case CONQUER_EUROPE_AND_OCEANIA_AND_A_THIRD_CONTINENT:
+                if (myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.EUROPE)).count() == 7 &&
+                        myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.OCEANIA)).count() == 4 && (
+                        myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.AFRICA)).count() == 6 ||
+                                myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.NORTH_AMERICA)).count() == 9 ||
+                                myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.ASIA)).count() == 12 ||
+                                myTerritory.stream().filter(p -> p.getSecond().getContinent().equals(Continent.SOUTH_AMERICA)).count() == 4
+                )) {
+                    this.gameSender.clientWin(this.getIP(), Goal.CONQUER_EUROPE_AND_OCEANIA_AND_A_THIRD_CONTINENT, Optional.empty()).onSuccess(h -> {
+                        this.guiGame.someoneWin(this.getIP(), Goal.CONQUER_EUROPE_AND_OCEANIA_AND_A_THIRD_CONTINENT);
+                    });
+                }
+                break;
+        }
+
+    }
 }

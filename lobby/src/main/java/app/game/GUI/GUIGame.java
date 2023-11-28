@@ -14,13 +14,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.sql.Time;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
@@ -53,10 +57,13 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     private JButton attackButton;
     private boolean tacticalMovedHasBeenDone = false;
 
-    public GUIGame() {
+    public GUIGame(JFrame parent) {
+        parent.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setClosingBehavior(parent);
         setLayout(new BorderLayout());
         enemies = new ArrayList<>();
         this.jlState = new JLabel("WAITING");
+        this.jlState.setForeground(Color.WHITE);
         map = new JLabel();
         map.setIcon(new ImageIcon(Paths.get("src/main/java/assets/image/map.png").toAbsolutePath().toString()));
         this.add(map, BorderLayout.CENTER);
@@ -67,7 +74,17 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         this.setBottomPanel();
         this.setRightPanel();
         this.disableActions();
-        setBackground(new Color(0, 134, 0));
+        setBackground(new Color(0, 71, 0));
+    }
+
+    private void setClosingBehavior(JFrame parent) {
+        parent.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                ((GameClientImpl) Launcher.getCurrentClient()).closeConnection();
+                System.exit(0);
+            }
+        });
     }
 
     @Override
@@ -97,7 +114,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         });
         attackButton.addActionListener(e -> this.attackPhase());
         moveTroopsButton.addActionListener(e -> this.movingPhase());
-
+        rightPanel.setBackground(new Color(0, 71, 0));
         this.add(rightPanel, BorderLayout.EAST);
         disableAllButtons();
     }
@@ -106,9 +123,12 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
         player = new JLabel("Player: " + ((GameClientImpl) Launcher.getCurrentClient()).getNickname());
+        player.setForeground(Color.WHITE);
         topPanel.add(player);
         topPanel.add(Box.createHorizontalGlue());
-        topPanel.add(new JLabel("Goal: " + ((GameClientImpl) Launcher.getCurrentClient()).getGoal()));
+        JLabel goal = new JLabel("Goal: " + ((GameClientImpl) Launcher.getCurrentClient()).getGoal());
+        goal.setForeground(Color.WHITE);
+        topPanel.add(goal);
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(this.jlState);
         topPanel.add(Box.createHorizontalGlue());
@@ -118,8 +138,10 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             }
         });
         enemiesLabel = new JLabel("Enemies: " + enemies.toString());
+        enemiesLabel.setForeground(Color.WHITE);
         topPanel.add(enemiesLabel);
         topPanel.add(Box.createHorizontalGlue());
+        topPanel.setBackground(new Color(0, 71, 0));
         add(topPanel, BorderLayout.NORTH);
     }
 
@@ -131,6 +153,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         log.append("LOG:");
         log.setRows(6);
         bottomPanel.add(log);
+        bottomPanel.setBackground(new Color(0, 71, 0));
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
@@ -450,7 +473,17 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void someoneDrawStateCard(String ip) {
     }
 
-    public void someoneWin(String ip, Goal goalCard, List<Territory> listTerritories) {
+    public void someoneWin(String ip, Goal goalCard) {
+        SwingUtilities.invokeLater(() -> {
+            String player = getPlayerFromIp(ip);
+            JOptionPane.showMessageDialog(this, "Player " + player + " win the game with goal: " + goalCard, "WINNER!!!", JOptionPane.INFORMATION_MESSAGE);
+            this.disableActions();
+            JOptionPane.showMessageDialog(this, "You can close this window and the game or wait 10s to return on the main page, THANKS FOR PLAYING!", "ALERT", JOptionPane.WARNING_MESSAGE);
+            Timer r = new Timer(10000, e ->
+                ((GameClientImpl) Launcher.getCurrentClient()).closeConnection()
+            );
+            r.start();
+        });
     }
 
     public void placeArmies() {
@@ -492,7 +525,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                 Color color = this.colors.get(clients.get(clt));
                 clientColorsList.add(new Pair<>(clt.getNickname(), clients.get(clt)));
                 g2d.setColor(color);
-                g2d.drawPolygon(p);
+                //g2d.drawPolygon(p);
                 g2d.fillOval((int) p.getBounds().getCenterX() - 15, (int) p.getBounds().getCenterY() - 15, 30, 30);
                 g2d.setColor(Color.BLACK);
                 g2d.drawString(armies.toString(), (int) p.getBounds().getCenterX() - 5, (int) p.getBounds().getCenterY() + 5);
@@ -585,7 +618,12 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             }
             this.state.set(GAME_STATE.PLAYING);
             this.jlState.setText("Playing phase");
+            checkForWin();
         });
+    }
+
+    private void checkForWin() {
+        ((GameClientImpl) Launcher.getCurrentClient()).checkForWin();
     }
 
     public void waitingPhase() {

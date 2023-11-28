@@ -6,7 +6,7 @@ public enum Continent {
     EUROPE("Europe", 5),
     AFRICA("Africa", 3),
     ASIA("Asia", 7),
-    AUSTRALIA("Australia", 2);
+    OCEANIA("Oceania", 2);
 
     private final String name;
     private final int bonus;

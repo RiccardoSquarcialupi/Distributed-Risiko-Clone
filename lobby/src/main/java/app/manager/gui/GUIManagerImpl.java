@@ -33,7 +33,7 @@ public class GUIManagerImpl extends JFrame implements GUIManager {
                 this.currentGUI = new GUILobbyManager();
                 break;
             case GAME:
-                this.currentGUI = new GUIGame();
+                this.currentGUI = new GUIGame(this);
                 break;
             default:
                 this.currentGUI = () -> "This should not happen";

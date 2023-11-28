@@ -98,7 +98,7 @@ public class GameReceiver extends AbstractVerticle {
         router
                 .put("/client/lobby")
                 .handler(routingContext -> {
-                    this.gameClient.lobbyClosed();
+                    this.gameClient.closeConnection();
                     routingContext.response().setStatusCode(200).end();
                 });
         //GET NOTIFY WHEN AN OFFENSIVE MOVE START
@@ -146,10 +146,16 @@ public class GameReceiver extends AbstractVerticle {
                     routingContext.request().bodyHandler(body -> {
                         var ip = body.toJsonArray().getString(0);
                         var goalCard = Goal.valueOf(body.toJsonArray().getString(1));
-                        var listTerritories = ((List<Territory>) body.toJsonArray().getJsonArray(2).getList());
-                        this.gameClient.someoneWin(ip, goalCard, listTerritories);
+                        var playerDestroyed = body.toJsonArray().getString(2);
+                        if(this.gameClient.someoneWin(ip, goalCard, playerDestroyed)){
+                            routingContext.response().setStatusCode(200).end();
+                        }
+                        else{
+                            //Client fake the win
+                            routingContext.response().setStatusCode(403).end();
+                        }
                     });
-                    routingContext.response().setStatusCode(200).end();
+
                 });
         //RECEIVE TERRITORY INFO FROM THE OTHERS PLAYERS
         router
@@ -175,6 +181,15 @@ public class GameReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.response().setStatusCode(200).end();
                 });
+
+        //HANDLE PLAYER LEFFT THE GAME
+        router.put("/client/game/playerLeft").handler(routingContext -> {
+            routingContext.request().bodyHandler(body -> {
+                var ip = body.toJsonArray().getString(0);
+                this.gameClient.playerLeft(ip);
+            });
+            routingContext.response().setStatusCode(200).end();
+        });
 
         // RECEIVE ARMIES UPDATE FROM ENEMY.
         router

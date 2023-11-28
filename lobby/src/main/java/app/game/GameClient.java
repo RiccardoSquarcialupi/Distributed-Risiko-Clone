@@ -21,11 +21,11 @@ public interface GameClient extends Client {
 
     void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies);
 
-    void lobbyClosed();
+    void closeConnection();
 
     void someoneDrawStateCard(String ip);
 
-    void someoneWin(String ip, Goal goalCard, List<Territory> listTerritories);
+    boolean someoneWin(String ip, Goal goalCard, String playerDestroyed);
 
     void setEnemyTerritory(String ip, Territory t);
 
@@ -56,4 +56,6 @@ public interface GameClient extends Client {
     void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory enemyTerritory, Territory myTerritory);
 
     void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory myTerritory, Territory enemyTerritory);
+
+    void playerLeft(String ip);
 }

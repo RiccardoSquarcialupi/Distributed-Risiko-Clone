@@ -27,4 +27,8 @@ public enum Goal implements Card {
     public static Goal fromJsonObject(JsonObject jsonObject) {
         return Goal.valueOf(jsonObject.getString("Goal"));
     }
+
+    public String getName() {
+        return name;
+    }
 }

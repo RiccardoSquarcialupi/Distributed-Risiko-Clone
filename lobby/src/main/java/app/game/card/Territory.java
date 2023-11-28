@@ -43,10 +43,10 @@ public enum Territory implements Card {
     SIBERIA("Siberia", Continent.ASIA, List.of("Ural", "Yakutsk", "Irkutsk", "Mongolia", "China")),
     URAL("Ural", Continent.ASIA, List.of("Ukraine", "Siberia", "China", "Afghanistan")),
     YAKUTSK("Yakutsk", Continent.ASIA, List.of("Siberia", "Irkutsk", "Kamchatka")),
-    EASTERN_AUSTRALIA("Eastern Australia", Continent.AUSTRALIA, List.of("New Guinea", "Western Australia")),
-    INDONESIA("Indonesia", Continent.AUSTRALIA, List.of("Siam", "New Guinea", "Western Australia")),
-    NEW_GUINEA("New Guinea", Continent.AUSTRALIA, List.of("Indonesia", "Eastern Australia", "Western Australia")),
-    WESTERN_AUSTRALIA("Western Australia", Continent.AUSTRALIA, List.of("Indonesia", "New Guinea", "Eastern Australia"));
+    EASTERN_AUSTRALIA("Eastern Australia", Continent.OCEANIA, List.of("New Guinea", "Western Australia")),
+    INDONESIA("Indonesia", Continent.OCEANIA, List.of("Siam", "New Guinea", "Western Australia")),
+    NEW_GUINEA("New Guinea", Continent.OCEANIA, List.of("Indonesia", "Eastern Australia", "Western Australia")),
+    WESTERN_AUSTRALIA("Western Australia", Continent.OCEANIA, List.of("Indonesia", "New Guinea", "Eastern Australia"));
 
     private final String name;
     private final Continent continent;
