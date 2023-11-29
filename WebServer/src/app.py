@@ -18,7 +18,7 @@ def lobbies_matching_client_filter():
 @app.route('/server/lobby/<lobby_id>', methods=['DELETE'])
 def match_started_lobby_deleted(lobby_id):
     if not str(lobby_id).isnumeric():
-        return "Lobby id is not a number", 404
+        return "Lobby id is not a number", 403
 
     lobby_id = int(lobby_id)
     global temporary_dict_of_lobbies
@@ -37,7 +37,7 @@ def create_new_lobby():
         add_lobby_to_dict(request.get_json()['name'], request.remote_addr, request.get_json()['max_players'])
         return jsonify(id), 200
     else:
-        return "Arguments not found", 401
+        return "Incongruous lobby provided", 400
 
 
 @app.route('/server/lobby/<lobby_id>/numberOfPlayer', methods=['DELETE'])
@@ -76,7 +76,7 @@ def update_manager_client_info(lobby_id):
 @app.route('/server/lobby/<lobby_id>', methods=['PUT'])
 def connect_to_lobby(lobby_id):
     if not str(lobby_id).isnumeric():
-        return "Lobby id is not a number", 404
+        return "Lobby id is not a number", 403
 
     lobby_id = int(lobby_id)
     global temporary_dict_of_lobbies
