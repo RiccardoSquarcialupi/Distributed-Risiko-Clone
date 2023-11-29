@@ -13,6 +13,7 @@ import app.game.comunication.GameSender;
 import app.lobbySelector.JSONClient;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -129,9 +130,10 @@ public class GameClientImpl implements GameClient {
     }
 
     public void playerLeft(String ip) {
-        randomOrder= randomOrder.stream().filter(c -> !c.getIP().equals(ip)).collect(Collectors.toList());
+        randomOrder = randomOrder.stream().filter(c -> !c.getIP().equals(ip)).collect(Collectors.toList());
         guiGame.addLogToTextArea("Player " + this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0).getNickname() + " left the game");
     }
+
     public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies) {
         guiGame.someoneGetBonus(ip, cardsList, bonusArmies, extraBonusArmies);
     }
@@ -139,11 +141,13 @@ public class GameClientImpl implements GameClient {
     public void closeConnection() {
         this.gameReceiver.stop();
         //SEND MSG TO THE OTHERS PLAYER TO REMOVE MYSELF FROM THE GAME
-        if(isMyTurn()){
+        if (isMyTurn()) {
             endMyTurn();
         }
-        this.gameSender.playerLeft(this.getIP());
-        Launcher.lobbyClosed();
+        this.gameSender.playerLeft(this.getIP()).onSuccess(h -> {
+            System.out.println("Player left msg sent");
+            Launcher.lobbyClosed();
+        });
     }
 
     public void someoneDrawStateCard(String ip) {
@@ -303,7 +307,7 @@ public class GameClientImpl implements GameClient {
     public void placeArmy(String clientIp, String country, Integer deltaArmies) {
         var clt = this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(clientIp)).collect(Collectors.toList()).get(0);
         var over = this.cltPar.addArmy(clt, country, deltaArmies);
-        gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
+        gameSender.placeArmies(country, this.cltPar.getAllTerritories().get(
                         new Pair<>(clt, Territory.fromString(country))))
                 .onComplete(h -> {
                     this.guiGame.updateMapImage();
@@ -340,13 +344,18 @@ public class GameClientImpl implements GameClient {
         return this.cltPar.getPlacingState();
     }
 
-    public void broadcastTerritories() {
-        this.gameSender.broadcastMyTerritories(this.getIP(), this.cltPar.getMyTerritories());
+    public Future<Void> broadcastTerritories() {
+        Promise<Void> prm = Promise.promise();
+        this.gameSender.broadcastMyTerritories(this.getIP(), this.cltPar.getMyTerritories()).onFailure(f -> {
+            System.out.println("Error with broadcastTerritories" + f.getMessage());
+            Launcher.getVertx().setTimer(2000, id -> broadcastTerritories().onSuccess(v -> prm.complete()));
+        }).onSuccess(s -> prm.complete());
+        return prm.future();
     }
 
     public void getStateCard() {
         //TODO how to draw the card?
-        this.gameSender.getStateCard(this.getIP());
+        this.gameSender.drawStateCard(this.getIP());
     }
 
     public void changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
@@ -509,7 +518,7 @@ public class GameClientImpl implements GameClient {
     private void updateArmiesAfterBattle(String clientIp, String country, Integer deltaArmies) {
         var clt = this.cltPar.getClientList().stream().filter(c -> c.getIP().equals(clientIp)).collect(Collectors.toList()).get(0);
         this.cltPar.updateArmiesAfterBattle(clt, country, deltaArmies);
-        gameSender.broadcastArmies(country, this.cltPar.getAllTerritories().get(
+        gameSender.placeArmies(country, this.cltPar.getAllTerritories().get(
                         new Pair<>(clt, Territory.fromString(country))))
                 .onComplete(h -> {
                     this.guiGame.updateMapImage();

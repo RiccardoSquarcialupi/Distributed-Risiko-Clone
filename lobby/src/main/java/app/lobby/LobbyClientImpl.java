@@ -9,8 +9,11 @@ import app.lobbySelector.JSONClient;
 import app.lobbySelector.LobbySelectorClientImpl;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 
+import javax.swing.*;
 import java.util.List;
+import java.util.Timer;
 
 public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyClient {
     private final ContextManagerParameters cltPar;
@@ -84,7 +87,12 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
         return cltPar.getIdLobby();
     }
 
-    public void broadcastClientIp() {
-        this.sender.broadcast();
+    public Future<Void> broadcastClientIp() {
+        Promise<Void> prm = Promise.promise();
+        this.sender.broadcastClientIp().onFailure(err -> {
+            System.out.println("Error with broadcastClientIp" + err.getMessage());
+            Launcher.getVertx().setTimer(2000, id -> this.broadcastClientIp().onSuccess(v -> prm.complete()));
+        }).onSuccess(prm::complete);
+        return prm.future();
     }
 }

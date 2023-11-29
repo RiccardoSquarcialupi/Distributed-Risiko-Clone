@@ -7,8 +7,6 @@ import app.lobbySelector.LobbySelectorClientImpl;
 import app.manager.Window;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,7 +28,7 @@ public class GameTest {
         if(System.getenv().containsKey("GAME")){
             // Create the new lobby.
             System.out.println("Creating lobby...");
-            var cnl = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).createNewLobby("qq", PLAYER);
+            var cnl = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).createNewLobby("qq", PLAYER).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
             waitForCompletion(cnl);
             System.out.println("Lobby created");
         } else {
@@ -39,7 +37,7 @@ public class GameTest {
             Future<HttpResponse<Buffer>> tjl;
             do {
                 Thread.sleep(500);
-                tjl = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).getFilteredLobbies(PLAYER);
+                tjl = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).getLobbies();
                 waitForCompletion(tjl);
             }while(tjl.result().bodyAsJsonArray().isEmpty());
             System.out.println("Lobby created, joining...");
@@ -47,7 +45,7 @@ public class GameTest {
 
             // Join the lobby.
             var jtl = ((LobbySelectorClientImpl)Launcher.getCurrentClient())
-                    .joinLobby(tjl.result().bodyAsJsonArray().getString(0).substring(47,57));
+                    .joinLobby(tjl.result().bodyAsJsonArray().getString(0).substring(47,57)).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
             // \"manager_client_ip\": \"172.20.0.3\",
             waitForCompletion(jtl);
             System.out.println("Lobby joined");

@@ -30,19 +30,8 @@ public class GameReceiver extends AbstractVerticle {
         this.router = Router.router(vertx);
     }
 
-    //TODO: THIS ARE ONLY SKELETONS, IMPLEMENT THEM
     public void start() {
 
-        //GET NOTIFY A CLIENT START HIS TURN
-        router
-                .put("/client/game/turn/start")
-                .handler(routingContext -> {
-                    routingContext.request().bodyHandler(body -> {
-
-                    });
-
-                    routingContext.response().setStatusCode(200).end();
-                });
         //GET NOTIFY A CLIENT END HIS TURN
         router
                 .put("/client/game/turn/finish")
@@ -183,7 +172,7 @@ public class GameReceiver extends AbstractVerticle {
                 });
 
         //HANDLE PLAYER LEFFT THE GAME
-        router.put("/client/game/playerLeft").handler(routingContext -> {
+        router.delete("/client/game/player").handler(routingContext -> {
             routingContext.request().bodyHandler(body -> {
                 var ip = body.toJsonArray().getString(0);
                 this.gameClient.playerLeft(ip);

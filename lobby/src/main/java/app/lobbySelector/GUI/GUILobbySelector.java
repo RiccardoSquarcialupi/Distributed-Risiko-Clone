@@ -161,7 +161,7 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
     }
 
     private void refreshTable() {
-        ((LobbySelectorClient) Launcher.getCurrentClient()).getFilteredLobbies(-1)
+        ((LobbySelectorClient) Launcher.getCurrentClient()).getLobbies()
                 .onSuccess((httpResponse) -> SwingUtilities.invokeLater(() -> {
                     obj = new Object[][]{};
                     ObjectMapper mapper = new ObjectMapper();
@@ -205,13 +205,13 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
             int selectedRow = jtb.getSelectedRow();
             if (selectedRow != -1) {
                 String managerIp = Arrays.stream(obj).map((o) -> (String) o[1]).collect(Collectors.toList()).get(selectedRow);
-                ((LobbySelectorClient) Launcher.getCurrentClient()).joinLobby(managerIp);
+                ((LobbySelectorClient) Launcher.getCurrentClient()).joinLobby(managerIp).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
             }
         };
     }
 
     private ActionListener onCreate() {
         return (e) -> ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
-                this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText()));
+                this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText())).onSuccess(v -> Launcher.lobbyCreatedSuccessfully());
     }
 }

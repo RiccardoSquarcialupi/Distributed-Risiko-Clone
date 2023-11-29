@@ -18,10 +18,9 @@ public interface LobbySelectorClient extends Client {
     /**
      * Returns a Future with a buffer HTTP response to get lobbies.
      *
-     * @param maxPlayers filter on number of players.
      * @return the future with lobbies.
      */
-    Future<HttpResponse<Buffer>> getFilteredLobbies(int maxPlayers);
+    Future<HttpResponse<Buffer>> getLobbies();
 
     /**
      * Create a new lobby.

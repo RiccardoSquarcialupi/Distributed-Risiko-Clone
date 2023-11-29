@@ -19,11 +19,11 @@ public class ClientServerInteractionsTest {
         Launcher.debugInit(Window.BASE);
 
         // Client request lobbies.
-        var crl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).getFilteredLobbies(-1);
+        var crl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).getLobbies();
         waitForCompletion(crl);
 
         // Client create a lobby.
-        var ccl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).createNewLobby("NewLobby", 4);
+        var ccl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).createNewLobby("NewLobby", 4).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
         waitForCompletion(ccl);
         assertEquals(ManagerClientImpl.class, Launcher.getCurrentClient().getClass());
 
@@ -46,7 +46,7 @@ public class ClientServerInteractionsTest {
         assertEquals(LobbySelectorClientImpl.class, Launcher.getCurrentClient().getClass());
 
         // Server knows lobby close.
-        var skc = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).getFilteredLobbies(-1);
+        var skc = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).getLobbies();
         waitForCompletion(skc);
         assertTrue(skc.result().bodyAsJsonArray().size() < lobbyCount);
     }

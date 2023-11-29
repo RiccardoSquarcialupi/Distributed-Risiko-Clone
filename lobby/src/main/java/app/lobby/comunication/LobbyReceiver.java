@@ -78,11 +78,11 @@ public class LobbyReceiver extends AbstractVerticle {
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(bh -> {
                         System.out.println(lobbyClient.getNickname() + ": " + bh.toJsonArray());
-                        routingContext.response().setStatusCode(200).end();
                         List<Territory> territory = new ArrayList<>();
                         var arr = bh.toJsonArray();
                         arr.getJsonArray(0).getList().forEach(t -> territory.add(Territory.fromName(t.toString())));
                         System.out.println(lobbyClient.getNickname() + " territories: " + territory);
+                        routingContext.response().setStatusCode(200).end();
                         this.lobbyClient.gameStarted(territory, Goal.fromJsonObject(arr.getJsonObject(1)));
                     });
                 });
@@ -103,7 +103,7 @@ public class LobbyReceiver extends AbstractVerticle {
                             jarr.add(bc.toJson());
                         }
                         routingContext.response()
-                                .putHeader("Content-Type", "application/json")
+                                .putHeader("Content-Type", "application/json").setStatusCode(200)
                                 .end(jarr.toBuffer());
 
                     } else {

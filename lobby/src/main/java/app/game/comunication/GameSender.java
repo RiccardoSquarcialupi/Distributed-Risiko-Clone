@@ -28,32 +28,8 @@ public class GameSender extends AbstractVerticle {
     }
 
     /*
-     * Get notify a client starts his turn
-     * */
-    public Future<Void> clientStartTurn(String ipClient) {
-        Promise<Void> prm = Promise.promise();
-        var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
-        List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
-        for (int i = 0; i < finalClientList.size(); i++) {
-            final int index = i;
-            this.client
-                    .put(5001, finalClientList.get(index).getIP(), "/client/game/turn/start")
-                    .sendJson(jsonify(ipClient))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about my start turn, " + response.statusCode());
-                        lpv.get(index).complete();
-                    })
-                    .onFailure(err -> {
-                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my start turn: " + err.getMessage());
-                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
-                    });
-        }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
-        return prm.future();
-    }
-
+    * Broadcast the list of territories to the others players in the game
+    * */
     public Future<Void> broadcastMyTerritories(String ipClient, List<Territory> territoryList) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
@@ -63,23 +39,39 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/territories")
                     .sendJson(jsonify(ipClient, territoryList))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about my territories, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about my territories, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my territories to the server");
+                                lpv.get(index).fail("Something went wrong when sending my territories to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my territories: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
     /*
-     * Get notify a client finish his turn
+     * Notify a client finish his turn
      * */
     public Future<Void> clientEndTurn(String ipClient) {
         Promise<Void> prm = Promise.promise();
@@ -90,25 +82,41 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/turn/finish")
                     .sendJson(jsonify(ipClient))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about my turn is finished, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about my turn is finished, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my turn is finished to the server");
+                                lpv.get(index).fail("Something went wrong when sending my turn is finished to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my turn is finished: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
     /*
-     * Get notify when someone get a State Card
+     * Notify players when someone get a State Card
      * */
-    public Future<Void> getStateCard(String ipClient) {
+    public Future<Void> drawStateCard(String ipClient) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -117,24 +125,40 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/stateCard")
                     .sendJson(jsonify(ipClient))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about my state card, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about my state card, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my state card to the server");
+                                lpv.get(index).fail("Something went wrong when sending my state card to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my state card: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
     /*
-     * Get notify when armies number change(nArmies could be negative if armies moved between to adjacent
-     * territories) in a specific territory(optional idClient is provided in case of obtained new territory
+     * Notify players when armies number change (nArmies could be negative if armies moved between to adjacent
+     * territories) in a specific territory (optional idClient is provided in case of obtained new territory
      * from a battle)
      * */
     public Future<Void> changeArmiesInTerritory(String ipClient, Territory territory, Optional<Territory> territoryReceiver, Integer armies, Optional<String> ipClientLoser) {
@@ -146,12 +170,31 @@ public class GameSender extends AbstractVerticle {
                 final int index = i;
                 this.client
                         .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/armiesWithConqueror")
-                        .sendJson(jsonify(ipClient, territory.name(), armies, ipClientLoser.get()))
-                        .onSuccess(response -> {
-                            System.out.println("Client " +
-                                    finalClientList.get(index).getNickname() +
-                                    " receive the info about my armies in territory, " + response.statusCode());
-                            lpv.get(index).complete();
+                        .sendJson(jsonify(ipClient, territory.getName(), armies, ipClientLoser.get()))
+                        .onSuccess(r -> {
+                            switch (r.statusCode()) {
+                                case 200:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " receive the info about my armies in territory, " + r.statusCode());
+                                    lpv.get(index).complete();
+                                    break;
+                                case 500:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    lpv.get(index).fail("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    break;
+                                default:
+                                    System.out.println("Something went wrong when sending my armies in territory to the server");
+                                    lpv.get(index).fail("Something went wrong when sending my armies in territory to the server");
+                                    break;
+                            }
+                        }).onFailure(err -> {
+                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies in territory: " + err.getMessage());
+                            lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                         });
 
             }
@@ -160,12 +203,28 @@ public class GameSender extends AbstractVerticle {
                 final int index = i;
                 this.client
                         .put(5001, finalClientList.get(index).getIP(), "/client/game/territory/armies")
-                        .sendJson(jsonify(ipClient, territory.name(), territoryReceiver.get().name(), armies))
-                        .onSuccess(response -> {
-                            System.out.println("Client " +
-                                    finalClientList.get(index).getNickname() +
-                                    " receive the info about my armies in territory, " + response.statusCode());
-                            lpv.get(index).complete();
+                        .sendJson(jsonify(ipClient, territory.getName(), territoryReceiver.get().getName(), armies))
+                        .onSuccess(r -> {
+                            switch (r.statusCode()) {
+                                case 200:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " receive the info about my armies in territory, " + r.statusCode());
+                                    lpv.get(index).complete();
+                                    break;
+                                case 500:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    lpv.get(index).fail("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    break;
+                                default:
+                                    System.out.println("Something went wrong when sending my armies in territory to the server");
+                                    lpv.get(index).fail("Something went wrong when sending my armies in territory to the server");
+                                    break;
+                            }
                         })
                         .onFailure(err -> {
                             System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies in territory: " + err.getMessage());
@@ -173,15 +232,14 @@ public class GameSender extends AbstractVerticle {
                         });
             }
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
     /*
-     * Get notify when bonus from State Card have been used
+     * Notify players when bonus from State Card have been used
      * */
-
-    public Future<Void> clientUseStateCardBonus(String ipClient, List<CardType> listCardType, Integer bonusArmies, Integer extraBonusArmies) {
+    public Future<Void> clientUseStateCardsBonus(String ipClient, List<CardType> listCardType, Integer bonusArmies, Integer extraBonusArmies) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -190,23 +248,39 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .delete(5001, finalClientList.get(index).getIP(), "/client/game/card")
                     .sendJson(jsonify(ipClient, JsonArray.of(listCardType), bonusArmies, extraBonusArmies))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about my state card bonus, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about my state card bonus, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my state card bonus to the server");
+                                lpv.get(index).fail("Something went wrong when sending my state card bonus to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my state card bonus: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
     /*
-    Get notify if an offense move is starting: attacker and defender are provided with the result of the dices roll
+    Notify players if an offense move is starting: attacker and defender are provided with the result of the dices roll
      */
     public Future<Void> clientAttackTerritory(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory territoryFromToAttack, Territory territoryToAttack) {
         Promise<Void> prm = Promise.promise();
@@ -216,24 +290,41 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/battle/offense")
-                    .sendJson(jsonify(ipClientAttack, ipClientDefend, JsonArray.of(diceATKResult), territoryFromToAttack.name(), territoryToAttack.name()))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about my attack, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .sendJson(jsonify(ipClientAttack, ipClientDefend, JsonArray.of(diceATKResult),
+                            territoryFromToAttack.getName(), territoryToAttack.getName()))
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about my attack, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my attack to the server");
+                                lpv.get(index).fail("Something went wrong when sending my attack to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my attack: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
     /*
-    Get notify if a defense move is starting: attacker and defender are provided with the result of the dices roll
+    Notify players if a defense move is starting: attacker and defender are provided with the result of the dices roll
      */
     public Future<Void> clientDefendTerritory(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory enemyTerritory, Territory myTerritory) {
         Promise<Void> prm = Promise.promise();
@@ -243,24 +334,40 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/battle/defense")
-                    .sendJson(jsonify(ipClientAttack, ipClientDefend, JsonArray.of(diceDEFResult), enemyTerritory.name(), myTerritory.name()))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about my defense, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .sendJson(jsonify(ipClientAttack, ipClientDefend, JsonArray.of(diceDEFResult), enemyTerritory.getName(), myTerritory.getName()))
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about my defense, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my defense to the server");
+                                lpv.get(index).fail("Something went wrong when sending my defense to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my defense: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
     /*
-    Get notify if a Client has won the game. The winner is provided with the goal card and the list of territories owned
+    Notify players if a Client has won the game. The winner is provided with the goal card and the list of territories owned
      */
     public Future<Void> clientWin(String ipClient, Goal goalCard, Optional<String> playerDestroyed) {
         Promise<Void> prm = Promise.promise();
@@ -272,14 +379,35 @@ public class GameSender extends AbstractVerticle {
                 this.client
                         .put(5001, finalClientList.get(index).getIP(), "/client/game/win")
                         .sendJson(jsonify(ipClient, goalCard, playerDestroyed.get()))
-                        .onSuccess(response -> {
-                            System.out.println("Client " +
-                                    finalClientList.get(index).getNickname() +
-                                    " receive the info about my win, " + response.statusCode());
-                            if (response.statusCode() == 200) {
-                                lpv.get(index).complete();
+                        .onSuccess(r -> {
+                            switch (r.statusCode()) {
+                                case 200:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " receive the info about my win, " + r.statusCode());
+                                    lpv.get(index).complete();
+                                    break;
+                                case 500:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    lpv.get(index).fail("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    break;
+                                case 403:
+                                        System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " try to fake the win");
+                                    lpv.get(index).fail("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            "try to fake the win");
+                                    break;
+                                default:
+                                    System.out.println("Something went wrong when sending my win to the server");
+                                    lpv.get(index).fail("Something went wrong when sending my win to the server");
+                                    break;
                             }
-
                         })
                         .onFailure(err -> {
                             System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my win: " + err.getMessage());
@@ -289,12 +417,34 @@ public class GameSender extends AbstractVerticle {
                 this.client
                         .put(5001, finalClientList.get(index).getIP(), "/client/game/win")
                         .sendJson(jsonify(ipClient, goalCard, ""))
-                        .onSuccess(response -> {
-                            System.out.println("Client " +
-                                    finalClientList.get(index).getNickname() +
-                                    " receive the info about my win, " + response.statusCode());
-                            if (response.statusCode() == 200) {
-                                lpv.get(index).complete();
+                        .onSuccess(r -> {
+                            switch (r.statusCode()) {
+                                case 200:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " receive the info about my win, " + r.statusCode());
+                                    lpv.get(index).complete();
+                                    break;
+                                case 500:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    lpv.get(index).fail("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    break;
+                                case 403:
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " try to fake the win");
+                                    lpv.get(index).fail("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            "try to fake the win");
+                                    break;
+                                default:
+                                    System.out.println("Something went wrong when sending my win to the server");
+                                    lpv.get(index).fail("Something went wrong when sending my win to the server");
+                                    break;
                             }
                         })
                         .onFailure(err -> {
@@ -334,12 +484,32 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .post(5001, finalClientList.get(index).getIP(), "/client/game/dice/throw")
                     .sendJson(jsonify(ipClient, hDice))
-                    .onSuccess(response -> {
-                        sDice.addAndGet(response.body().toJsonArray().getInteger(0));
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                sDice.addAndGet(r.body().toJsonArray().getInteger(0));
+                                lpv.get(index).complete();
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the dice throw, " + r.statusCode());
+                                break;
+                            case 500:
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my dice throw to the server");
+                                lpv.get(index).fail("Something went wrong when sending my dice throw to the server");
+                                break;
+                        }
+
+
                     })
-                    .onFailure(err ->
-                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the dice throw: " + err.getMessage()));
+                    .onFailure(err -> {
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the dice throw: " + err.getMessage());
+                        lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                    });
         }
         var lp = finalClientList.stream()
                 .map(c -> Promise.promise()).collect(Collectors.toList());
@@ -353,16 +523,34 @@ public class GameSender extends AbstractVerticle {
                                 rDice,
                                 Base64.getEncoder().encodeToString(kDice),
                                 sDice.get()))
-                        .onSuccess(response -> {
-                            System.out.println("Dice status code: " + response.statusCode());
-                            if(response.statusCode() == 200){
-                                lp.get(index).complete();
-                            }else{
-                                throw new RuntimeException("Dice throw is not eligible.");
+                        .onSuccess(r -> {
+                            switch (r.statusCode()) {
+                                case 200:
+                                    System.out.println("Dice status code: " + r.statusCode());
+                                    lp.get(index).complete();
+                                    System.out.println("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " receive the dice confirm, " + r.statusCode());
+                                    break;
+                                case 500:
+                                    lp.get(index).fail("Client " +
+                                            finalClientList.get(index).getNickname() +
+                                            " is down");
+                                    break;
+                                case 403:
+                                    lp.get(index).fail("Dice throw is not eligible.");
+                                    System.out.println("Dice status code: " + r.statusCode());
+                                    throw new RuntimeException("Dice throw is not eligible.");
+                                default:
+                                    System.out.println("Something went wrong when sending my dice confirm to the server");
+                                    lp.get(index).fail("Something went wrong when sending my dice confirm to the server");
+                                    break;
                             }
                         })
-                        .onFailure(err ->
-                                System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the dice confirm: " + err.getMessage()));
+                        .onFailure(err ->{
+                            System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the dice confirm: " + err.getMessage());
+                            lp.get(index).fail("Error with" + finalClientList.get(index).getNickname());
+                        });
             }
         });
         Future.all(lp.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> {
@@ -375,7 +563,7 @@ public class GameSender extends AbstractVerticle {
             } else {
                 prm.complete(diceResults);
             }
-        });
+        }).onFailure(prm::fail);
         return prm.future();
     }
 
@@ -389,10 +577,30 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/dice/share")
                     .sendJson(jsonify(ip, rnd))
-                    .onSuccess(response -> {
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                lpv.get(index).complete();
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the dice share, " + r.statusCode());
+                                break;
+                            case 500:
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my dice share to the server");
+                                lpv.get(index).fail("Something went wrong when sending my dice share to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
+                        System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the dice share: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
@@ -402,7 +610,7 @@ public class GameSender extends AbstractVerticle {
         return prm.future();
     }
 
-    public Future<Void> broadcastArmies(String country, Integer armies) {
+    public Future<Void> placeArmies(String country, Integer armies) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -411,18 +619,34 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/armies/update")
                     .sendJson(jsonify(country, armies))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the info about armies update, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about armies update, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending my armies update to the server");
+                                lpv.get(index).fail("Something went wrong when sending my armies update to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the info about my armies update: " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
         return prm.future();
     }
 
@@ -436,10 +660,30 @@ public class GameSender extends AbstractVerticle {
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/order")
                     .sendJson(jsonify(ip, jsonObjectClientList))
-                    .onSuccess(response -> {
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the random order, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending the random order to the server");
+                                lpv.get(index).fail("Something went wrong when sending the random order to the server");
+                                break;
+                        }
                         System.out.println("Client " +
                                 finalClientList.get(index).getNickname() +
-                                " receive the random order, " + response.statusCode());
+                                " receive the random order, " + r.statusCode());
                         lpv.get(index).complete();
                     })
                     .onFailure(err -> {
@@ -459,20 +703,36 @@ public class GameSender extends AbstractVerticle {
         for (int i = 0; i < finalClientList.size(); i++) {
             final int index = i;
             this.client
-                    .put(5001, finalClientList.get(index).getIP(), "/client/game/playerLeft")
+                    .delete(5001, finalClientList.get(index).getIP(), "/client/game/player")
                     .sendJson(jsonify(ip))
-                    .onSuccess(response -> {
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the random order, " + response.statusCode());
-                        lpv.get(index).complete();
+                    .onSuccess(r -> {
+                        switch (r.statusCode()) {
+                            case 200:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " receive the info about player left, " + r.statusCode());
+                                lpv.get(index).complete();
+                                break;
+                            case 500:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " is down");
+                                break;
+                            default:
+                                System.out.println("Something went wrong when sending the info about player left to the server");
+                                lpv.get(index).fail("Something went wrong when sending the info about player left to the server");
+                                break;
+                        }
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the random order " + err.getMessage());
                         lpv.get(index).fail("Error with" + finalClientList.get(index).getNickname());
                     });
         }
-        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete());
+        CompositeFuture.all(lpv.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> prm.complete()).onFailure(s -> prm.fail(s.getMessage()));
 
         return prm.future();
     }
