@@ -90,6 +90,10 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                                             System.out.println("FLASK Server r: Server Not Found");
                                             prm.get(0).fail("FLASK Server r: Server Not Found");
                                             break;
+                                        case 403:
+                                            System.out.println("FLASK Server response: Lobby id is not a number");
+                                            prm.get(0).fail("FLASK Server response: Lobby id is not number");
+                                            break;
                                         default:
                                             System.out.println("Something went wrong when sending joinLobby Notification to the FLASK server");
                                             prm.get(0).fail("Something went wrong when sending joinLobby Notification to the FLASK server");

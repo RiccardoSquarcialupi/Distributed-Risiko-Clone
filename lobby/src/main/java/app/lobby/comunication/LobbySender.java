@@ -127,6 +127,10 @@ public class LobbySender extends AbstractVerticle {
                                 System.out.println("Server response: Lobby Not Found");
                                 prm.fail("Server response: Lobby Not Found");
                                 break;
+                            case 403:
+                                System.out.println("Server response: Lobby id is not number");
+                                prm.fail("Server response: Lobby id is not a number");
+                                break;
                             default:
                                 System.out.println("Something went wrong when sending info about my exit to the server");
                                 prm.fail("Something went wrong when sending info about my exit to the server");
@@ -161,6 +165,22 @@ public class LobbySender extends AbstractVerticle {
                                 lpv.get(index).fail("Client " +
                                         finalClientList.get(index).getNickname() +
                                         " is down");
+                                break;
+                            case 404:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " response: Lobby Not Found");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " response: Lobby Not Found");
+                                break;
+                            case 400:
+                                System.out.println("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " response: New manager not set");
+                                lpv.get(index).fail("Client " +
+                                        finalClientList.get(index).getNickname() +
+                                        " response: New manager not set");
                                 break;
                             default:
                                 System.out.println("Something went wrong when sending new manager ip to the server");
@@ -257,6 +277,10 @@ public class LobbySender extends AbstractVerticle {
                         case 404:
                             System.out.println("Server response: Lobby Not Found");
                             prm.fail("Server response: Lobby Not Found");
+                            break;
+                        case 403:
+                            System.out.println("Server response: Lobby id is not number");
+                            prm.fail("Server response: Lobby id is not a number");
                             break;
                         default:
                             System.out.println("Something went wrong when sending info about my exit to the server");
