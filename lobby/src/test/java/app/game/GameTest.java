@@ -28,7 +28,7 @@ public class GameTest {
         if(System.getenv().containsKey("GAME")){
             // Create the new lobby.
             System.out.println("Creating lobby...");
-            var cnl = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).createNewLobby("qq", PLAYER).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
+            var cnl = ((LobbySelectorClientImpl)Launcher.getCurrentClient()).createNewLobby("qq", PLAYER).onSuccess(v -> Launcher.lobbyCreatedSuccessfully());
             waitForCompletion(cnl);
             System.out.println("Lobby created");
         } else {
@@ -46,7 +46,6 @@ public class GameTest {
             // Join the lobby.
             var jtl = ((LobbySelectorClientImpl)Launcher.getCurrentClient())
                     .joinLobby(tjl.result().bodyAsJsonArray().getString(0).substring(47,57)).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
-            // \"manager_client_ip\": \"172.20.0.3\",
             waitForCompletion(jtl);
             System.out.println("Lobby joined");
         }

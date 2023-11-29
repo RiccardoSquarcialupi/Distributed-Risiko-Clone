@@ -23,7 +23,7 @@ public class ClientServerInteractionsTest {
         waitForCompletion(crl);
 
         // Client create a lobby.
-        var ccl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).createNewLobby("NewLobby", 4).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
+        var ccl = ((LobbySelectorClientImpl) Launcher.getCurrentClient()).createNewLobby("NewLobby", 4).onSuccess(v -> Launcher.lobbyCreatedSuccessfully());
         waitForCompletion(ccl);
         assertEquals(ManagerClientImpl.class, Launcher.getCurrentClient().getClass());
 
