@@ -1,9 +1,6 @@
 package app.lobby;
 
-import app.game.card.Card;
-import app.game.card.Goal;
-import app.game.card.Jolly;
-import app.game.card.Territory;
+import app.game.card.*;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -47,7 +44,7 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
         Collections.shuffle(cards);
         Collections.shuffle(goalCards);
 
-        List<Card> deck = Stream.concat(List.copyOf(cards).stream().map(t -> (Card)t), Arrays.stream(Jolly.values())).collect(Collectors.toList());
+        List<CardType> deck = Stream.concat(cards.stream().map(Territory::getType), Stream.of(CardType.JOLLY,CardType.JOLLY)).collect(Collectors.toList());
         Collections.shuffle(deck);
 
         List<Promise<Void>> lpr = new ArrayList<>(this.cltPar.getMaxPlayer());

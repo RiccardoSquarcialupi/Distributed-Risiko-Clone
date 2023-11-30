@@ -1,10 +1,7 @@
 package app.manager.contextManager;
 
 import app.common.Pair;
-import app.game.card.Card;
-import app.game.card.Continent;
-import app.game.card.Goal;
-import app.game.card.Territory;
+import app.game.card.*;
 import app.lobbySelector.JSONClient;
 
 import java.io.IOException;
@@ -24,8 +21,8 @@ public class ContextManagerParameters {
     private Goal goalCard;
     private int currentArmiesPlaced;
     private int toPlaceArmies;
-    private List<Card> deck;
-    private List<Card> myBonusCards;
+    private List<CardType> deck;
+    private List<CardType> myBonusCards;
 
     public ContextManagerParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();
@@ -227,15 +224,15 @@ public class ContextManagerParameters {
         this.allTerritories.put(new Pair<>(clt, country), armies);
     }
 
-    public void setDeck(List<Card> deck) {
+    public void setDeck(List<CardType> deck) {
         this.deck = deck;
     }
 
-    public List<Card> getDeck(){
+    public List<CardType> getDeck(){
         return this.deck;
     }
 
-    public List<Card> getBonusCards(){
+    public List<CardType> getBonusCards(){
         return this.myBonusCards;
     }
 }

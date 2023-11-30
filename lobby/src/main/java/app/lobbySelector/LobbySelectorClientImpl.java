@@ -33,7 +33,7 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
     }
 
     @Override
-    public Future<Void> joinLobby(String managerClientIp) {
+    public Future<String> joinLobby(String managerClientIp) {
         List<Promise<Void>> prm = List.of(Promise.promise(), Promise.promise());
         this.client
                 .post(serverPort, managerClientIp, "/client/lobby/clients")
@@ -103,8 +103,8 @@ public class LobbySelectorClientImpl extends LoginClient implements LobbySelecto
                     });
                 })
                 .onFailure(prm.get(1)::fail);
-        Promise<Void> ret = Promise.promise();
-        Future.all(prm.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> ret.complete()).onFailure(err -> {
+        Promise<String> ret = Promise.promise();
+        Future.all(prm.stream().map(Promise::future).collect(Collectors.toList())).onSuccess(s -> ret.complete(managerClientIp)).onFailure(err -> {
             System.out.println("Error with joinLobby, Promise not completed" + err.getMessage());
             ret.fail(err);
         });

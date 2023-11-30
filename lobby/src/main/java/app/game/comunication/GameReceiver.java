@@ -78,8 +78,7 @@ public class GameReceiver extends AbstractVerticle {
                         var ip = body.toJsonArray().getString(0);
                         var cardsList = (List<CardType>) body.toJsonArray().getJsonArray(1).getList();
                         var bonusArmies = body.toJsonArray().getInteger(2);
-                        var extraBonusArmies = body.toJsonArray().getInteger(3);
-                        this.gameClient.someoneGetBonus(ip, cardsList, bonusArmies, extraBonusArmies);
+                        this.gameClient.someoneGetBonus(ip, cardsList, bonusArmies);
                     });
                     routingContext.response().setStatusCode(200).end();
                 });

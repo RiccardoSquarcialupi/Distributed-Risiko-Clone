@@ -45,6 +45,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     private final JLabel jlState;
     private final JTextArea log = new JTextArea();
     private boolean orderHasBeenSet = false;
+    private List<CardType> myHandCards = new ArrayList<>();
     private JLabel player;
     private JLabel enemiesLabel;
     private Territory territoryFromToMove;
@@ -107,7 +108,6 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         moveTroopsButton.setEnabled(false);
         rightPanel.add(moveTroopsButton);
         rightPanel.add(Box.createVerticalGlue());
-
         endTurnButton.addActionListener(e -> {
             ((GameClientImpl) Launcher.getCurrentClient()).endMyTurn();
         });
@@ -446,8 +446,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     }
 
-    public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies) {
-        JOptionPane.showMessageDialog(this, "Player " + getPlayerFromIp(ip) + " get bonus of " + bonusArmies + " armies for " + cardsList.toString() + " cards and " + extraBonusArmies + " extra armies", "Bonus", JOptionPane.INFORMATION_MESSAGE);
+    public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies) {
+        JOptionPane.showMessageDialog(this, "Player " + getPlayerFromIp(ip) + " get bonus of " + bonusArmies + " armies for " + cardsList.toString() + " cards.", "Bonus", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private String getPlayerFromIp(String ip) {
@@ -473,6 +473,10 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void someoneDrawStateCard(String ip) {
+        SwingUtilities.invokeLater(() -> {
+            String player = getPlayerFromIp(ip);
+            JOptionPane.showMessageDialog(this, "Player " + player + " draw a state card", "State Card", JOptionPane.INFORMATION_MESSAGE);
+        });
     }
 
     public void someoneWin(String ip, Goal goalCard) {
@@ -590,9 +594,55 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                     .filter(p -> p.getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())).count();
             count = count / ((GameClientImpl) Launcher.getCurrentClient()).getClientList().size();
 
-            ((GameClient) Launcher.getCurrentClient()).placeArmies(((int) Math.floor(count)));
+            if (myHandCards.size() >= 3) {
+                count += checkForBonusCards();
+            }
 
+            ((GameClient) Launcher.getCurrentClient()).placeArmies(((int) Math.floor(count)));
         });
+    }
+
+    private Integer checkForBonusCards() {
+        //1 Jolly and 2 same symbol State Card 12
+        if (myHandCards.stream().anyMatch(c -> (c.equals(CardType.JOLLY))) && myHandCards.stream().filter(c -> c.equals(CardType.ARTILLERY)).count() >= 2) {
+            var ans = JOptionPane.showConfirmDialog(this, "You have 1 Jolly, 2 Artillery. Do you want to exchange them for 12 armies?", "Bonus Cards", JOptionPane.YES_NO_OPTION);
+            return ans == JOptionPane.YES_OPTION ? useBonus(CardType.JOLLY, CardType.ARTILLERY, CardType.ARTILLERY, 12) : 0;
+        } //1 Jolly and 2 same symbol State Card 12
+        else if (myHandCards.stream().anyMatch(c -> (c.equals(CardType.JOLLY))) && myHandCards.stream().filter(c -> c.equals(CardType.INFANTRY)).count() >= 2) {
+            var ans = JOptionPane.showConfirmDialog(this, "You have 1 Jolly, 2 Infantry cards. Do you want to exchange them for 12 armies?", "Bonus Cards", JOptionPane.YES_NO_OPTION);
+            return ans == JOptionPane.YES_OPTION ? useBonus(CardType.JOLLY, CardType.INFANTRY, CardType.INFANTRY, 12) : 0;
+        } //1 Jolly and 2 same symbol State Card 12
+        else if (myHandCards.stream().anyMatch(c -> (c.equals(CardType.JOLLY))) && myHandCards.stream().filter(c -> c.equals(CardType.CAVALRY)).count() >= 2) {
+            var ans = JOptionPane.showConfirmDialog(this, "You have 1 Jolly, 2 Cavalry. Do you want to exchange them for 12 armies?", "Bonus Cards", JOptionPane.YES_NO_OPTION);
+            return ans == JOptionPane.YES_OPTION ? useBonus(CardType.JOLLY, CardType.CAVALRY, CardType.CAVALRY, 12) : 0;
+        } //3 State Card with different symbol 10
+        else if (myHandCards.stream().anyMatch(c -> c.equals(CardType.ARTILLERY)) && myHandCards.stream().anyMatch(c -> c.equals(CardType.INFANTRY)) && myHandCards.stream().anyMatch(c -> c.equals(CardType.CAVALRY))) {
+            var ans = JOptionPane.showConfirmDialog(this, "You have 1 Artillery, 1 Infantry and 1 Cavalry cards. Do you want to exchange them for 10 armies?", "Bonus Cards", JOptionPane.YES_NO_OPTION);
+            return ans == JOptionPane.YES_OPTION ? useBonus(CardType.ARTILLERY, CardType.INFANTRY, CardType.CAVALRY, 10) : 0;
+        } //3 Cavalry 8
+        else if (myHandCards.stream().filter(c -> c.equals(CardType.CAVALRY)).count() >= 3) {
+            var ans = JOptionPane.showConfirmDialog(this, "You have 3 Cavalry cards. Do you want to exchange them for 8 armies?", "Bonus Cards", JOptionPane.YES_NO_OPTION);
+            return ans == JOptionPane.YES_OPTION ? useBonus(CardType.CAVALRY, CardType.CAVALRY, CardType.CAVALRY, 8) : 0;
+        } //3 Infantry 6
+        else if (myHandCards.stream().filter(c -> c.equals(CardType.INFANTRY)).count() >= 3) {
+            var ans = JOptionPane.showConfirmDialog(this, "You have 3 Infantry cards. Do you want to exchange them for 6 armies?", "Bonus Cards", JOptionPane.YES_NO_OPTION);
+            return ans == JOptionPane.YES_OPTION ? useBonus(CardType.INFANTRY, CardType.INFANTRY, CardType.INFANTRY, 6) : 0;
+        } //3 Artillery 4
+        else if (myHandCards.stream().filter(c -> c.equals(CardType.ARTILLERY)).count() >= 3) {
+            var ans = JOptionPane.showConfirmDialog(this, "You have 3 Artillery cards. Do you want to exchange them for 4 armies?", "Bonus Cards", JOptionPane.YES_NO_OPTION);
+            return ans == JOptionPane.YES_OPTION ? useBonus(CardType.ARTILLERY, CardType.ARTILLERY, CardType.ARTILLERY, 4) : 0;
+        }
+        return 0;
+    }
+
+    private Integer useBonus(CardType card1, CardType card2, CardType card3, Integer bonus) {
+        var cardList = new ArrayList<CardType>();
+        cardList.add(card1);
+        cardList.add(card2);
+        cardList.add(card3);
+        myHandCards.removeAll(cardList);
+        ((GameClient) Launcher.getCurrentClient()).useBonusCards(cardList, bonus);
+        return bonus;
     }
 
     public void attackPhase() {
@@ -686,7 +736,8 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         });
     }
 
-    public void tacticalMoveNotification(String ip, Integer nArmiesChange, String territorySender, String territoryReceiver) {
+    public void tacticalMoveNotification(String ip, Integer nArmiesChange, String territorySender, String
+            territoryReceiver) {
         SwingUtilities.invokeLater(() -> {
             JOptionPane.showMessageDialog(guiGame, String.format("Player %s moved %d armies from %s to %s", getPlayerFromIp(ip), nArmiesChange, territorySender, territoryReceiver), "Tactical Move", JOptionPane.INFORMATION_MESSAGE);
         });
@@ -695,6 +746,13 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void displayAttackDiceResult(List<Integer> lastAttackDicesThrow) {
         SwingUtilities.invokeLater(() -> {
             JOptionPane.showMessageDialog(guiGame, "Dices result: " + lastAttackDicesThrow, "Attack result", JOptionPane.INFORMATION_MESSAGE);
+        });
+    }
+
+    public void updateHandCards(List<CardType> bonusCards) {
+        myHandCards = bonusCards;
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(guiGame, "You have " + myHandCards.toString() + " cards", "Cards", JOptionPane.INFORMATION_MESSAGE);
         });
     }
 

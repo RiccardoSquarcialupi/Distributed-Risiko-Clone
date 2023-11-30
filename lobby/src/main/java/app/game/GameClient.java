@@ -2,6 +2,7 @@ package app.game;
 
 import app.common.Client;
 import app.common.Pair;
+import app.game.card.Card;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
@@ -19,7 +20,7 @@ public interface GameClient extends Client {
 
     void updateEnemyTerritoryWithConqueror(String winnerIp, Territory fromName, Integer nArmies, String loserIp);
 
-    void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies);
+    void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies);
 
     void closeConnection();
 
@@ -58,4 +59,6 @@ public interface GameClient extends Client {
     void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory myTerritory, Territory enemyTerritory);
 
     void playerLeft(String ip);
+
+    void useBonusCards(List<CardType> cardList, Integer bonus);
 }

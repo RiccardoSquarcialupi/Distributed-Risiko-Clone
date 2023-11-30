@@ -45,7 +45,7 @@ public class GameTest {
 
             // Join the lobby.
             var jtl = ((LobbySelectorClientImpl)Launcher.getCurrentClient())
-                    .joinLobby(tjl.result().bodyAsJsonArray().getString(0).substring(47,57)).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
+                    .joinLobby(tjl.result().bodyAsJsonArray().getString(0).substring(47,59)).onSuccess(v -> Launcher.lobbyJoinedSuccessfully());
             waitForCompletion(jtl);
             System.out.println("Lobby joined");
         }

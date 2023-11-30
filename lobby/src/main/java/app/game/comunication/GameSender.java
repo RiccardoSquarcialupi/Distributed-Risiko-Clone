@@ -3,6 +3,7 @@ package app.game.comunication;
 import app.Launcher;
 import app.common.Utils;
 import app.game.GameClientImpl;
+import app.game.card.Card;
 import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
@@ -239,7 +240,7 @@ public class GameSender extends AbstractVerticle {
     /*
      * Notify players when bonus from State Card have been used
      * */
-    public Future<Void> clientUseStateCardsBonus(String ipClient, List<CardType> listCardType, Integer bonusArmies, Integer extraBonusArmies) {
+    public Future<Void> clientUseStateCardsBonus(String ipClient, List<CardType> listCard, Integer bonusArmies) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -247,7 +248,7 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .delete(5001, finalClientList.get(index).getIP(), "/client/game/card")
-                    .sendJson(jsonify(ipClient, JsonArray.of(listCardType), bonusArmies, extraBonusArmies))
+                    .sendJson(jsonify(ipClient, JsonArray.of(listCard), bonusArmies))
                     .onSuccess(r -> {
                         switch (r.statusCode()) {
                             case 200:
@@ -681,10 +682,6 @@ public class GameSender extends AbstractVerticle {
                                 lpv.get(index).fail("Something went wrong when sending the random order to the server");
                                 break;
                         }
-                        System.out.println("Client " +
-                                finalClientList.get(index).getNickname() +
-                                " receive the random order, " + r.statusCode());
-                        lpv.get(index).complete();
                     })
                     .onFailure(err -> {
                         System.out.println("Client ip: " + finalClientList.get(index).getIP() + " doesn't receive the random order " + err.getMessage());

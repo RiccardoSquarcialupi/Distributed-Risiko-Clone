@@ -27,6 +27,7 @@ public class GameClientImpl implements GameClient {
     private List<JSONClient> randomOrder = new ArrayList<>();
     private List<Integer> lastAttackDicesThrow;
     private List<Integer> lastDefenceDicesThrow;
+    private Card cardDraw;
     private boolean orderFound = false;
 
     public GameClientImpl(ContextManagerParameters cltPar) {
@@ -131,8 +132,16 @@ public class GameClientImpl implements GameClient {
         guiGame.addLogToTextArea("Player " + this.getClientList().stream().filter(c -> c.getIP().equals(ip)).collect(Collectors.toList()).get(0).getNickname() + " left the game");
     }
 
-    public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies, Integer extraBonusArmies) {
-        guiGame.someoneGetBonus(ip, cardsList, bonusArmies, extraBonusArmies);
+    @Override
+    public void useBonusCards(List<CardType> cardsList, Integer bonus) {
+        this.gameSender.clientUseStateCardsBonus(this.getIP(), cardsList, bonus).onSuccess(h -> {
+            this.cltPar.getBonusCards().removeAll(cardsList);
+            this.cltPar.setPlaceableArmies(bonus);
+        });
+    }
+
+    public void someoneGetBonus(String ip, List<CardType> cardsList, Integer bonusArmies) {
+        guiGame.someoneGetBonus(ip, cardsList, bonusArmies);
     }
 
     public void closeConnection() {
@@ -537,7 +546,10 @@ public class GameClientImpl implements GameClient {
             //conquer
             this.gameSender.changeArmiesInTerritory(getIpFromTerritory(myTerritory), enemyTerritory, Optional.empty(), 0, Optional.ofNullable(getIpFromTerritory(enemyTerritory))).onSuccess(h -> {
                 this.updateEnemyTerritoryWithConqueror(this.getIP(), enemyTerritory, 0, getIpFromTerritory(enemyTerritory));
-                this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
+                this.getStateCard().onSuccess(h1 -> {
+                    this.guiGame.updateHandCards(this.cltPar.getBonusCards());
+                    this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
+                });
             });
         } else {
             this.guiGame.updateMapImage();

@@ -2,6 +2,7 @@ package app.lobby;
 
 import app.Launcher;
 import app.game.card.Card;
+import app.game.card.CardType;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobby.comunication.LobbyReceiver;
@@ -74,7 +75,7 @@ public class LobbyClientImpl extends LobbySelectorClientImpl implements LobbyCli
         }
     }
 
-    public void gameStarted(List<Territory> listTerritory, List<Card> deck, Goal goalCard) {
+    public void gameStarted(List<Territory> listTerritory, List<CardType> deck, Goal goalCard) {
         listTerritory.forEach(this.cltPar::addTerritory);
         this.cltPar.setDeck(deck);
         this.cltPar.setGoalCard(goalCard);
