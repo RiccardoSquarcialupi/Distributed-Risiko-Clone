@@ -98,6 +98,17 @@ public class ContextManagerParameters {
         this.maxPlayer = -1;
         this.clientList.clear();
     }
+    public void resetGame() {
+        this.allTerritories.clear();
+        this.goalCard = null;
+        this.idLobby = -1;
+        this.ipManager = "";
+        this.maxPlayer = -1;
+        this.clientList.clear();
+        this.allTerritories.clear();
+        this.currentArmiesPlaced = 0;
+        this.toPlaceArmies = 0;
+    }
 
     public void addTerritory(Territory t) {
         this.allTerritories.put(new Pair<>(new JSONClient(getIp(), getNickname()), t), 0);

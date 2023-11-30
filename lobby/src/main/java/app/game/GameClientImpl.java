@@ -140,6 +140,7 @@ public class GameClientImpl implements GameClient {
 
     public void closeConnection() {
         this.gameReceiver.stop();
+        this.cltPar.resetGame();
         //SEND MSG TO THE OTHERS PLAYER TO REMOVE MYSELF FROM THE GAME
         if (isMyTurn()) {
             endMyTurn();
@@ -358,8 +359,8 @@ public class GameClientImpl implements GameClient {
         this.gameSender.drawStateCard(this.getIP());
     }
 
-    public void changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
-        this.gameSender.changeArmiesInTerritory(this.getIP(), territorySender, Optional.ofNullable(territoryReceiver), nArmiesChange, Optional.empty()).onSuccess(res -> {
+    public Future<Void> changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
+        return this.gameSender.changeArmiesInTerritory(this.getIP(), territorySender, Optional.ofNullable(territoryReceiver), nArmiesChange, Optional.empty()).onSuccess(res -> {
             this.guiGame.tacticalMoveSucceeded();
             this.cltPar.updateMyTerritory(territorySender, territoryReceiver, nArmiesChange);
             this.guiGame.updateMapImage();
