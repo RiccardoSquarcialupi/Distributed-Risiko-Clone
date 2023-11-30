@@ -218,19 +218,25 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
     }
 
     private ActionListener onCreate() {
-        if(!this.jtfMaxPlayers.getText().isEmpty() || !this.jtfName.getText().isBlank()){
-            try{
-                var maxPlayers = Integer.parseInt(this.jtfMaxPlayers.getText());
-                if (maxPlayers > 2 && maxPlayers < 7) {
-                    return (e) -> ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
-                            this.jtfName.getText(), maxPlayers).onSuccess(v -> Launcher.lobbyCreatedSuccessfully());
-                }
-            }catch(NumberFormatException e){
-                //SILENTLY IGNORE
-            }
-        }
         return (e) -> {
-            JOptionPane.showMessageDialog(this, "Max players must be between 3 and 6", "Error", JOptionPane.ERROR_MESSAGE);
+            if(!jtfMaxPlayers.getText().isEmpty() && !jtfName.getText().isEmpty()){
+                try{
+                    System.out.println("Value of max player Right now: "+ jtfMaxPlayers.getText());
+                    var maxPlayers = Integer.parseInt(jtfMaxPlayers.getText());
+                    if (maxPlayers > 2 && maxPlayers < 7) {
+                        ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
+                                jtfName.getText(), maxPlayers).onSuccess(v -> Launcher.lobbyCreatedSuccessfully());
+                    }
+                }catch(NumberFormatException n){
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(this, "Max players must be between 3 and 6 and Name not empty", "Error", JOptionPane.ERROR_MESSAGE);
+                    });
+                }
+            }else {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(this, "Max players must be between 3 and 6 and Name not empty", "Error", JOptionPane.ERROR_MESSAGE);
+                });
+            }
         };
     }
 }
