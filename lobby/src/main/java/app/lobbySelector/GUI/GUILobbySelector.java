@@ -22,6 +22,7 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
     private final Object[] tableHeader = {"ID", "Server IP", "Players Inside", "Max Players"};
     Object[][] obj = new Object[][]{};
     private boolean isJoinPage = true;
+    private JLabel titleLabel;
     private JScrollPane jspLobbies;
     private JTable jtb;
     private JTextField jtfName;
@@ -31,7 +32,7 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
         setBackground(new Color(0x2E3842));
 
         JPanel titlePanel = new JPanel();
-        JLabel titleLabel = new JLabel("Lobby Selector");
+        titleLabel = new JLabel("Lobby Selector");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titlePanel.add(titleLabel);
         titlePanel.setBackground(new Color(0x2E3842));
@@ -80,8 +81,14 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
             // Toggle between "join" and "create" panels
             if (isJoinPage) {
                 cardLayout.show(cards, "create");
+                titleLabel.setText("Lobby Creator");
+                repaint();
+                revalidate();
             } else {
                 cardLayout.show(cards, "join");
+                titleLabel.setText("Lobby Selector");
+                repaint();
+                revalidate();
             }
             isJoinPage = !isJoinPage;
         };
@@ -211,7 +218,19 @@ public class GUILobbySelector extends JPanel implements GUI, GUILobbySelectorAct
     }
 
     private ActionListener onCreate() {
-        return (e) -> ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
-                this.jtfName.getText(), Integer.parseInt(this.jtfMaxPlayers.getText())).onSuccess(v -> Launcher.lobbyCreatedSuccessfully());
+        if(!this.jtfMaxPlayers.getText().isEmpty() || !this.jtfName.getText().isBlank()){
+            try{
+                var maxPlayers = Integer.parseInt(this.jtfMaxPlayers.getText());
+                if (maxPlayers > 2 && maxPlayers < 7) {
+                    return (e) -> ((LobbySelectorClient) Launcher.getCurrentClient()).createNewLobby(
+                            this.jtfName.getText(), maxPlayers).onSuccess(v -> Launcher.lobbyCreatedSuccessfully());
+                }
+            }catch(NumberFormatException e){
+                //SILENTLY IGNORE
+            }
+        }
+        return (e) -> {
+            JOptionPane.showMessageDialog(this, "Max players must be between 3 and 6", "Error", JOptionPane.ERROR_MESSAGE);
+        };
     }
 }

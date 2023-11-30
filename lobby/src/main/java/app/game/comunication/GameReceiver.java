@@ -52,7 +52,7 @@ public class GameReceiver extends AbstractVerticle {
                         var territoryReceiver = body.toJsonArray().getString(2);
                         var nArmiesChange = body.toJsonArray().getInteger(3);
                         System.out.println("Armies moved from sender " + territorySender + " to receiver " + territoryReceiver + ", nArmies " + nArmiesChange);
-                        this.gameClient.updateEnemyTerritory(ip, Territory.fromName(territorySender), Territory.fromName(territoryReceiver), nArmiesChange);
+                        this.gameClient.updateEnemyTerritory(ip, Territory.fromString(territorySender), Territory.fromString(territoryReceiver), nArmiesChange);
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
@@ -66,7 +66,7 @@ public class GameReceiver extends AbstractVerticle {
                         var nArmies = body.toJsonArray().getInteger(2);
                         var loserIp = body.toJsonArray().getString(3);
                         System.out.println("Received armies with conqueror with winner " + winnerIp + ", territory " + territory + ", nArmies " + nArmies + ", loser " + loserIp);
-                        this.gameClient.updateEnemyTerritoryWithConqueror(winnerIp, Territory.fromName(territory), nArmies, loserIp);
+                        this.gameClient.updateEnemyTerritoryWithConqueror(winnerIp, Territory.fromString(territory), nArmies, loserIp);
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
@@ -98,8 +98,8 @@ public class GameReceiver extends AbstractVerticle {
                         var ipClientAttack = body.toJsonArray().getString(0);
                         var ipClientDefend = body.toJsonArray().getString(1);
                         var diceATKResult = ((List<Integer>) body.toJsonArray().getJsonArray(2).getList().get(0));
-                        var territoryEnemy = Territory.fromName(body.toJsonArray().getString(3));
-                        var myTerritory = Territory.fromName(body.toJsonArray().getString(4));
+                        var territoryEnemy = Territory.fromString(body.toJsonArray().getString(3));
+                        var myTerritory = Territory.fromString(body.toJsonArray().getString(4));
                         this.gameClient.receiveAttackMsg(ipClientAttack, ipClientDefend, diceATKResult, territoryEnemy, myTerritory);
                     });
                     routingContext.response().setStatusCode(200).end();
@@ -112,8 +112,8 @@ public class GameReceiver extends AbstractVerticle {
                         var ipClientAttack = body.toJsonArray().getString(0);
                         var ipClientDefend = body.toJsonArray().getString(1);
                         var diceDEFResult = ((List<Integer>) body.toJsonArray().getJsonArray(2).getList().get(0));
-                        var myTerritory = Territory.fromName(body.toJsonArray().getString(3));
-                        var enemyTerritory = Territory.fromName(body.toJsonArray().getString(4));
+                        var myTerritory = Territory.fromString(body.toJsonArray().getString(3));
+                        var enemyTerritory = Territory.fromString(body.toJsonArray().getString(4));
                         this.gameClient.receiveDefendMsg(ipClientAttack, ipClientDefend, diceDEFResult, myTerritory, enemyTerritory);
                     });
                     routingContext.response().setStatusCode(200).end();
@@ -153,7 +153,7 @@ public class GameReceiver extends AbstractVerticle {
                     routingContext.request().bodyHandler(body -> {
                         var ip = body.toJsonArray().getString(0);
                         var territory = (List<Territory>) body.toJsonArray().getJsonArray(1).getList()
-                                .stream().map(s -> Territory.fromName(s.toString())).collect(Collectors.toList());
+                                .stream().map(s -> Territory.fromString(s.toString())).collect(Collectors.toList());
                         System.out.println("Received terri: " + territory);
                         territory.forEach(t -> this.gameClient.setEnemyTerritory(ip, t));
 

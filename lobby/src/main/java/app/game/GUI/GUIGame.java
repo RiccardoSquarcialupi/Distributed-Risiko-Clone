@@ -13,8 +13,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -24,7 +24,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.Time;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
@@ -53,7 +52,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     private Territory territoryFromToAttack;
     private Territory territoryToAttack;
     private JButton moveTroopsButton;
-    private  JButton endTurnButton;
+    private JButton endTurnButton;
     private JButton attackButton;
     private boolean tacticalMovedHasBeenDone = false;
 
@@ -291,6 +290,9 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public void tacticalMoveSucceeded() {
         tacticalMovedHasBeenDone = true;
+        this.moveTroopsButton.setEnabled(false);
+        this.repaint();
+        this.revalidate();
     }
 
     private void firstCountryClickedWhileMoving(MouseEvent e, String country) {
@@ -455,7 +457,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void receiveAttackMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceATKResult, Territory enemyTerritory, Territory myTerritory) {
         SwingUtilities.invokeLater(() -> {
             String playerAttacker = getPlayerFromIp(ipClientAttack);
-            JOptionPane.showMessageDialog(this, "Player " + playerAttacker + " attack " + myTerritory.name() + " from " + enemyTerritory.name() + " with dices result: " + diceATKResult, "Incoming Attack!!!", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Player " + playerAttacker + " attack " + myTerritory.getName() + " from " + enemyTerritory.getName() + " with dices result: " + diceATKResult, "Incoming Attack!!!", JOptionPane.INFORMATION_MESSAGE);
             Object nDicesToUse = (JOptionPane.showInputDialog(guiGame, "How many dices do you want to use? (0-3)", "Dices Selection", JOptionPane.QUESTION_MESSAGE, null, getNDicesFromTerritory(myTerritory, "DEFEND"), 0));
             System.out.println("nDices used for defending: " + nDicesToUse);
             ((GameClient) Launcher.getCurrentClient()).sendDefendMsg(enemyTerritory, myTerritory, nDicesToUse == null ? 0 : (Integer) nDicesToUse);
@@ -466,7 +468,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void receiveDefendMsg(String ipClientAttack, String ipClientDefend, List<Integer> diceDEFResult, Territory myTerritory, Territory enemyTerritory) {
         SwingUtilities.invokeLater(() -> {
             String playerDefender = getPlayerFromIp(ipClientDefend);
-            JOptionPane.showMessageDialog(this, "Player " + playerDefender + " defend " + enemyTerritory.name() + " from the attack of " + enemyTerritory.name() + " with dices result: " + diceDEFResult, "Defence result!!!", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Player " + playerDefender + " defend " + enemyTerritory.getName() + " from the attack of " + enemyTerritory.getName() + " with dices result: " + diceDEFResult, "Defence result!!!", JOptionPane.INFORMATION_MESSAGE);
         });
     }
 
@@ -478,9 +480,9 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             String player = getPlayerFromIp(ip);
             JOptionPane.showMessageDialog(this, "Player " + player + " win the game with goal: " + goalCard, "WINNER!!!", JOptionPane.INFORMATION_MESSAGE);
             this.disableActions();
-            JOptionPane.showMessageDialog(this, "You can close this window and the game or wait 10s to return on the main page, THANKS FOR PLAYING!", "ALERT", JOptionPane.WARNING_MESSAGE);
-            Timer r = new Timer(10000, e ->
-                ((GameClientImpl) Launcher.getCurrentClient()).closeConnection()
+            JOptionPane.showMessageDialog(this, "You can close this window and the game or wait 5s to return on the main page, THANKS FOR PLAYING!", "ALERT", JOptionPane.WARNING_MESSAGE);
+            Timer r = new Timer(5000, e ->
+                    ((GameClientImpl) Launcher.getCurrentClient()).closeConnection()
             );
             r.start();
         });
@@ -516,7 +518,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                 var client = ((GameClient) Launcher.getCurrentClient());
                 Territory ter = Territory.fromString(country);
                 JSONClient clt = client.getAllTerritories()
-                        .keySet().stream().filter(pa -> pa.getSecond().name().equals(ter.name()))
+                        .keySet().stream().filter(pa -> pa.getSecond().getName().equals(ter.getName()))
                         .map(Pair::getFirst).collect(Collectors.toList()).get(0);
                 Integer armies = client.getAllTerritories().get(new Pair<>(clt, ter));
                 if (!clients.containsKey(clt)) {
@@ -635,29 +637,29 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     private void disableActions() {
-            this.setEnabled(false);
-            this.disableAllButtons();
-            this.repaint();
-            this.revalidate();
+        this.setEnabled(false);
+        this.disableAllButtons();
+        this.repaint();
+        this.revalidate();
     }
 
     private void enableActions() {
-            this.setEnabled(true);
-            this.enableAllButtons();
-            this.repaint();
-            this.revalidate();
+        this.setEnabled(true);
+        this.enableAllButtons();
+        this.repaint();
+        this.revalidate();
     }
 
     public void disableAllButtons() {
-            moveTroopsButton.setEnabled(false);
-            attackButton.setEnabled(false);
-            endTurnButton.setEnabled(false);
+        moveTroopsButton.setEnabled(false);
+        attackButton.setEnabled(false);
+        endTurnButton.setEnabled(false);
     }
 
     private void enableAllButtons() {
-            moveTroopsButton.setEnabled(true);
-            attackButton.setEnabled(true);
-            endTurnButton.setEnabled(true);
+        moveTroopsButton.setEnabled(true);
+        attackButton.setEnabled(true);
+        endTurnButton.setEnabled(true);
     }
 
     public void orderingPhase() {
@@ -678,7 +680,9 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             this.state.set(GAME_STATE.MOVING_AFTER_CONQUER);
             this.jlState.setText("Select the number of armies to move in the conquered territory");
             Object nArmiesToMove = (JOptionPane.showInputDialog(guiGame, "How many armies do you want to move? (0-3)", "Armies Selection", JOptionPane.QUESTION_MESSAGE, null, getNDicesFromTerritory(myTerritory, "DEFEND"), 0));
-            ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(myTerritory, newTerritory, (Integer) nArmiesToMove);
+            ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(myTerritory, newTerritory, (Integer) nArmiesToMove).onSuccess(s -> {
+                tacticalMovedHasBeenDone = false;
+            });
         });
     }
 

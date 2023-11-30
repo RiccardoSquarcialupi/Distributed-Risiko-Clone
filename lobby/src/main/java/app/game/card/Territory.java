@@ -60,15 +60,6 @@ public enum Territory implements Card {
         this.type = Math.random() < 0.33 ? CardType.INFANTRY : Math.random() < 0.66 ? CardType.CAVALRY : CardType.ARTILLERY;
     }
 
-    public static Territory fromName(String name) {
-        for (Territory t : Territory.values()) {
-            if (t.name().equals(name)) {
-                return t;
-            }
-        }
-        return null;
-    }
-
     public static Territory fromString(String country) {
         Territory minTerritory = null;
         int minDistance = Integer.MAX_VALUE;
