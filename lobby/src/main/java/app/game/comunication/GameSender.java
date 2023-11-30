@@ -116,7 +116,7 @@ public class GameSender extends AbstractVerticle {
     /*
      * Notify players when someone get a State Card
      * */
-    public Future<Void> drawStateCard(String ipClient) {
+    public Future<Void> drawStateCard(String ipClient, int cardIndex) {
         Promise<Void> prm = Promise.promise();
         var finalClientList = ((GameClientImpl) Launcher.getCurrentClient()).getClientList().stream().filter(c -> !c.getIP().equals(Launcher.getCurrentClient().getIP())).collect(Collectors.toList());
         List<Promise> lpv = finalClientList.stream().map(c -> Promise.promise()).collect(Collectors.toList());
@@ -124,7 +124,7 @@ public class GameSender extends AbstractVerticle {
             final int index = i;
             this.client
                     .put(5001, finalClientList.get(index).getIP(), "/client/game/stateCard")
-                    .sendJson(jsonify(ipClient))
+                    .sendJson(jsonify(ipClient, cardIndex))
                     .onSuccess(r -> {
                         switch (r.statusCode()) {
                             case 200:

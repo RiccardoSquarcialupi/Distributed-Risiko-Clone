@@ -25,6 +25,7 @@ public class ContextManagerParameters {
     private int currentArmiesPlaced;
     private int toPlaceArmies;
     private List<Card> deck;
+    private List<Card> myBonusCards;
 
     public ContextManagerParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();
@@ -36,6 +37,8 @@ public class ContextManagerParameters {
         this.allTerritories = new HashMap<>();
         this.currentArmiesPlaced = 0;
         this.toPlaceArmies = 0;
+        this.deck = null;
+        this.myBonusCards = new ArrayList<>();
     }
 
     public String getIp() {
@@ -230,5 +233,9 @@ public class ContextManagerParameters {
 
     public List<Card> getDeck(){
         return this.deck;
+    }
+
+    public List<Card> getBonusCards(){
+        return this.myBonusCards;
     }
 }

@@ -23,7 +23,7 @@ public interface GameClient extends Client {
 
     void closeConnection();
 
-    void someoneDrawStateCard(String ip);
+    void someoneDrawStateCard(String ip, int cardIndex);
 
     boolean someoneWin(String ip, Goal goalCard, String playerDestroyed);
 

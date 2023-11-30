@@ -118,16 +118,6 @@ public class GameReceiver extends AbstractVerticle {
                     });
                     routingContext.response().setStatusCode(200).end();
                 });
-        //GET NOTIFY WHEN SOMEONE GET A CARD
-        router
-                .put("/client/game/cards/stateCard")
-                .handler(routingContext -> {
-                    routingContext.request().bodyHandler(body -> {
-                        var ip = body.toJsonArray().getString(0);
-                        this.gameClient.someoneDrawStateCard(ip);
-                    });
-                    routingContext.response().setStatusCode(200).end();
-                });
         //GET NOTIFY WHEN A PLAYER WIN
         router
                 .put("/client/game/win")
@@ -264,6 +254,18 @@ public class GameReceiver extends AbstractVerticle {
                         clientDiceShare.clear();
                     });
 
+                });
+
+        //GET NOTIFY WHEN SOMEONE GET A CARD
+        router
+                .put("/client/game/stateCard")
+                .handler(routingContext -> {
+                    routingContext.request().bodyHandler(body ->{
+                        var ipClient = body.toJsonArray().getString(0);
+                        var cardIndex = body.toJsonArray().getInteger(1);
+                        this.gameClient.someoneDrawStateCard(ipClient, cardIndex);
+                        routingContext.response().setStatusCode(200).end();
+                    });
                 });
 
         httpServer.requestHandler(router).listen(5001);

@@ -4,10 +4,7 @@ package app.game;
 import app.Launcher;
 import app.common.Pair;
 import app.game.GUI.GUIGame;
-import app.game.card.CardType;
-import app.game.card.Continent;
-import app.game.card.Goal;
-import app.game.card.Territory;
+import app.game.card.*;
 import app.game.comunication.GameReceiver;
 import app.game.comunication.GameSender;
 import app.lobbySelector.JSONClient;
@@ -151,7 +148,8 @@ public class GameClientImpl implements GameClient {
         });
     }
 
-    public void someoneDrawStateCard(String ip) {
+    public void someoneDrawStateCard(String ip, int cardIndex) {
+        this.cltPar.getDeck().remove(cardIndex);
         guiGame.someoneDrawStateCard(ip);
     }
 
@@ -354,9 +352,10 @@ public class GameClientImpl implements GameClient {
         return prm.future();
     }
 
-    public void getStateCard() {
-        //TODO how to draw the card?
-        this.gameSender.drawStateCard(this.getIP());
+    public Future<Void> getStateCard() {
+        int cardIndex = new Random().nextInt(this.cltPar.getDeck().size());
+        this.cltPar.getBonusCards().add(this.cltPar.getDeck().remove(cardIndex));
+        return this.gameSender.drawStateCard(this.getIP(), cardIndex);
     }
 
     public Future<Void> changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
