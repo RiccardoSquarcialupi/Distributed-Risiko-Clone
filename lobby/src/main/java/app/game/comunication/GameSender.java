@@ -541,7 +541,8 @@ public class GameSender extends AbstractVerticle {
                                 case 403:
                                     lp.get(index).fail("Dice throw is not eligible.");
                                     System.out.println("Dice status code: " + r.statusCode());
-                                    throw new RuntimeException("Dice throw is not eligible.");
+                                    break;
+                                    //throw new RuntimeException("Dice throw is not eligible.");
                                 default:
                                     System.out.println("Something went wrong when sending my dice confirm to the server");
                                     lp.get(index).fail("Something went wrong when sending my dice confirm to the server");
