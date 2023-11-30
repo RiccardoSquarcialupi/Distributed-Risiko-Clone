@@ -1,6 +1,8 @@
 package app.lobby;
 
+import app.game.card.Card;
 import app.game.card.Goal;
+import app.game.card.Jolly;
 import app.game.card.Territory;
 import app.manager.contextManager.ContextManagerParameters;
 import io.vertx.core.Future;
@@ -9,9 +11,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient {
     private final List<Territory> cards;
@@ -43,6 +47,9 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
         Collections.shuffle(cards);
         Collections.shuffle(goalCards);
 
+        List<Card> deck = Stream.concat(List.copyOf(cards).stream().map(t -> (Card)t), Arrays.stream(Jolly.values())).collect(Collectors.toList());
+        Collections.shuffle(deck);
+
         List<Promise<Void>> lpr = new ArrayList<>(this.cltPar.getMaxPlayer());
 
         for (int i = 0; i < this.cltPar.getMaxPlayer(); i++) {
@@ -55,8 +62,13 @@ public class ManagerClientImpl extends LobbyClientImpl implements ManagerClient 
                 this.cltPar.getClientList().remove(tmp);
                 this.cltPar.getClientList().add(tmp);
             }
+
             this.sender.gameHasStarted(
-                    JsonArray.of(cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)), JsonObject.of("Goal", goalCards.get(0))),
+                    JsonArray.of(
+                            cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)),
+                            JsonObject.of("Goal", goalCards.get(0)),
+                            deck
+                    ),
                     this.cltPar.getClientList().get(i).getIP()
             ).onSuccess(s -> lpr.get(index).complete());
             cards.subList(0, cards.size() / (this.cltPar.getMaxPlayer() - i)).clear();

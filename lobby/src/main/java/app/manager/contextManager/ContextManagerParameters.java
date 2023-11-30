@@ -1,6 +1,7 @@
 package app.manager.contextManager;
 
 import app.common.Pair;
+import app.game.card.Card;
 import app.game.card.Continent;
 import app.game.card.Goal;
 import app.game.card.Territory;
@@ -23,6 +24,7 @@ public class ContextManagerParameters {
     private Goal goalCard;
     private int currentArmiesPlaced;
     private int toPlaceArmies;
+    private List<Card> deck;
 
     public ContextManagerParameters() throws IOException {
         this.ip = Inet4Address.getLocalHost().getHostAddress();
@@ -220,5 +222,13 @@ public class ContextManagerParameters {
 
     public void updateEnemyTerritoryAfterBroadcast(JSONClient clt, Territory country, Integer armies) {
         this.allTerritories.put(new Pair<>(clt, country), armies);
+    }
+
+    public void setDeck(List<Card> deck) {
+        this.deck = deck;
+    }
+
+    public List<Card> getDeck(){
+        return this.deck;
     }
 }
