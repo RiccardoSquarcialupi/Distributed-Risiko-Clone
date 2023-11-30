@@ -1,16 +1,14 @@
 package app.manager.contextManager;
 
 import app.common.Pair;
+import app.game.card.Continent;
 import app.game.card.Goal;
 import app.game.card.Territory;
 import app.lobbySelector.JSONClient;
 
 import java.io.IOException;
 import java.net.Inet4Address;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ContextManagerParameters {
@@ -175,13 +173,34 @@ public class ContextManagerParameters {
 
     public void setPlaceableArmiesAtStart() {
         this.currentArmiesPlaced = 0;
-        this.toPlaceArmies = this.getMyTerritories().size() * 2;
+        switch (this.maxPlayer){
+            case 3:
+                this.toPlaceArmies = 35;
+                break;
+            case 4:
+                this.toPlaceArmies = 30;
+                break;
+            case 5:
+                this.toPlaceArmies = 25;
+                break;
+            case 6:
+                this.toPlaceArmies = 20;
+                break;
+            default:
+                this.toPlaceArmies = 10;
+                break;
+        }
         System.out.println("Armies to deploy: " + this.toPlaceArmies);
     }
 
     public void setPlaceableArmies(int armies) {
         this.currentArmiesPlaced = 0;
         this.toPlaceArmies = armies;
+        this.toPlaceArmies += Arrays.stream(Continent.values()).map(cnt ->
+            this.getMyTerritories().stream().filter(ter -> ter.getContinent().equals(cnt)).count() ==
+            this.allTerritories.keySet().stream().map(Pair::getSecond).filter(ter -> ter.getContinent().equals(cnt)).count() ?
+                    cnt.getBonus() : 0
+        ).mapToInt(Integer::intValue).sum();
     }
 
     public Pair<Integer, Integer> getPlacingState() {

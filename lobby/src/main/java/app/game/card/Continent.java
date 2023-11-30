@@ -15,4 +15,8 @@ public enum Continent {
         this.name = name;
         this.bonus = bonus;
     }
+
+    public int getBonus(){
+        return this.bonus;
+    }
 }
