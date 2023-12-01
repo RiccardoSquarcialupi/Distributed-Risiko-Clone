@@ -24,10 +24,10 @@ public class GameClientImpl implements GameClient {
     public GameReceiver gameReceiver;
     private GUIGame guiGame;
     private boolean myTurn;
+    private boolean cardIsDrawed = false;
     private List<JSONClient> randomOrder = new ArrayList<>();
     private List<Integer> lastAttackDicesThrow;
     private List<Integer> lastDefenceDicesThrow;
-    private Card cardDraw;
     private boolean orderFound = false;
 
     public GameClientImpl(ContextManagerParameters cltPar) {
@@ -64,10 +64,6 @@ public class GameClientImpl implements GameClient {
 
     public List<JSONClient> getClientList() {
         return this.cltPar.getClientList();
-    }
-
-    public void addTerritory(Territory territory) {
-        this.cltPar.addTerritory(territory);
     }
 
     public String getGoal() {
@@ -115,6 +111,7 @@ public class GameClientImpl implements GameClient {
                     && this.randomOrder.get((i + 1) % this.randomOrder.size()).getIP().equals(this.getIP())
             ) {
                 this.myTurn = true;
+                cardIsDrawed = false;
                 guiGame.startTurn();
             }
         }
@@ -495,7 +492,6 @@ public class GameClientImpl implements GameClient {
         var attackDices = lastAttackDicesThrow.stream().sorted().collect(Collectors.toList());
         var defenceDices = lastDefenceDicesThrow.stream().sorted().collect(Collectors.toList());
         //compute armies lost
-        List<Pair<Integer, Integer>> result = new ArrayList<>();
         while (attackDices.size() != defenceDices.size()) {
             if (attackDices.size() > defenceDices.size()) {
                 attackDices.remove(0);
@@ -547,7 +543,10 @@ public class GameClientImpl implements GameClient {
             this.gameSender.changeArmiesInTerritory(getIpFromTerritory(myTerritory), enemyTerritory, Optional.empty(), 0, Optional.ofNullable(getIpFromTerritory(enemyTerritory))).onSuccess(h -> {
                 this.updateEnemyTerritoryWithConqueror(this.getIP(), enemyTerritory, 0, getIpFromTerritory(enemyTerritory));
                 this.getStateCard().onSuccess(h1 -> {
-                    this.guiGame.updateHandCards(this.cltPar.getBonusCards());
+                    if(!cardIsDrawed){
+                        this.guiGame.updateHandCards(this.cltPar.getBonusCards());
+                        cardIsDrawed=true;
+                    }
                     this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
                 });
             });
