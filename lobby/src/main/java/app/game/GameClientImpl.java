@@ -4,7 +4,10 @@ package app.game;
 import app.Launcher;
 import app.common.Pair;
 import app.game.GUI.GUIGame;
-import app.game.card.*;
+import app.game.card.CardType;
+import app.game.card.Continent;
+import app.game.card.Goal;
+import app.game.card.Territory;
 import app.game.comunication.GameReceiver;
 import app.game.comunication.GameSender;
 import app.lobbySelector.JSONClient;
@@ -436,6 +439,13 @@ public class GameClientImpl implements GameClient {
                     }
                 }
             }
+        } else {
+            Random rn = new Random();
+            if (rn.nextInt(5) > 2) {
+                System.out.println("ORDER FOUND!!!");
+                System.out.println("Order:" + (randomOrder));
+                sendRandomOrderForTurning(this.randomOrder);
+            }
         }
     }
 
@@ -542,13 +552,13 @@ public class GameClientImpl implements GameClient {
             //conquer
             this.gameSender.changeArmiesInTerritory(getIpFromTerritory(myTerritory), enemyTerritory, Optional.empty(), 0, Optional.ofNullable(getIpFromTerritory(enemyTerritory))).onSuccess(h -> {
                 this.updateEnemyTerritoryWithConqueror(this.getIP(), enemyTerritory, 0, getIpFromTerritory(enemyTerritory));
-                this.getStateCard().onSuccess(h1 -> {
-                    if(!cardIsDrawed){
+                if (!cardIsDrawed) {
+                    this.getStateCard().onSuccess(h1 -> {
+                        cardIsDrawed = true;
                         this.guiGame.updateHandCards(this.cltPar.getBonusCards());
-                        cardIsDrawed=true;
-                    }
-                    this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
-                });
+                    });
+                }
+                this.guiGame.movingPhaseAfterConquer(myTerritory, enemyTerritory);
             });
         } else {
             this.guiGame.updateMapImage();
