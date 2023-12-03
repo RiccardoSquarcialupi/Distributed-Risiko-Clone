@@ -46,6 +46,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     private final JTextArea log = new JTextArea();
     private boolean orderHasBeenSet = false;
     private List<CardType> myHandCards = new ArrayList<>();
+    private JLabel handCardsLabel;
     private JLabel player;
     private JLabel enemiesLabel;
     private Territory territoryFromToMove;
@@ -140,6 +141,11 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         enemiesLabel.setForeground(Color.WHITE);
         topPanel.add(enemiesLabel);
         topPanel.add(Box.createHorizontalGlue());
+        handCardsLabel = new JLabel("My hand: "+ myHandCards.toString());
+        handCardsLabel.setForeground(Color.WHITE);
+        topPanel.add(handCardsLabel);
+        topPanel.add(Box.createHorizontalGlue());
+
         topPanel.setBackground(new Color(0, 71, 0));
         add(topPanel, BorderLayout.NORTH);
     }
@@ -291,6 +297,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     public void tacticalMoveSucceeded() {
         tacticalMovedHasBeenDone = true;
         this.moveTroopsButton.setEnabled(false);
+        this.attackButton.setEnabled(false);
         this.repaint();
         this.revalidate();
     }
@@ -592,7 +599,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
                     .keySet()
                     .stream()
                     .filter(p -> p.getFirst().getNickname().equals(((GameClientImpl) Launcher.getCurrentClient()).getNickname())).count();
-            count = count / ((GameClientImpl) Launcher.getCurrentClient()).getClientList().size();
+            count /= 3;
 
             if (myHandCards.size() >= 3) {
                 count += checkForBonusCards();
@@ -750,8 +757,11 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
     }
 
     public void updateHandCards(List<CardType> bonusCards) {
-        myHandCards = bonusCards;
         SwingUtilities.invokeLater(() -> {
+            myHandCards = bonusCards;
+            handCardsLabel.setText("My hand "+ myHandCards.toString());
+            repaint();
+            revalidate();
             JOptionPane.showMessageDialog(guiGame, "You have " + myHandCards.toString() + " cards", "Cards", JOptionPane.INFORMATION_MESSAGE);
         });
     }
