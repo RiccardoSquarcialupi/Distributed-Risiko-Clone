@@ -668,12 +668,11 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
 
     public void playingPhase() {
         SwingUtilities.invokeLater(() -> {
+            this.guiGame.updateMapImage();
             this.enableActions();
             System.out.println("Tactical moved has been done T|F ?  " + tacticalMovedHasBeenDone);
             if (tacticalMovedHasBeenDone) {
-                moveTroopsButton.setEnabled(false);
-                repaint();
-                revalidate();
+                tacticalMoveSucceeded();
             }
             this.state.set(GAME_STATE.PLAYING);
             this.jlState.setText("Playing phase");

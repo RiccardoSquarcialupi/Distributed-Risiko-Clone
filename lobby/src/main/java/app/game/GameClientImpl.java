@@ -369,9 +369,7 @@ public class GameClientImpl implements GameClient {
 
     public Future<Void> changeArmiesInMyTerritory(Territory territorySender, Territory territoryReceiver, Integer nArmiesChange) {
         return this.gameSender.changeArmiesInTerritory(this.getIP(), territorySender, Optional.ofNullable(territoryReceiver), nArmiesChange, Optional.empty()).onSuccess(res -> {
-            this.guiGame.tacticalMoveSucceeded();
             this.cltPar.updateMyTerritory(territorySender, territoryReceiver, nArmiesChange);
-            this.guiGame.updateMapImage();
             this.guiGame.playingPhase();
         });
     }
