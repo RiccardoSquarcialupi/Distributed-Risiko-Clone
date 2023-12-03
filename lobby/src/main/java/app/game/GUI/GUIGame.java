@@ -289,9 +289,14 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
         }
         Integer[] nArmiesToMoveArray = Arrays.stream(nArmiesToMove.stream().mapToInt(Integer::intValue).toArray()).boxed().toArray(Integer[]::new);
 
-        Object nArmies = JOptionPane.showInputDialog(guiGame, "How many armies do you want to move?", "Tactical Armies Move", JOptionPane.QUESTION_MESSAGE, null, nArmiesToMoveArray, 0);
-
-        ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(territoryFromToMove, territoryToMove, (Integer) nArmies);
+        Object nArmies = null;
+        while(nArmies == null){
+            nArmies = JOptionPane.showInputDialog(guiGame, "How many armies do you want to move?", "Tactical Armies Move", JOptionPane.QUESTION_MESSAGE, null, nArmiesToMoveArray, 0);
+        }
+        ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(territoryFromToMove, territoryToMove, (Integer) nArmies).onSuccess(s -> {
+            tacticalMovedHasBeenDone = true;
+            this.guiGame.playingPhase();
+        });
     }
 
     public void tacticalMoveSucceeded() {
@@ -738,6 +743,7 @@ public class GUIGame extends JPanel implements GUI, GUIGameActions {
             Object nArmiesToMove = (JOptionPane.showInputDialog(guiGame, "How many armies do you want to move? (0-3)", "Armies Selection", JOptionPane.QUESTION_MESSAGE, null, getNDicesFromTerritory(myTerritory, "DEFEND"), 0));
             ((GameClientImpl) Launcher.getCurrentClient()).changeArmiesInMyTerritory(myTerritory, newTerritory, (Integer) nArmiesToMove).onSuccess(s -> {
                 tacticalMovedHasBeenDone = false;
+                this.playingPhase();
             });
         });
     }
