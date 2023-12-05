@@ -247,7 +247,7 @@ public class GameSender extends AbstractVerticle {
         for (int i = 0; i < finalClientList.size(); i++) {
             final int index = i;
             this.client
-                    .delete(5001, finalClientList.get(index).getIP(), "/client/game/card")
+                    .put(5001, finalClientList.get(index).getIP(), "/client/game/card")
                     .sendJson(jsonify(ipClient, JsonArray.of(listCard), bonusArmies))
                     .onSuccess(r -> {
                         switch (r.statusCode()) {
@@ -701,7 +701,7 @@ public class GameSender extends AbstractVerticle {
         for (int i = 0; i < finalClientList.size(); i++) {
             final int index = i;
             this.client
-                    .delete(5001, finalClientList.get(index).getIP(), "/client/game/player")
+                    .put(5001, finalClientList.get(index).getIP(), "/client/game/player")
                     .sendJson(jsonify(ip))
                     .onSuccess(r -> {
                         switch (r.statusCode()) {

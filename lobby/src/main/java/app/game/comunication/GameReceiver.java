@@ -72,7 +72,7 @@ public class GameReceiver extends AbstractVerticle {
                 });
         //GET NOTIFY WHEN A BONUS FROM STATE CARD HAVE BEEN USED
         router
-                .delete("/client/game/card")
+                .put("/client/game/card")
                 .handler(routingContext -> {
                     routingContext.request().bodyHandler(body -> {
                         var ip = body.toJsonArray().getString(0);
@@ -161,7 +161,7 @@ public class GameReceiver extends AbstractVerticle {
                 });
 
         //HANDLE PLAYER LEFFT THE GAME
-        router.delete("/client/game/player").handler(routingContext -> {
+        router.put("/client/game/player").handler(routingContext -> {
             routingContext.request().bodyHandler(body -> {
                 var ip = body.toJsonArray().getString(0);
                 this.gameClient.playerLeft(ip);
