@@ -1,0 +1,42 @@
+services:
+  
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    ports:
+      - "8000:5000"
+
+  client1:
+    build:
+      context: .
+      dockerfile: LinuxClient.Dockerfile
+    ports:
+      - "8001:5001"
+    environment:
+      - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+
+  client2:
+    build:
+      context: .
+      dockerfile: LinuxClient.Dockerfile
+    ports:
+      - "8002:5001"
+    environment:
+      - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+
+  client3:
+    build:
+      context: .
+      dockerfile: LinuxClient.Dockerfile
+    ports:
+      - "8003:5001"
+    environment:
+      - DISPLAY=$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      

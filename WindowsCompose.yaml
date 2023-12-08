@@ -1,0 +1,36 @@
+services:
+  
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    ports:
+      - "8000:5000"
+
+  client1:
+    build:
+      context: .
+      dockerfile: WindowsClient.Dockerfile
+    ports:
+      - "8001:5001"
+
+  client2:
+    build:
+      context: .
+      dockerfile: WindowsClient.Dockerfile
+    ports:
+      - "8002:5001"
+
+  client3:
+    build:
+      context: .
+      dockerfile: WindowsClient.Dockerfile
+    ports:
+      - "8003:5001"
+#
+#  client4:
+#    build:
+#      context: .
+#      dockerfile: client.Dockerfile
+#    ports:
+#      - "8004:5001"
