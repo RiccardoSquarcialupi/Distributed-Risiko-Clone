@@ -1,10 +1,14 @@
 ## RISIKO!
 # A p2p implementation.
 
-The first time you clone the repo you need to:
-`git submodule --init --recursive`
-To correctly pull submodules exec:
-`git pull --recurse-submodules`
-If you want to avoid using the *--recurse-submodules* option, you can configure git as follow:
-`git config --global submodule.recurse true`
-From now on you just need to git pull to update the entire project.
+To clone the project simply run:
+
+`git clone https://gitlab.com/pika-lab/courses/ds/projects/ds-project-benvenuti-squarcialupi-ay2122.git`
+
+Once the project is cloned, to run use the command:
+
+`docker-compose -f (WindowsCompose.yaml/LinuxCompose.yaml) up --build`
+
+To run tests of project, run:
+
+`docker-compose -f (WindowsComposeTest.yaml/LinuxComposeTest.yaml) up --build`
